@@ -1,0 +1,35 @@
+<form class="form-horizontal" action="javascript: form.send({ {{form}}{{if identifier|notempty}}'{{identifier}}':'#{{identifier}}',{{/if}}{{/form}} },'{{request.request}}','{{request.page}}');" role="form">
+	{{if header|notequals>}}<h3>{{header}}</h3>{{/if}}
+	{{form}}
+		{{if type|equals>description}}
+			<div class="form-group">
+				<label class="col-sm-2 control-label"></label>
+				<div class="col-sm-10"><p class="text-primary form-control-static">{{description}}</p></div>
+			</div>
+		{{else}}
+			<div class="form-group">
+				<label for="{{identifier}}" class="col-sm-2 control-label">{{label}}</label>
+				<div class="col-sm-10">
+					{{if type|equals>text}}
+						<input type="text" class="form-control" id="{{identifier}}" value="{{if value|notempty}}{{value|htmlescape}}{{/if}}" placeholder="{{label}}">
+					{{else}}
+						{{if type|equals>password}}
+							<input type="password" class="form-control" id="{{identifier}}" value="{{if value|notequals>null}}{{value|htmlescape}}{{/if}}" placeholder="{{label}}">
+						{{else}}
+							{{if type|equals>textarea}}
+								<textarea class="form-control" rows="3" placeholder="{{label}}" id="{{identifier}}">{{if value|notequals>null}}{{value|htmlescape}}{{/if}}</textarea>
+							{{else}}
+								
+							{{/if}}
+						{{/if}}
+					{{/if}}
+				</div>
+			</div>
+		{{/if}}
+	{{/form}}
+	<div class="form-group">
+		<div class="col-sm-offset-2 col-sm-10">
+			<button type="submit" class="btn btn-default">Save Data</button>
+		</div>
+	</div>
+</form>
