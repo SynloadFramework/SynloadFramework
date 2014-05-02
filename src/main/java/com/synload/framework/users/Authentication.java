@@ -19,7 +19,7 @@ public class Authentication{
 	public static boolean create(String username, String password, String email, List<String> flags){
 		boolean validEmail = false;
 		try {
-			Pattern regex = Pattern.compile("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+			Pattern regex = Pattern.compile("[A-Z0-9._%+-]+@[A-Z0-9.-]+", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 			Matcher regexMatcher = regex.matcher(email);
 			validEmail = regexMatcher.matches();
 		} catch (PatternSyntaxException ex) {
@@ -32,11 +32,9 @@ public class Authentication{
 		}
 	}
 	public static User session(String ip, String uuid){
-		User u = User.findUserSession(uuid);
+		User u = User.findUserSession(uuid, ip);
 		if(u != null){
-			if(u.getIp().equals(ip)){
-				return u;
-			}
+			return u;
 		}
 		return null;
 	}

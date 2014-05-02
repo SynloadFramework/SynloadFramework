@@ -52,7 +52,7 @@ public class DefaultWSPages {
 			user.setUser(authedUser);
 			Success authResponse = new Success("session");
 			Map<String, String> userData = new HashMap<String,String>();
-			userData.put("id", String.valueOf(user.getUser().get_id()));
+			userData.put("id", String.valueOf(user.getUser().getId()));
 			userData.put("session", request.getData().get("sessionid"));
 			if(authedUser.getFlags()!=null){
 				userData.put("flags", user.ow.writeValueAsString(user.getUser().getFlags()));
@@ -66,7 +66,7 @@ public class DefaultWSPages {
 	}
 	public void getLogout(WSHandler user, Request request) throws JsonProcessingException, IOException{
 		if(user.getUser()!=null){
-			user.getUser().saveUserSession("", "");
+			user.getUser().deleteUserSession( String.valueOf(user.session.getUpgradeRequest().getHeaders("X-Real-IP")), request.getData().get("sessionid"));
 			user.setUser(null);
 			user.send(user.ow.writeValueAsString(new Success("logout")));
 		}else{
@@ -83,7 +83,7 @@ public class DefaultWSPages {
 			user.getUser().saveUserSession(String.valueOf(user.session.getUpgradeRequest().getHeaders("X-Real-IP")), uuid);
 			Success authResponse = new Success("login");
 			Map<String, String> userData = new HashMap<String,String>();
-			userData.put("id", String.valueOf(user.getUser().get_id()));
+			userData.put("id", String.valueOf(user.getUser().getId()));
 			userData.put("session", uuid);
 			if(authedUser.getFlags()!=null){
 				userData.put("flags", user.ow.writeValueAsString(authedUser.getFlags()));

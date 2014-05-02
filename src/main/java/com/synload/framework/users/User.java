@@ -18,6 +18,7 @@ import com.synload.framework.SynloadFramework;
     property = "class"
 )
 public class User{
+	public User(){}
 	public User(ResultSet rs){
 		try {
 			this.setUsername(rs.getString("username"));
@@ -26,8 +27,6 @@ public class User{
 			this.setEmail(rs.getString("email"));
 			this.setAdmin(rs.getBoolean("admin"));
 			this.setId(rs.getLong("id"));
-			this.ip = rs.getString("ip");
-			this.session = rs.getString("session");
 			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -47,7 +46,7 @@ public class User{
 			s.execute();
 			User m = User.findUser(this.getUsername());
 			if(m!=null){
-				this.setId(m.get_id());
+				this.setId(m.getId());
 			}else{
 				System.out.println("[ERROR] Registration error!");
 			}
@@ -57,27 +56,17 @@ public class User{
 		}
 	}
 	private long id;
-	private String username, email, ip, session = "";
+	private String username = "";
+	@JsonIgnore public String email = "";
 	private List<String> flags = new ArrayList<String>();
 	private boolean admin = false;
 	@JsonIgnore private String password = "";
+	
 	public long getId() {
 		return id;
 	}
 	public void setId(long id) {
 		this.id = id;
-	}
-	public String getIp() {
-		return ip;
-	}
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
-	public String getSessionID() {
-		return session;
-	}
-	public void setSessionID(String session) {
-		this.session = session;
 	}
 	public List<String> getFlags() {
 		return flags;
@@ -91,14 +80,20 @@ public class User{
 	public void addFlags(String flag) {
 		this.flags.add(flag);
 	}
-	public long get_id() {
-		return id;
-	}
 	public boolean isAdmin() {
 		return admin;
 	}
 	public void setAdmin(boolean admin) {
 		this.admin = admin;
+		try{
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("UPDATE users SET admin=? WHERE id=?");
+			s.setBoolean(1, admin);
+			s.setLong(2, id);
+			s.execute();
+			s.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	public String getUsername() {
 		return username;
@@ -113,6 +108,15 @@ public class User{
 		String hashedPass = "";
 		try {
 			hashedPass = this.hashGenerator(Password);
+			try{
+				PreparedStatement s = SynloadFramework.sql.prepareStatement("UPDATE users SET password=? WHERE id=?");
+				s.setString(1, hashedPass);
+				s.setLong(2, id);
+				s.execute();
+				s.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
@@ -155,9 +159,25 @@ public class User{
 			return 0;
 		}
 	}
+	public static List<User> all(){
+		List<User> all = new ArrayList<User>();
+		try{
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id FROM users");
+			ResultSet rs = s.executeQuery();
+			while(!rs.isClosed() && rs.next()){
+				User u = new User(rs);
+				all.add(u);
+			}
+			rs.close();
+			s.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+		return all;
+	}
 	public static User findUser(String user){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id, ip, session FROM users WHERE username=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id FROM users WHERE username=?");
 			s.setString(1, user.toLowerCase());
 			ResultSet rs = s.executeQuery();
 			while(rs.next()){
@@ -174,13 +194,14 @@ public class User{
 			return null;
 		}
 	}
-	public static User findUserSession(String uuid){
+	public static User findUserSession(String uuid, String ip){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id, ip, session FROM users WHERE session=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT user FROM sessions WHERE session=? AND ip=?");
 			s.setString(1, uuid);
+			s.setString(2, ip);
 			ResultSet rs = s.executeQuery();
 			while(rs.next()){
-				User u = new User(rs);
+				User u = findUser(rs.getLong("user"));
 				rs.close();
 				s.close();
 				return u;
@@ -194,7 +215,7 @@ public class User{
 	}
 	public static User findUser(long uid){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id, ip, session FROM users WHERE id=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id FROM users WHERE id=?");
 			s.setLong(1, uid);
 			ResultSet rs = s.executeQuery();
 			while(rs.next()){
@@ -223,9 +244,21 @@ public class User{
 			e.printStackTrace();
 		}
 	}
+	public void deleteUserSession(String ip, String uuid){
+		try{
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("DELETE FROM sessions WHERE ip=? AND session=? AND user=?");
+			s.setString(1, ip);
+			s.setString(2, uuid);
+			s.setLong(3, id);
+			s.execute();
+			s.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	public void saveUserSession(String ip, String uuid){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("UPDATE users SET ip=?, session=? WHERE id=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("INSERT INTO sessions SET ip=?, session=?, user=?");
 			s.setString(1, ip);
 			s.setString(2, uuid);
 			s.setLong(3, id);

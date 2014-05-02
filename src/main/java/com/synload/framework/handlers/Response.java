@@ -36,7 +36,7 @@ public class Response {
 		return pageTitle;
 	}
 	public void setPageTitle(String pageTitle) {
-		this.pageTitle = pageTitle;
+		this.pageTitle = SynloadFramework.prop.getProperty("name")+pageTitle;
 	}
 	public Request getRequest() {
 		return request;

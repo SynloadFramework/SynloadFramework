@@ -78,6 +78,11 @@ public class SynloadFramework{
 	            folder.mkdir();
 	        }
 	        
+	        sql = DriverManager.getConnection( 
+					prop.getProperty("jdbc"), 
+					prop.getProperty("dbuser"), 
+					prop.getProperty("dbpass") );
+	        
 	        File[] listOfFiles = folder.listFiles(); 
 	        for (int i = 0; i < listOfFiles.length; i++){
 	            if (listOfFiles[i].isFile()){
@@ -102,11 +107,6 @@ public class SynloadFramework{
 			if(args.length>=1){
 				port = Integer.valueOf(args[0]);
 			}
-			
-			sql = DriverManager.getConnection( 
-					prop.getProperty("jdbc"), 
-					prop.getProperty("dbuser"), 
-					prop.getProperty("dbpass") );
 			
 			Server server = new Server(port);
 			HandlerCollection handlerCollection = new HandlerCollection();
@@ -141,24 +141,24 @@ public class SynloadFramework{
 	}
 	
 	public static void buildDefaultHTTP(){
-		SynloadFramework.registerHTTPPage("/", (new DefaultHTTPPages()).getClass(), "getIndex");
+		SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
 	}
 	
 	public static void buildDefaultPages(){
 		List<String> flagsRegistered = new ArrayList<String>();
 		flagsRegistered.add("r");
-		SynloadFramework.registerElement(new WSRequest("full","get"), (new DefaultWSPages()).getClass(), "getFullPage", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("full","get"), DefaultWSPages.class, "getFullPage", new ArrayList<String>());
 		/* USER ACCOUNT DATA */
-		SynloadFramework.registerElement(new WSRequest("wrapper","get"), (new DefaultWSPages()).getClass(), "getWrapper", flagsRegistered);
-		SynloadFramework.registerElement(new WSRequest("userSettings","get"), (new DefaultWSPages()).getClass(), "getUserSettingsForm", flagsRegistered);
-		SynloadFramework.registerElement(new WSRequest("userSettings","action"), (new DefaultWSPages()).getClass(), "getUserSettingsSave", flagsRegistered);
-		SynloadFramework.registerElement(new WSRequest("login","get"), (new DefaultWSPages()).getClass(), "getLoginBox", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("logout","get"), (new DefaultWSPages()).getClass(), "getLogout", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("register","get"), (new DefaultWSPages()).getClass(), "getRegisterBox", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("sessionlogin","get"), (new DefaultWSPages()).getClass(), "getSessionLogin", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("login","action"), (new DefaultWSPages()).getClass(), "getLogin", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("register","action"), (new DefaultWSPages()).getClass(), "getRegister", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("ping","get"), (new DefaultWSPages()).getClass(), "getPing", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("wrapper","get"), DefaultWSPages.class, "getWrapper", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("userSettings","get"), DefaultWSPages.class, "getUserSettingsForm", flagsRegistered);
+		SynloadFramework.registerElement(new WSRequest("userSettings","action"), DefaultWSPages.class, "getUserSettingsSave", flagsRegistered);
+		SynloadFramework.registerElement(new WSRequest("login","get"), DefaultWSPages.class, "getLoginBox", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("logout","get"), DefaultWSPages.class, "getLogout", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("register","get"), DefaultWSPages.class, "getRegisterBox", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("sessionlogin","get"), DefaultWSPages.class, "getSessionLogin", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("login","action"), DefaultWSPages.class, "getLogin", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("register","action"), DefaultWSPages.class, "getRegister", new ArrayList<String>());
+		SynloadFramework.registerElement(new WSRequest("ping","get"), DefaultWSPages.class, "getPing", new ArrayList<String>());
 	}
 	
 	public static void buildMenu(){

@@ -16,6 +16,6 @@ public class RegisterBox extends Response{
 		this.setParent("#content");
 		this.setRequest(new Request("get","register"));
 		this.setParentTemplate("full");
-		this.setPageTitle("AnimeCap .::. Register");
+		this.setPageTitle(" .::. Register");
 	}
 }

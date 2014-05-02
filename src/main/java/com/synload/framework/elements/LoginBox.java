@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.synload.framework.SynloadFramework;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
 
@@ -24,6 +25,6 @@ public class LoginBox extends Response{
 		this.setData(tmp);
 		this.setRequest(new Request("get","login"));
 		this.addJavascript(this.getFileData("./elements/js/focus_input.js"));
-		this.setPageTitle("AnimeCap .::. Login");
+		this.setPageTitle(" .::. Login");
 	}
 }
