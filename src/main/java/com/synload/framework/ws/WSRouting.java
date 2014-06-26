@@ -35,10 +35,16 @@ public class WSRouting{
 			//System.out.println("[WR][I] Route Found!");
 			WSResponse p = routes.get(ow.writeValueAsString(pg));
 			boolean flagRequirementsMet = true;
-			for(String flag: p.getRequiredFlags()){
-				if(!user.getUser().getFlags().contains(flag)){
-					flagRequirementsMet = false;
+			if(user.getUser()!=null){
+				for(String flag: p.getRequiredFlags()){
+					if(!user.getUser().getFlags().contains(flag)){
+						flagRequirementsMet = false;
+					}
 				}
+			}else if(p.getRequiredFlags().size()==0){
+				flagRequirementsMet = true;
+			}else{
+				flagRequirementsMet = false;
 			}
 			if(flagRequirementsMet){
 				try {

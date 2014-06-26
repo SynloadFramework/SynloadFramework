@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 	)
 public class WSRequest{
 	/**
-	 * Derp Derp
+	 * 
 	 */
 	public String pri, request = "";
 	public WSRequest(String page, String request){

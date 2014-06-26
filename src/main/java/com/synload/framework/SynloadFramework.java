@@ -17,6 +17,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JclObjectFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.synload.eventsystem.Addon;
 import com.synload.framework.handlers.Request;
@@ -41,6 +42,8 @@ public class SynloadFramework{
 	public static List<String> bannedIPs = new ArrayList<String>();
 	public static Connection sql = null;
 	public static int totalFailures = 10;
+	public static boolean debug = false;
+	public static Server server = null;
 	public static Properties prop = new Properties();
 	public static Map<String,List<Long>> failedAttempts = new HashMap<String,List<Long>>();
 	public static List<Javascript> javascripts = new ArrayList<Javascript>();
@@ -59,9 +62,12 @@ public class SynloadFramework{
 				prop.setProperty("jdbc", "jdbc:mysql://localhost:3306/db");
 				prop.setProperty("dbuser", "root");
 				prop.setProperty("dbpass", "");
+				prop.setProperty("debug", "false");
 				prop.setProperty("gameMenu", "true");
 				prop.store(new FileOutputStream("config.ini"), null);
 			}
+			
+			debug = Boolean.valueOf(prop.getProperty("debug"));
 			
 			System.out.println("[DS] Loading defaults");
 			SynloadFramework.buildMenu();
@@ -108,7 +114,7 @@ public class SynloadFramework{
 				port = Integer.valueOf(args[0]);
 			}
 			
-			Server server = new Server(port);
+			server = new Server(port);
 			HandlerCollection handlerCollection = new HandlerCollection();
 			handlerCollection.addHandler(new HTTPHandler());
 			handlerCollection.addHandler(new WebsocketHandler());
@@ -118,7 +124,9 @@ public class SynloadFramework{
 			server.join();
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -185,7 +193,9 @@ public class SynloadFramework{
 		}
 		return m;
 	}
-	
+	public static void log(String data){
+		System.out.print(data);
+	}
 	public static void registerJavascriptFile(Javascript js, String name){
 		System.out.println("[JS] Registered javascript <"+name+">");
 		SynloadFramework.javascripts.add(js);
@@ -199,7 +209,9 @@ public class SynloadFramework{
 				System.out.println("[WB][E] Failed to add <"+page+"> path");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -211,7 +223,9 @@ public class SynloadFramework{
 				System.out.println("[PG][E] Failed to add <"+page.getPri()+"> with action <"+page.getRequest()+">");
 			}
 		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	

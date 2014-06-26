@@ -42,10 +42,10 @@ public class HTTPRouting{
 	}
 	@SuppressWarnings("unused")
 	public static boolean openFile(String filename,HttpServletResponse response, Request baseRequest) throws IOException{
-		boolean properFile = false;
+		boolean properFile = true;
 		String mime = "text/html;charset=utf-8";
         try {
-        	properFile = filename.split("/")[filename.split("/").length-1].matches("(?sim)([a-z.A-Z0-9]+)");
+        	//properFile = filename.split("/")[filename.split("/").length-1].matches("(?sim)([a-z.A-Z0-9]+)");
         } catch (PatternSyntaxException ex) {
         }
         String ext = filename.split("(?sim)\\.")[filename.split("(?sim)\\.").length-1];
@@ -61,6 +61,8 @@ public class HTTPRouting{
 			mime = "image/jpeg";
 		}else if(ext.equalsIgnoreCase("png")){
 			mime = "image/png";
+		}else if(ext.equalsIgnoreCase("ico")){
+			mime = "image/x-icon";
 		}
         if(properFile){
         	boolean htmlExists = ( new File(filename)).exists();
@@ -76,7 +78,7 @@ public class HTTPRouting{
         			htmlf = SynloadFramework.htmlFiles.get(filename);
         			isCached = htmlf.get("modified").equals(( new File(filename)).lastModified());
         		}
-        		if(range==null || ext.equals("ico")){
+        		if(range==null){
         			response.setCharacterEncoding("UTF-8");
             		response.setStatus(HttpServletResponse.SC_OK);
             		response.setHeader("Accept-Ranges", "bytes");
@@ -96,19 +98,26 @@ public class HTTPRouting{
         	    		while (is.read(buffer) != -1) {
         	    			if(cache){
         	    				outputStream.write( buffer );
+        	    				outputStream.flush();
         	    			}
         	    			try{
         	    				if(ext.equalsIgnoreCase("html") || ext.equalsIgnoreCase("css") || ext.equalsIgnoreCase("js")){
 		        	    			response.getWriter().print(new String(buffer));
+		        	    			response.getWriter().flush();
 	        	    			}else if(ext.equalsIgnoreCase("mp4") ||
 	        	    				ext.equalsIgnoreCase("avi") || 
 	        	    				ext.equalsIgnoreCase("webm") || 
 	        	    				ext.equalsIgnoreCase("jpg") || 
 	        	    				ext.equalsIgnoreCase("png") || 
+	        	    				ext.equalsIgnoreCase("ico") || 
 	        	    				ext.equalsIgnoreCase("gif") ){
 	        	    				response.getOutputStream().write(buffer);
+	        	    				response.getOutputStream().flush();
 	        	    			}
 	        	    		} catch (IOException ex) {
+	        	    			if(SynloadFramework.debug){
+	        	    				ex.printStackTrace();
+	        	    			}
 	            			}
         	    		}
         	    		if(cache){
@@ -224,16 +233,21 @@ public class HTTPRouting{
 						stream.write(buffer);
 					}
 				}
+				stream.flush();
 			}
 		} catch (IOException e) {
-			//e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}finally{
 			try {
 				if(is!=null){
 					is.close();
 				}
 			} catch (IOException e) {
-				//e.printStackTrace();
+				if(SynloadFramework.debug){
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -252,6 +266,9 @@ public class HTTPRouting{
 							p.getListener().newInstance(), target, baseRequest, request, response, URI
 						);
 				} catch (Exception e) {
+					if(SynloadFramework.debug){
+						e.printStackTrace();
+					}
 				}
 				return ;
 			}
@@ -262,24 +279,18 @@ public class HTTPRouting{
 			}
 		}
 		//System.out.println("[WB][I] Route not found checking for files!!");
-		boolean folder = false;
-		try {
-			Pattern regex = Pattern.compile("([a-zA-Z0-9_\\-()\\[\\] ]+)", Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-			Matcher regexMatcher = regex.matcher(URI[1]);
-			folder = regexMatcher.matches();
-		} catch (PatternSyntaxException ex) {
-		}
 		boolean file = false;
 		try {
-			Pattern regex = Pattern.compile("([a-zA-Z0-9._\\-()\\[\\] ]+)", Pattern.DOTALL | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-			Matcher regexMatcher = regex.matcher(URI[2]);
-			file = regexMatcher.matches();
+			Pattern regex = Pattern.compile("\\.\\.", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.MULTILINE);
+			Matcher regexMatcher = regex.matcher(URI[1]+"/"+URI[2]);
+			file = regexMatcher.find();
 		} catch (PatternSyntaxException ex) {
+			// Syntax error in the regular expression
 		}
 		if(URI.length==3){
 			//System.out.println("[WB][I] Checking if route is a file <"+URI[1]+"><"+URI[2]+">!");
-			if((new File(URI[1]+"/"+URI[2])).exists() && folder && file){
-				//System.out.println("[WB][I] Sending file data <"+URI[1]+"><"+URI[2]+">!");
+			if((new File(URI[1]+"/"+URI[2])).exists() && !file){
+				System.out.println("[WB][I] Sending file data <"+URI[1]+"><"+URI[2]+">!");
 				openFile( URI[1]+"/"+URI[2], response, baseRequest);
 				return;
 			}

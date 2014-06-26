@@ -1,7 +1,12 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
-import org.eclipse.jetty.websocket.api.Session;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -28,7 +33,10 @@ import com.synload.framework.users.User;
 	)
 public class WSHandler{
 	@JsonIgnore public Session session = null;
+	@JsonIgnore public List<String> queue = new ArrayList<String>();
 	public User user = null;
+	@JsonIgnore public boolean isSending = false;
+	@JsonIgnore private Thread sendingThreadVar = null;
 	@JsonIgnore public ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 	/*@OnWebSocketFrame
 	public void onWebSocketBinary(byte[] arg0, int arg1, int arg2) {
@@ -39,6 +47,8 @@ public class WSHandler{
 	@OnWebSocketClose
 	public void onWebSocketClose(int statusCode, String reason) {
 		SynloadFramework.users.remove(session);
+		sendingThreadVar.stop();
+		sendingThreadVar.interrupt();
 		EventPublisher.raiseEventThread(new CloseEvent(this));
         //System.out.println("Close: statusCode=" + statusCode + ", reason=" + reason);
 	}
@@ -53,13 +63,18 @@ public class WSHandler{
 
 	@OnWebSocketConnect
 	public void onWebSocketConnect(Session session) {
+		
 		this.session = session;
 		SynloadFramework.users.add(session);
 		try {
+			sendingThreadVar = (new Thread(new sendingThread(this)));
+			sendingThreadVar.start();
 			session.getRemote().sendString(ow.writeValueAsString(new JavascriptIncludes()));
 			System.out.println("[WS] "+session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!");
 		} catch (IOException e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
         //System.out.println("Connect: " + session.getRemoteAddress().getAddress());
         EventPublisher.raiseEventThread(new ConnectEvent(this));
@@ -69,9 +84,8 @@ public class WSHandler{
 	public void onWebSocketError(Throwable t) {
 		//System.out.println("Error: " + t.getMessage());
 	}
-	public void send(String data) throws IOException{
-		//System.out.println(data);
-		this.session.getRemote().sendString(data);
+	public void send(String data){
+		queue.add(data);
 	}
 	public class HandleRequest implements Runnable{
 		WSHandler handler;
@@ -84,8 +98,51 @@ public class WSHandler{
 			try {
 				WSRouting.page(this.handler,this.request);
 			} catch (IOException e) {
-				e.printStackTrace();
+				if(SynloadFramework.debug){
+					e.printStackTrace();
+				}
 			}
+		}
+	}
+	public class sendingThread implements Runnable{
+		private WSHandler ws= null;
+		public sendingThread(WSHandler ws){
+			this.ws = ws;
+		}
+		@Override
+		public void run() {
+			while(true){
+				try{
+					if(ws.queue.size()>0){
+						List<String> queueTemp = new ArrayList<String>(ws.queue);
+						ws.queue = new ArrayList<String>();
+						Iterator<String> queueIterator = queueTemp.iterator();
+						while(queueIterator.hasNext()){
+							ws.isSending=true;
+							ws.session.getRemote().sendString(queueIterator.next(),new verifySend(ws));
+						}
+					}
+					Thread.sleep(1);
+				}catch(Exception e){
+					if(SynloadFramework.debug){
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	public class verifySend implements WriteCallback{
+		private WSHandler ws= null;
+		public verifySend(WSHandler ws){
+			this.ws = ws;
+		}
+		@Override
+		public void writeFailed(Throwable arg0) {
+			this.ws.isSending=false;
+		}
+		@Override
+		public void writeSuccess() {
+			this.ws.isSending=false;
 		}
 	}
 	@OnWebSocketMessage
@@ -95,7 +152,9 @@ public class WSHandler{
 			Request request = mapper.readValue(message, Request.class);
 			(new Thread(new HandleRequest(this,request))).start();
 		} catch (IOException e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
         //System.out.println("[DEBUG]["+session.getUpgradeRequest().getHeaders("X-Real-IP")+"] " + message);
 	}

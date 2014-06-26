@@ -2,6 +2,8 @@ package com.synload.eventsystem;
 
 import java.lang.reflect.Method;
 
+import com.synload.framework.SynloadFramework;
+
 public class EventPublisher {
 	public static void raiseEventThread(final Event event, boolean threaded) {
 		if(threaded){
@@ -46,7 +48,9 @@ public class EventPublisher {
                     try {
                         methods[i].invoke(handler.newInstance(), event);
                     } catch (Exception e) {
-                        System.err.println(e);
+                    	if(SynloadFramework.debug){
+                    		e.printStackTrace();
+                    	}
                     }
                 }
             }

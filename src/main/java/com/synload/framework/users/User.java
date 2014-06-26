@@ -1,5 +1,6 @@
 package com.synload.framework.users;
 
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
@@ -8,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.SynloadFramework;
@@ -17,7 +19,7 @@ import com.synload.framework.SynloadFramework;
     include = JsonTypeInfo.As.PROPERTY,
     property = "class"
 )
-public class User{
+public class User implements Serializable{
 	public User(){}
 	public User(ResultSet rs){
 		try {
@@ -29,7 +31,9 @@ public class User{
 			this.setId(rs.getLong("id"));
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	public User(String username, String password, String email, List<String> flags){
@@ -52,14 +56,16 @@ public class User{
 			}
 			//return query.setParameter("user", ).getResultList().size();
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
-	private long id;
-	private String username = "";
-	@JsonIgnore public String email = "";
-	private List<String> flags = new ArrayList<String>();
-	private boolean admin = false;
+	public long id;
+	public String username = "";
+	@JsonIgnore private String email = "";
+	public List<String> flags = new ArrayList<String>();
+	public boolean admin = false;
 	@JsonIgnore private String password = "";
 	
 	public long getId() {
@@ -92,7 +98,9 @@ public class User{
 			s.execute();
 			s.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	public String getUsername() {
@@ -118,7 +126,9 @@ public class User{
 				e.printStackTrace();
 			}
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 		this.password = hashedPass;
 	}
@@ -155,7 +165,9 @@ public class User{
 			return 0;
 			//return query.setParameter("user", ).getResultList().size();
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 			return 0;
 		}
 	}
@@ -171,7 +183,9 @@ public class User{
 			rs.close();
 			s.close();
 		}catch(SQLException e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 		return all;
 	}
@@ -190,7 +204,9 @@ public class User{
 			s.close();
 			return null;
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -210,6 +226,30 @@ public class User{
 			s.close();
 			return null;
 		}catch(Exception e){
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
+	public static User findVerifySession(String uuid){
+		try{
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT user FROM sessions WHERE session=?");
+			s.setString(1, uuid);
+			ResultSet rs = s.executeQuery();
+			while(rs.next()){
+				User u = findUser(rs.getLong("user"));
+				rs.close();
+				s.close();
+				return u;
+			}
+			rs.close();
+			s.close();
+			return null;
+		}catch(Exception e){
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -228,7 +268,9 @@ public class User{
 			s.close();
 			return null;
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 			return null;
 		}
 	}
@@ -241,7 +283,9 @@ public class User{
 			s.close();
 			this.email = email;
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	public void deleteUserSession(String ip, String uuid){
@@ -253,7 +297,9 @@ public class User{
 			s.execute();
 			s.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	public void saveUserSession(String ip, String uuid){
@@ -265,7 +311,9 @@ public class User{
 			s.execute();
 			s.close();
 		}catch(Exception e){
-			e.printStackTrace();
+			if(SynloadFramework.debug){
+				e.printStackTrace();
+			}
 		}
 	}
 	private String hashGenerator(String Password) throws NoSuchAlgorithmException{

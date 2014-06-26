@@ -169,7 +169,9 @@ public class Response {
 				SynloadFramework.htmlFiles.put(tmpl, tmpf);
 				is.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				if(SynloadFramework.debug){
+					e.printStackTrace();
+				}
 			}
 			return dataOut.trim();
 		}else{
