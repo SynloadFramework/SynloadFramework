@@ -28,6 +28,7 @@ public class User implements Serializable{
 			this.password = rs.getString("password");
 			this.setEmail(rs.getString("email"));
 			this.setAdmin(rs.getBoolean("admin"));
+			this.setCreatedDate(rs.getLong("created_date"));
 			this.setId(rs.getLong("id"));
 			rs.close();
 		} catch (SQLException e) {
@@ -42,7 +43,7 @@ public class User implements Serializable{
 		this.setEmail(email);
 		this.setFlags(flags);
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("INSERT INTO `users` ( `username`, `password`, `email`, `flags`) VALUES (?, ?, ?, ?)");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("INSERT INTO `users` ( `username`, `password`, `email`, `flags`, `created_date`) VALUES ( ?, ?, ?, ?, UNIX_TIMESTAMP() )");
 			s.setString(1, this.getUsername());
 			s.setString(2, this.getPassword());
 			s.setString(3, this.getEmail());
@@ -61,7 +62,7 @@ public class User implements Serializable{
 			}
 		}
 	}
-	public long id;
+	public long id,createdDate;
 	public String username = "";
 	@JsonIgnore private String email = "";
 	public List<String> flags = new ArrayList<String>();
@@ -88,6 +89,12 @@ public class User implements Serializable{
 	}
 	public boolean isAdmin() {
 		return admin;
+	}
+	public long getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(long createdDate) {
+		this.createdDate = createdDate;
 	}
 	public void setAdmin(boolean admin) {
 		this.admin = admin;
@@ -174,7 +181,7 @@ public class User implements Serializable{
 	public static List<User> all(){
 		List<User> all = new ArrayList<User>();
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id FROM users");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id, created_date FROM users");
 			ResultSet rs = s.executeQuery();
 			while(!rs.isClosed() && rs.next()){
 				User u = new User(rs);
@@ -191,7 +198,7 @@ public class User implements Serializable{
 	}
 	public static User findUser(String user){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id FROM users WHERE username=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id, created_date FROM users WHERE username=?");
 			s.setString(1, user.toLowerCase());
 			ResultSet rs = s.executeQuery();
 			while(rs.next()){
@@ -255,7 +262,7 @@ public class User implements Serializable{
 	}
 	public static User findUser(long uid){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id FROM users WHERE id=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT username, password, email, flags, admin, id, created_date FROM users WHERE id=?");
 			s.setLong(1, uid);
 			ResultSet rs = s.executeQuery();
 			while(rs.next()){

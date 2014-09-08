@@ -1,7 +1,6 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,14 +14,17 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.CloseEvent;
 import com.synload.eventsystem.events.ConnectEvent;
+import com.synload.framework.OOnPage;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.elements.JavascriptIncludes;
 import com.synload.framework.handlers.Request;
+import com.synload.framework.handlers.Response;
 import com.synload.framework.users.User;
 
 @WebSocket
@@ -44,12 +46,16 @@ public class WSHandler{
 		
 	}*/
 	
+	@SuppressWarnings("deprecation")
 	@OnWebSocketClose
 	public void onWebSocketClose(int statusCode, String reason) {
+		OOnPage.removeClient(this);
 		SynloadFramework.users.remove(session);
+		SynloadFramework.clients.remove(this);
 		sendingThreadVar.stop();
 		sendingThreadVar.interrupt();
 		EventPublisher.raiseEventThread(new CloseEvent(this));
+		
         //System.out.println("Close: statusCode=" + statusCode + ", reason=" + reason);
 	}
 	
@@ -69,6 +75,7 @@ public class WSHandler{
 		try {
 			sendingThreadVar = (new Thread(new sendingThread(this)));
 			sendingThreadVar.start();
+			SynloadFramework.clients.add(this);
 			session.getRemote().sendString(ow.writeValueAsString(new JavascriptIncludes()));
 			System.out.println("[WS] "+session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!");
 		} catch (IOException e) {
@@ -86,6 +93,14 @@ public class WSHandler{
 	}
 	public void send(String data){
 		queue.add(data);
+	}
+	public void send(Response r){
+		OOnPage.newPage(this, r);
+		try {
+			queue.add(ow.writeValueAsString(r));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
 	}
 	public class HandleRequest implements Runnable{
 		WSHandler handler;

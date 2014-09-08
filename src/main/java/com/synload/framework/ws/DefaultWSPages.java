@@ -45,7 +45,7 @@ public class DefaultWSPages {
 	}
 	public void getSessionLogin(WSHandler user, Request request) throws JsonProcessingException, IOException{
 		User authedUser = Authentication.session(
-				String.valueOf(user.session.getUpgradeRequest().getHeaders("X-Real-IP")),
+				String.valueOf(user.session.getUpgradeRequest().getHeader("X-Real-IP")),
 				request.getData().get("sessionid")
 			);
 		if(authedUser!=null){

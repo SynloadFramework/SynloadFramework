@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,23 @@ public class Response {
 	public List<String> javascript = new ArrayList<String>();
 	public Map<String,String> redirect, data = new HashMap<String,String>();
 	public List<DelayedRequest> delayedRequests = new ArrayList<DelayedRequest>();
+	public Map<String, List<String>> objects = new HashMap<String, List<String>>();
 	public int sleep = 0;
+	public Map<String, List<String>> getObjects() {
+		return objects;
+	}
+	public void setObjects(Map<String, List<String>> objects) {
+		this.objects = objects;
+	}
+	public void addObject(String reference, String id){
+		if(this.objects.containsKey(reference)){
+			this.objects.get(reference).add(id);
+		}else{
+			List<String> h = new ArrayList<String>();
+			h.add(id);
+			this.getObjects().put(reference, h);
+		}
+	}
 	public String getTemplateId() {
 		return templateId;
 	}
@@ -125,19 +142,15 @@ public class Response {
 	public void setTemplate(String template) {
 		this.template = template;
 	}
-
 	public String getParent() {
 		return parent;
 	}
-
 	public void setParent(String parent) {
 		this.parent = parent;
 	}
-
 	public String getAction() {
 		return action;
 	}
-
 	public void setAction(String action) {
 		this.action = action;
 	}
@@ -158,14 +171,8 @@ public class Response {
 				InputStream is = new FileInputStream(htmlFile);
 				HashMap<String, Object> tmpf = new HashMap<String, Object>(); 
 				tmpf.put("modified", ( new File(tmpl)).lastModified());
-				@SuppressWarnings("unused")
-				int bytesRead;
-				byte[] buffer = new byte[8 * 1024];
-				while ((bytesRead = is.read(buffer)) != -1) {
-					String dataM = new String(buffer);
-					dataOut += dataM;
-				}
-				tmpf.put("data", dataOut.trim());
+				dataOut = new String(Files.readAllBytes(htmlFile.toPath()), "UTF-8");
+				tmpf.put("data", dataOut);
 				SynloadFramework.htmlFiles.put(tmpl, tmpf);
 				is.close();
 			} catch (IOException e) {
@@ -173,9 +180,9 @@ public class Response {
 					e.printStackTrace();
 				}
 			}
-			return dataOut.trim();
+			return dataOut;
 		}else{
-			return (String) htmlf.get("data");
+			return (String)htmlf.get("data");
 		}
 	}
 }

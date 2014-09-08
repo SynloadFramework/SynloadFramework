@@ -28,6 +28,7 @@ import com.synload.framework.http.HTTPRouting;
 import com.synload.framework.js.Javascript;
 import com.synload.framework.menu.MenuItem;
 import com.synload.framework.ws.DefaultWSPages;
+import com.synload.framework.ws.WSHandler;
 import com.synload.framework.ws.WSRequest;
 import com.synload.framework.ws.WSResponse;
 import com.synload.framework.ws.WSRouting;
@@ -45,6 +46,7 @@ public class SynloadFramework{
 	public static boolean debug = false;
 	public static Server server = null;
 	public static Properties prop = new Properties();
+	public static List<WSHandler> clients = new ArrayList<WSHandler>();
 	public static Map<String,List<Long>> failedAttempts = new HashMap<String,List<Long>>();
 	public static List<Javascript> javascripts = new ArrayList<Javascript>();
 	public static String authKey = "s9V0l3v1GsrE2j50VrUp1Elp1jY4Xh97bNkuHBnOVCL28I"+
@@ -63,7 +65,6 @@ public class SynloadFramework{
 				prop.setProperty("dbuser", "root");
 				prop.setProperty("dbpass", "");
 				prop.setProperty("debug", "false");
-				prop.setProperty("gameMenu", "true");
 				prop.store(new FileOutputStream("config.ini"), null);
 			}
 			
@@ -192,6 +193,16 @@ public class SynloadFramework{
 			parent.addMenus(m);
 		}
 		return m;
+	}
+	public static void broadcast(String data){
+		for(WSHandler user: SynloadFramework.clients){
+			user.send(data);
+		}
+	}
+	public static void broadcast(List<WSHandler> _cs, String data){
+		for(WSHandler user: _cs){
+			user.send(data);
+		}
 	}
 	public static void log(String data){
 		System.out.print(data);
