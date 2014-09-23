@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.SynloadFramework;
 
+@SuppressWarnings("serial")
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,

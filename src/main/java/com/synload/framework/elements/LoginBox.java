@@ -3,8 +3,6 @@ package com.synload.framework.elements;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.synload.framework.SynloadFramework;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
 

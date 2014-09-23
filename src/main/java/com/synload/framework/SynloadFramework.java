@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.ArrayList;
@@ -44,6 +46,9 @@ public class SynloadFramework{
 	public static Connection sql = null;
 	public static int totalFailures = 10;
 	public static boolean debug = false;
+	public static long maxUploadSize = 26214400;
+	public static boolean handleUpload = false;
+	public static String uploadPath = "uploads/";
 	public static Server server = null;
 	public static Properties prop = new Properties();
 	public static List<WSHandler> clients = new ArrayList<WSHandler>();
@@ -59,17 +64,23 @@ public class SynloadFramework{
 			if((new File("config.ini")).exists()){
 				prop.load(new FileInputStream("config.ini"));
 				authKey = prop.getProperty("authKey");
+				handleUpload = Boolean.valueOf(prop.getProperty("handleUploads"));
 			}else{
 				prop.setProperty("authKey", authKey);
 				prop.setProperty("jdbc", "jdbc:mysql://localhost:3306/db");
 				prop.setProperty("dbuser", "root");
 				prop.setProperty("dbpass", "");
 				prop.setProperty("debug", "false");
+				prop.setProperty("handleUploads", "false");
+				prop.setProperty("maxUploadSize", "26214400");
+				prop.setProperty("uploadPath", "uploads/");
 				prop.store(new FileOutputStream("config.ini"), null);
 			}
 			
 			debug = Boolean.valueOf(prop.getProperty("debug"));
-			
+			uploadPath = prop.getProperty("uploadPath");
+			maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
+			 
 			System.out.println("[DS] Loading defaults");
 			SynloadFramework.buildMenu();
 			SynloadFramework.buildDefaultPages();
@@ -131,6 +142,11 @@ public class SynloadFramework{
 		}
 	}
 	
+	public static String randomString(int length){
+		SecureRandom random = new SecureRandom();
+	    return new BigInteger(130, random).toString(length);
+	}
+	
 	public static void buildJavascript(){
 		Javascript jsUser = new Javascript();
 		jsUser.addCallBack("user.msg", "recieve");
@@ -151,6 +167,10 @@ public class SynloadFramework{
 	
 	public static void buildDefaultHTTP(){
 		SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
+		if(handleUpload){
+			System.out.println("Upload handler enabled!");
+			SynloadFramework.registerHTTPPage("/system/uploads", DefaultHTTPPages.class, "handleUploads");
+		}
 	}
 	
 	public static void buildDefaultPages(){

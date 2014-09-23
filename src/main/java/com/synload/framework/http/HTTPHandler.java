@@ -2,17 +2,15 @@ package com.synload.framework.http;
 
 import java.io.IOException;
 import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.ContextHandler;
-
 import com.synload.framework.SynloadFramework;
 
 
 public class HTTPHandler extends ContextHandler{
-	private static final MultipartConfigElement MULTI_PART_CONFIG = 
+	public static final MultipartConfigElement MULTI_PART_CONFIG = 
 			new MultipartConfigElement(
 				"/tmp/", 
 				943718400, 
@@ -38,7 +36,6 @@ public class HTTPHandler extends ContextHandler{
 		}*/
 		if (request.getContentType() != null && request.getContentType().startsWith("multipart/form-data")) {
 			baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
-			
 		}
 		this.setStopTimeout(2000);
 		try {
