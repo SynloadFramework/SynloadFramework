@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.synload.eventsystem.events.RequestEvent;
+import com.synload.framework.SynloadFramework;
 import com.synload.framework.elements.Failed;
 import com.synload.framework.elements.FullPage;
 import com.synload.framework.elements.LoginBox;
@@ -16,98 +18,158 @@ import com.synload.framework.elements.Success;
 import com.synload.framework.elements.UserSettingsForm;
 import com.synload.framework.elements.Wrapper;
 import com.synload.framework.handlers.Request;
+import com.synload.framework.modules.annotations.Event;
+import com.synload.framework.modules.annotations.Event.Type;
 import com.synload.framework.users.Authentication;
 import com.synload.framework.users.User;
 
 public class DefaultWSPages {
-	public void getFullPage(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		user.send(user.ow.writeValueAsString(new FullPage(request.getTemplateCache())));
+	
+	@Event(name="",description="",trigger={"get","full"},type=Type.WEBSOCKET)
+	public void getFullPage(RequestEvent event) throws JsonProcessingException, IOException{
+		event.getSession().send(
+				SynloadFramework.ow.writeValueAsString(
+				new FullPage(
+					event.getRequest().getTemplateCache()
+				)
+			)
+		);
 	}
-	public void getPing(WSHandler user, Request request) throws JsonProcessingException, IOException{
+	
+	@Event(name="",description="",trigger={"get","ping"},type=Type.WEBSOCKET)
+	public void getPing(RequestEvent event) throws JsonProcessingException, IOException{
 		return;
 	}
-	public void getWrapper(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		user.session.getRemote().sendString(user.ow.writeValueAsString(new Wrapper(request.getTemplateCache())));
+	
+	@Event(name="",description="",trigger={"get","wrapper"},type=Type.WEBSOCKET)
+	public void getWrapper(RequestEvent event) throws JsonProcessingException, IOException{
+		event.getSession().session.getRemote().sendString(
+				SynloadFramework.ow.writeValueAsString(
+				new Wrapper(
+					event.getRequest().getTemplateCache()
+				)
+			)
+		);
 	}
-	public void getUserSettingsForm(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		user.send(user.ow.writeValueAsString(UserSettingsForm.get(user)));
+	
+	@Event(name="",description="",trigger={"get","userSettings"},type=Type.WEBSOCKET,flags={"r"})
+	public void getUserSettingsForm(RequestEvent event) throws JsonProcessingException, IOException{
+		event.getSession().send(
+			SynloadFramework.ow.writeValueAsString(
+				UserSettingsForm.get(
+					event.getSession()
+				)
+			)
+		);
 	}
-	public void getUserSettingsSave(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		User mu = user.getUser();
-		mu.saveUserEmail(request.getData().get("email"));
-		user.send(user.ow.writeValueAsString(UserSettingsForm.get(user)));
+	
+	@Event(name="",description="",trigger={"action","userSettings"},type=Type.WEBSOCKET,flags={"r"})
+	public void getUserSettingsSave(RequestEvent event) throws JsonProcessingException, IOException{
+		User mu = event.getSession().getUser();
+		mu.saveUserEmail(event.getRequest().getData().get("email"));
+		event.getSession().send(SynloadFramework.ow.writeValueAsString(UserSettingsForm.get(event.getSession())));
 	}
-	public void getLoginBox(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		user.send(user.ow.writeValueAsString(new LoginBox(request.getTemplateCache())));
+	
+	@Event(name="",description="",trigger={"get","login"},type=Type.WEBSOCKET)
+	public void getLoginBox(RequestEvent event) throws JsonProcessingException, IOException{
+		event.getSession().send(
+			SynloadFramework.ow.writeValueAsString(
+				new LoginBox(
+					event.getRequest().getTemplateCache()
+				)
+			)
+		);
 	}
-	public void getRegisterBox(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		user.send(user.ow.writeValueAsString(new RegisterBox(request.getTemplateCache())));
+	
+	@Event(name="",description="",trigger={"get","register"},type=Type.WEBSOCKET)
+	public void getRegisterBox(RequestEvent event) throws JsonProcessingException, IOException{
+		event.getSession().send(
+			SynloadFramework.ow.writeValueAsString(
+				new RegisterBox(
+					event.getRequest().getTemplateCache()
+				)
+			)
+		);
 	}
-	public void getSessionLogin(WSHandler user, Request request) throws JsonProcessingException, IOException{
+	
+	@Event(name="",description="",trigger={"get","sessionlogin"},type=Type.WEBSOCKET)
+	public void getSessionLogin(RequestEvent event) throws JsonProcessingException, IOException{
 		User authedUser = Authentication.session(
-				String.valueOf(user.session.getUpgradeRequest().getHeader("X-Real-IP")),
-				request.getData().get("sessionid")
+				String.valueOf(event.getSession().session.getUpgradeRequest().getHeader("X-Real-IP")),
+				event.getRequest().getData().get("sessionid")
 			);
 		if(authedUser!=null){
-			user.setUser(authedUser);
+			event.getSession().setUser(authedUser);
 			Success authResponse = new Success("session");
 			Map<String, String> userData = new HashMap<String,String>();
-			userData.put("id", String.valueOf(user.getUser().getId()));
-			userData.put("session", request.getData().get("sessionid"));
+			userData.put("id", String.valueOf(event.getSession().getUser().getId()));
+			userData.put("session", event.getRequest().getData().get("sessionid"));
 			if(authedUser.getFlags()!=null){
-				userData.put("flags", user.ow.writeValueAsString(user.getUser().getFlags()));
+				userData.put("flags", SynloadFramework.ow.writeValueAsString(event.getSession().getUser().getFlags()));
 			}
-			userData.put("name", user.getUser().getUsername());
+			userData.put("name", event.getSession().getUser().getUsername());
 			authResponse.setData(userData);
-			user.send(user.ow.writeValueAsString(authResponse));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(authResponse));
 		}else{
-			user.send(user.ow.writeValueAsString(new Failed("session")));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Failed("session")));
 		}
 	}
-	public void getLogout(WSHandler user, Request request) throws JsonProcessingException, IOException{
-		if(user.getUser()!=null){
-			user.getUser().deleteUserSession( String.valueOf(user.session.getUpgradeRequest().getHeader("X-Real-IP")), request.getData().get("sessionid"));
-			user.setUser(null);
-			user.send(user.ow.writeValueAsString(new Success("logout")));
+	
+	@Event(name="",description="",trigger={"get","logout"},type=Type.WEBSOCKET)
+	public void getLogout(RequestEvent event) throws JsonProcessingException, IOException{
+		if(event.getSession().getUser()!=null){
+			event.getSession().getUser().deleteUserSession( 
+				String.valueOf(event.getSession().session.getUpgradeRequest().getHeader("X-Real-IP")), 
+				event.getRequest().getData().get("sessionid")
+			);
+			event.getSession().setUser(null);
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Success("logout")));
 		}else{
-			user.send(user.ow.writeValueAsString(new Failed("logout")));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Failed("logout")));
 		}
 	}
-	public void getLogin(WSHandler user, Request request) throws JsonProcessingException, IOException{
+	
+	@Event(name="",description="",trigger={"action","login"},type=Type.WEBSOCKET)
+	public void getLogin(RequestEvent event) throws JsonProcessingException, IOException{
 		User authedUser = Authentication.login(
-				request.getData().get("username").toLowerCase(),
-				request.getData().get("password"));
+				event.getRequest().getData().get("username").toLowerCase(),
+				event.getRequest().getData().get("password"));
 		if(authedUser!=null){
 			String uuid = UUID.randomUUID().toString();
-			user.setUser(authedUser);
-			user.getUser().saveUserSession(String.valueOf(user.session.getUpgradeRequest().getHeader("X-Real-IP")), uuid);
+			event.getSession().setUser(authedUser);
+			event.getSession().getUser().saveUserSession(
+				String.valueOf(event.getSession().session.getUpgradeRequest().getHeader("X-Real-IP")),
+				uuid
+			);
 			Success authResponse = new Success("login");
 			Map<String, String> userData = new HashMap<String,String>();
-			userData.put("id", String.valueOf(user.getUser().getId()));
+			userData.put("id", String.valueOf(event.getSession().getUser().getId()));
 			userData.put("session", uuid);
 			if(authedUser.getFlags()!=null){
-				userData.put("flags", user.ow.writeValueAsString(authedUser.getFlags()));
+				userData.put("flags", SynloadFramework.ow.writeValueAsString(authedUser.getFlags()));
 			}
-			userData.put("name", user.getUser().getUsername());
+			userData.put("name", event.getSession().getUser().getUsername());
 			authResponse.setData(userData);
-			user.send(user.ow.writeValueAsString(authResponse));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(authResponse));
 		}else{
-			user.send(user.ow.writeValueAsString(new Failed("login")));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Failed("login")));
 		}
 	}
-	public void getRegister(WSHandler user, Request request) throws JsonProcessingException, IOException{
+	
+	@Event(name="",description="",trigger={"action","register"},type=Type.WEBSOCKET)
+	public void getRegister(RequestEvent event) throws JsonProcessingException, IOException{
 		List<String> flags = new ArrayList<String>();
 		flags.add("r");
 		boolean authedUser = Authentication.create(
-				request.getData().get("username").toLowerCase(),
-				request.getData().get("password"),
-				request.getData().get("email"),
+				event.getRequest().getData().get("username").toLowerCase(),
+				event.getRequest().getData().get("password"),
+				event.getRequest().getData().get("email"),
 				flags);
 		if(authedUser){
-			user.send(user.ow.writeValueAsString(new Success("register")));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Success("register")));
 			// Should redirect to login box!
 		}else{
-			user.send(user.ow.writeValueAsString(new Failed("register")));
+			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Failed("register")));
 		}
 	}
 	

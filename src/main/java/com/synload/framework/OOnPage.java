@@ -80,12 +80,20 @@ public class OOnPage {
 		List<WSHandler> g = new ArrayList<WSHandler>();
 		if(ObjectsClients.containsKey(reference)){
 			if(ObjectsClients.get(reference).containsKey(id)){
-				g = new ArrayList<WSHandler>(ObjectsClients.get(reference).get(id));
+				g = ObjectsClients.get(reference).get(id);
 			}
 		}
+		System.out.println("reference="+reference+" id="+id+" size="+g.size());
 		return g;
 	}
-	
+	public static List<String> get(WSHandler ws, String reference){
+		if(clientsObjects.containsKey(ws)){
+			if(clientsObjects.get(ws).containsKey(reference)){
+				return clientsObjects.get(ws).get(reference);
+			}
+		}
+		return new ArrayList<String>();
+	}
 	public static void newPage(WSHandler client, Response r){
 		if(r.getObjects().size()>0){
 			OOnPage.removeClient(client);

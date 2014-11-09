@@ -1,12 +1,14 @@
 package com.synload.eventsystem.events;
 
-import com.synload.eventsystem.Event;
+import com.synload.eventsystem.EventClass;
+import com.synload.eventsystem.Handler;
 import com.synload.framework.http.UploadedFile;
 
-public class FileUploadEvent extends Event{
+public class FileUploadEvent extends EventClass{
     public UploadedFile file;
     public String key = "";
     public FileUploadEvent(UploadedFile file, String key){
+    	this.setHandler(Handler.EVENT);
     	this.key = key;
     	this.file = file;
     }

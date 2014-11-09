@@ -13,15 +13,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.server.AbstractNetworkConnector;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.spdy.server.http.HTTPSPDYServerConnector;
 import org.xeustechnologies.jcl.JarClassLoader;
 import org.xeustechnologies.jcl.JclObjectFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.synload.eventsystem.Addon;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.synload.eventsystem.Handler;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.http.DefaultHTTPPages;
 import com.synload.framework.http.HTTPHandler;
@@ -29,6 +38,9 @@ import com.synload.framework.http.HTTPResponse;
 import com.synload.framework.http.HTTPRouting;
 import com.synload.framework.js.Javascript;
 import com.synload.framework.menu.MenuItem;
+import com.synload.framework.modules.ModuleLoader;
+import com.synload.framework.modules.ModuleLoader.TYPE;
+import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.ws.DefaultWSPages;
 import com.synload.framework.ws.WSHandler;
 import com.synload.framework.ws.WSRequest;
@@ -49,6 +61,135 @@ public class SynloadFramework{
 	public static long maxUploadSize = 26214400;
 	public static boolean handleUpload = false;
 	public static String uploadPath = "uploads/";
+	public static boolean siteDefaults = false;
+	public static HashMap<String, HashMap<String, Object>> getHtmlFiles() {
+		return htmlFiles;
+	}
+
+	public static void setHtmlFiles(
+			HashMap<String, HashMap<String, Object>> htmlFiles) {
+		SynloadFramework.htmlFiles = htmlFiles;
+	}
+
+	public static List<Object> getPlugins() {
+		return plugins;
+	}
+
+	public static void setPlugins(List<Object> plugins) {
+		SynloadFramework.plugins = plugins;
+	}
+
+	public static List<String> getBannedIPs() {
+		return bannedIPs;
+	}
+
+	public static void setBannedIPs(List<String> bannedIPs) {
+		SynloadFramework.bannedIPs = bannedIPs;
+	}
+
+	public static boolean isDebug() {
+		return debug;
+	}
+
+	public static void setDebug(boolean debug) {
+		SynloadFramework.debug = debug;
+	}
+
+	public static long getMaxUploadSize() {
+		return maxUploadSize;
+	}
+
+	public static void setMaxUploadSize(long maxUploadSize) {
+		SynloadFramework.maxUploadSize = maxUploadSize;
+	}
+
+	public static boolean isHandleUpload() {
+		return handleUpload;
+	}
+
+	public static void setHandleUpload(boolean handleUpload) {
+		SynloadFramework.handleUpload = handleUpload;
+	}
+
+	public static boolean isSiteDefaults() {
+		return siteDefaults;
+	}
+
+	public static void setSiteDefaults(boolean siteDefaults) {
+		SynloadFramework.siteDefaults = siteDefaults;
+	}
+
+	public static Server getServer() {
+		return server;
+	}
+
+	public static void setServer(Server server) {
+		SynloadFramework.server = server;
+	}
+
+	public static Properties getProp() {
+		return prop;
+	}
+
+	public static void setProp(Properties prop) {
+		SynloadFramework.prop = prop;
+	}
+
+	public static List<WSHandler> getClients() {
+		return clients;
+	}
+
+	public static void setClients(List<WSHandler> clients) {
+		SynloadFramework.clients = clients;
+	}
+
+	public static Map<String, List<Long>> getFailedAttempts() {
+		return failedAttempts;
+	}
+
+	public static void setFailedAttempts(Map<String, List<Long>> failedAttempts) {
+		SynloadFramework.failedAttempts = failedAttempts;
+	}
+
+	public static List<Javascript> getJavascripts() {
+		return javascripts;
+	}
+
+	public static void setJavascripts(List<Javascript> javascripts) {
+		SynloadFramework.javascripts = javascripts;
+	}
+
+	public static String getAuthKey() {
+		return authKey;
+	}
+
+	public static void setAuthKey(String authKey) {
+		SynloadFramework.authKey = authKey;
+	}
+
+	public static List<MenuItem> getMenus() {
+		return menus;
+	}
+
+	public static void setMenus(List<MenuItem> menus) {
+		SynloadFramework.menus = menus;
+	}
+
+	public static ObjectWriter getOw() {
+		return ow;
+	}
+
+	public static void setOw(ObjectWriter ow) {
+		SynloadFramework.ow = ow;
+	}
+
+	public static HashMap<String, MenuItem> getReferenceMenus() {
+		return referenceMenus;
+	}
+
+	public static void setReferenceMenus(HashMap<String, MenuItem> referenceMenus) {
+		SynloadFramework.referenceMenus = referenceMenus;
+	}
 	public static Server server = null;
 	public static Properties prop = new Properties();
 	public static List<WSHandler> clients = new ArrayList<WSHandler>();
@@ -57,19 +198,23 @@ public class SynloadFramework{
 	public static String authKey = "s9V0l3v1GsrE2j50VrUp1Elp1jY4Xh97bNkuHBnOVCL28I"+
 			"TyH17u5TRD25UDsRrb2Bny61y1XXv0zZSWq4O9gARzO881amS3lAgy";
 	public static List<MenuItem> menus = new ArrayList<MenuItem>();
+	public static ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 	public static HashMap<String,MenuItem> referenceMenus = new HashMap<String,MenuItem>();
 	public static void main(String[] args) {
+		
 		try {
 			System.out.println("\t"+"Starting Synload Development Framework Server");
 			if((new File("config.ini")).exists()){
 				prop.load(new FileInputStream("config.ini"));
 				authKey = prop.getProperty("authKey");
 				handleUpload = Boolean.valueOf(prop.getProperty("handleUploads"));
+				siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
 			}else{
 				prop.setProperty("authKey", authKey);
 				prop.setProperty("jdbc", "jdbc:mysql://localhost:3306/db");
 				prop.setProperty("dbuser", "root");
 				prop.setProperty("dbpass", "");
+				prop.setProperty("siteDefaults", "false");
 				prop.setProperty("debug", "false");
 				prop.setProperty("handleUploads", "false");
 				prop.setProperty("maxUploadSize", "26214400");
@@ -83,7 +228,9 @@ public class SynloadFramework{
 			 
 			System.out.println("[DS] Loading defaults");
 			SynloadFramework.buildMenu();
-			SynloadFramework.buildDefaultPages();
+			
+			ModuleLoader.register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null);
+			
 			SynloadFramework.buildDefaultHTTP();
 			SynloadFramework.buildJavascript();
 			System.out.println("[DS] Fully loaded defaults");
@@ -95,43 +242,33 @@ public class SynloadFramework{
 	        if(!folder.exists()){
 	            folder.mkdir();
 	        }
-	        
+	        ModuleLoader.load(path);
 	        sql = DriverManager.getConnection( 
 					prop.getProperty("jdbc"), 
 					prop.getProperty("dbuser"), 
 					prop.getProperty("dbpass") );
 	        
-	        File[] listOfFiles = folder.listFiles(); 
-	        for (int i = 0; i < listOfFiles.length; i++){
-	            if (listOfFiles[i].isFile()){
-	                fileName = listOfFiles[i].getName();
-	                if (fileName.endsWith(".jar")){
-	                    jcl = new JarClassLoader();
-	                    String[] filedata = fileName.split("\\.");
-	                    jcl.add("modules/"+fileName);
-	                    JclObjectFactory factory = JclObjectFactory.getInstance();
-	                    InputStream is = jcl.getResourceAsStream("config.ini");
-	                    Properties mProperties = new Properties();
-	                    mProperties.load(is);
-	                    Object obj = factory.create(jcl, mProperties.getProperty("class"));
-	                    plugins.add(obj);
-	                    ((Addon)obj).init();
-	                    System.out.println("[ML] Loaded module "+filedata[0]);
-	                }
-	            }
-	        }
-	        System.out.println("[ML] Modules fully loaded");
-			int port = 80;
+	        int port = 80;
 			if(args.length>=1){
 				port = Integer.valueOf(args[0]);
 			}
 			
-			server = new Server(port);
+			LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(150);
+			ExecutorThreadPool pool = new ExecutorThreadPool(50, 200, 10, TimeUnit.MILLISECONDS, queue);
+			
+			server = new Server(pool);
+			
+			HTTPSPDYServerConnector connector = new HTTPSPDYServerConnector(server) ;
+			connector.setPort(port);
+			Connector[] g = new Connector[]{connector};
+			server.setConnectors(g);
+			
 			HandlerCollection handlerCollection = new HandlerCollection();
 			handlerCollection.addHandler(new HTTPHandler());
 			handlerCollection.addHandler(new WebsocketHandler());
 			server.setHandler(handlerCollection);
 			System.out.println("[SR] Started server on port "+port);
+			
 			server.start();
 			server.join();
 			
@@ -166,28 +303,12 @@ public class SynloadFramework{
 	}
 	
 	public static void buildDefaultHTTP(){
+		
 		SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
 		if(handleUpload){
 			System.out.println("Upload handler enabled!");
 			SynloadFramework.registerHTTPPage("/system/uploads", DefaultHTTPPages.class, "handleUploads");
 		}
-	}
-	
-	public static void buildDefaultPages(){
-		List<String> flagsRegistered = new ArrayList<String>();
-		flagsRegistered.add("r");
-		SynloadFramework.registerElement(new WSRequest("full","get"), DefaultWSPages.class, "getFullPage", new ArrayList<String>());
-		/* USER ACCOUNT DATA */
-		SynloadFramework.registerElement(new WSRequest("wrapper","get"), DefaultWSPages.class, "getWrapper", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("userSettings","get"), DefaultWSPages.class, "getUserSettingsForm", flagsRegistered);
-		SynloadFramework.registerElement(new WSRequest("userSettings","action"), DefaultWSPages.class, "getUserSettingsSave", flagsRegistered);
-		SynloadFramework.registerElement(new WSRequest("login","get"), DefaultWSPages.class, "getLoginBox", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("logout","get"), DefaultWSPages.class, "getLogout", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("register","get"), DefaultWSPages.class, "getRegisterBox", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("sessionlogin","get"), DefaultWSPages.class, "getSessionLogin", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("login","action"), DefaultWSPages.class, "getLogin", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("register","action"), DefaultWSPages.class, "getRegister", new ArrayList<String>());
-		SynloadFramework.registerElement(new WSRequest("ping","get"), DefaultWSPages.class, "getPing", new ArrayList<String>());
 	}
 	
 	public static void buildMenu(){

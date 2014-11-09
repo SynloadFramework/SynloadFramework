@@ -220,9 +220,9 @@ public class User implements Serializable{
 	}
 	public static User findUserSession(String uuid, String ip){
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT user FROM sessions WHERE session=? AND ip=?");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("SELECT user FROM sessions WHERE session=?"); //  AND ip=?
 			s.setString(1, uuid);
-			s.setString(2, ip);
+			//s.setString(2, ip);
 			ResultSet rs = s.executeQuery();
 			while(rs.next()){
 				User u = findUser(rs.getLong("user"));

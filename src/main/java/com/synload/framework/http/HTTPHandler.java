@@ -37,7 +37,7 @@ public class HTTPHandler extends ContextHandler{
 		if (request.getContentType() != null && request.getContentType().startsWith("multipart/form-data")) {
 			baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
 		}
-		this.setStopTimeout(2000);
+		this.setStopTimeout(60000);
 		try {
 			HTTPRouting.page(target, baseRequest, request, response);
 		} catch (IOException e) {

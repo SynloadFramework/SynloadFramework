@@ -290,6 +290,6 @@ public class HTTPRouting{
 			}
 		}
 		//System.out.println("[WB][I] File not found for route sending to modules!");
-		EventPublisher.raiseEventThread(new WebEvent(target,baseRequest,request,response,URI),false);
+		EventPublisher.raiseEvent(new WebEvent(target,baseRequest,request,response,URI),target);
 	}
 }

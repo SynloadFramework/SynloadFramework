@@ -1,56 +1,80 @@
 package com.synload.eventsystem;
 
-import java.lang.reflect.Method;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.synload.eventsystem.events.RequestEvent;
+import com.synload.eventsystem.events.WebEvent;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.annotations.Event;
+import com.synload.framework.modules.annotations.Event.Type;
 
 public class EventPublisher {
-	public static void raiseEventThread(final Event event, boolean threaded) {
-		if(threaded){
-			new Thread() {
-	            @Override
-	            public void run() {
-	                raise(event);
-	            }
-	        }.start();
-		}else{
-			raise(event);
-		}
-	}
-    public static void raiseEventThread(final Event event) {
-        new Thread() {
-            @Override
-            public void run() {
-                raise(event);
-            }
-        }.start();
+    public static void raiseEvent(final EventClass event, boolean threaded, final String target) {
+        if (threaded) {
+            new Thread() {
+                @Override
+                public void run() {
+                    raise(event, target);
+                }
+            }.start();
+        } else {
+            raise(event, target);
+        }
     }
-    public static void raiseEvent(final Event event) {
-        raise(event);
+
+    public static void raiseEvent(final EventClass event, String target) {
+        raise(event, target);
     }
-    
-    @SuppressWarnings("rawtypes")
-    private static void raise(final Event event) {
-        for (Class handler : HandlerRegistry.getHandlers()) {
-            Method[] methods = handler.getMethods();
-            for (int i = 0; i < methods.length; ++i) {
-                EventHandler eventHandler = methods[i].getAnnotation(EventHandler.class);
-                if (eventHandler != null) {
-                    Class[] methodParams = methods[i].getParameterTypes();
 
-                    if (methodParams.length < 1)
-                        continue;
-
-                    if (!event.getClass().getSimpleName()
-                            .equals(methodParams[0].getSimpleName()))
-                        continue;
-
-                    try {
-                        methods[i].invoke(handler.newInstance(), event);
-                    } catch (Exception e) {
-                    	if(SynloadFramework.debug){
-                    		e.printStackTrace();
-                    	}
+    private static void raise(final EventClass event, String target) {
+        if (HandlerRegistry.getHandlers().containsKey(event.getHandler().getAnnotationClass())) {
+            for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())) {
+                if(event.getClass()==RequestEvent.class && RequestEvent.class==trigger.getMethod().getParameterTypes()[0] && trigger.getEventType()==Type.WEBSOCKET){
+                	if(
+                			event.getTrigger()!=null && 
+                			event.getTrigger().length>0 && 
+                			trigger.getTrigger().length>0
+                	){
+	                    if(
+	                    		trigger.getTrigger()[0].equalsIgnoreCase(event.getTrigger()[0])
+	                    		&& trigger.getTrigger()[1].equalsIgnoreCase(event.getTrigger()[1])
+	                    ){
+	                        if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
+	                            try {
+	                                trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
+	                            } catch (Exception e) {
+	                                e.printStackTrace();
+	                            }
+	                        }
+	                    }
+                	}else{
+						if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
+						    try {
+						        trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
+						    } catch (Exception e) {
+						        e.printStackTrace();
+						    }
+						}
+                	}
+                }else if(event.getClass()==WebEvent.class && WebEvent.class==trigger.getMethod().getParameterTypes()[0] && trigger.getEventType()==Type.HTTP){
+                    if(
+                    		event.getTrigger()!=null && 
+                    		target.matches(
+                    			trigger.getTrigger()[0]
+                    		)
+                    ){
+                        try {
+                            trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }else if(event.getClass()!=WebEvent.class && event.getClass()!=RequestEvent.class){
+                    if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
+                        try {
+                            trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

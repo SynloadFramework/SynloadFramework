@@ -39,7 +39,6 @@ public class WSHandler{
 	public User user = null;
 	@JsonIgnore public boolean isSending = false;
 	@JsonIgnore private Thread sendingThreadVar = null;
-	@JsonIgnore public ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 	/*@OnWebSocketFrame
 	public void onWebSocketBinary(byte[] arg0, int arg1, int arg2) {
 		// TODO Auto-generated method stub
@@ -49,13 +48,12 @@ public class WSHandler{
 	@SuppressWarnings("deprecation")
 	@OnWebSocketClose
 	public void onWebSocketClose(int statusCode, String reason) {
+		EventPublisher.raiseEvent(new CloseEvent(this),null);
 		OOnPage.removeClient(this);
 		SynloadFramework.users.remove(session);
 		SynloadFramework.clients.remove(this);
 		sendingThreadVar.stop();
 		sendingThreadVar.interrupt();
-		EventPublisher.raiseEventThread(new CloseEvent(this));
-		
         //System.out.println("Close: statusCode=" + statusCode + ", reason=" + reason);
 	}
 	
@@ -76,7 +74,9 @@ public class WSHandler{
 			sendingThreadVar = (new Thread(new sendingThread(this)));
 			sendingThreadVar.start();
 			SynloadFramework.clients.add(this);
-			session.getRemote().sendString(ow.writeValueAsString(new JavascriptIncludes()));
+			if(SynloadFramework.isSiteDefaults()){
+			session.getRemote().sendString(SynloadFramework.ow.writeValueAsString(new JavascriptIncludes()));
+			}
 			System.out.println("[WS] "+session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!");
 		} catch (IOException e) {
 			if(SynloadFramework.debug){
@@ -84,7 +84,7 @@ public class WSHandler{
 			}
 		}
         //System.out.println("Connect: " + session.getRemoteAddress().getAddress());
-        EventPublisher.raiseEventThread(new ConnectEvent(this));
+        EventPublisher.raiseEvent(new ConnectEvent(this), null);
 	}
 	
 	@OnWebSocketError
@@ -97,7 +97,7 @@ public class WSHandler{
 	public void send(Response r){
 		OOnPage.newPage(this, r);
 		try {
-			queue.add(ow.writeValueAsString(r));
+			queue.add(SynloadFramework.ow.writeValueAsString(r));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}

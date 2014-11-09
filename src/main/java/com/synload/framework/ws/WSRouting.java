@@ -61,7 +61,7 @@ public class WSRouting{
 		}else{
 			// route does not exist send out to more complex modules
 			//System.out.println("[WR][W] Route does not exist!");
-			EventPublisher.raiseEventThread(new RequestEvent(user,request));
+			EventPublisher.raiseEvent(new RequestEvent(user,request), null);
 			return;
 		}
 	}

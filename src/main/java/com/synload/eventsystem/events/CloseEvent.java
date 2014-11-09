@@ -1,12 +1,14 @@
 package com.synload.eventsystem.events;
 
-import com.synload.eventsystem.Event;
+import com.synload.eventsystem.EventClass;
+import com.synload.eventsystem.Handler;
 import com.synload.framework.ws.WSHandler;
 
-public class CloseEvent extends Event {
+public class CloseEvent extends EventClass {
 	public WSHandler session;
 	public CloseEvent(WSHandler session){
     	this.setSession(session);
+    	this.setHandler(Handler.EVENT);
     }
 	public WSHandler getSession() {
 		return session;

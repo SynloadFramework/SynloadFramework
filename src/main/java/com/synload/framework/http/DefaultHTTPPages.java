@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,8 +62,8 @@ public class DefaultHTTPPages {
 								e.printStackTrace();
 							}
 						}
-						UploadedFile uf = new UploadedFile(part.getSubmittedFileName(),SynloadFramework.uploadPath,tempFile,part.getSize());
-						EventPublisher.raiseEventThread(new FileUploadEvent(uf, StringUtils.join(baseRequest.getParameterMap().get("key"))),true);
+						UploadedFile uf = new UploadedFile(URLDecoder.decode(part.getSubmittedFileName(), "UTF-8"),SynloadFramework.uploadPath,tempFile,part.getSize());
+						EventPublisher.raiseEvent(new FileUploadEvent(uf, StringUtils.join(baseRequest.getParameterMap().get("key"))),true,null);
 						entry.add(uf.getName());
 					}
 				}

@@ -2,10 +2,14 @@ package com.synload.eventsystem.events;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.eclipse.jetty.server.Request;
-import com.synload.eventsystem.Event;
 
-public class WebEvent extends Event {
+import org.eclipse.jetty.server.Request;
+
+import com.synload.eventsystem.EventClass;
+import com.synload.eventsystem.Handler;
+import com.synload.framework.modules.annotations.Event.Type;
+
+public class WebEvent extends EventClass {
 	public String target;
 	public Request baseRequest;
 	public HttpServletRequest request;
@@ -14,9 +18,12 @@ public class WebEvent extends Event {
 	public WebEvent(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response, String[] URI){
 		this.setBaseRequest(baseRequest);
 		this.setRequest(request);
+		this.setHandler(Handler.EVENT);
+		this.setType(Type.HTTP);
 		this.setTarget(target);
 		this.setResponse(response);
 		this.setURI(URI);
+		this.setTrigger(new String[]{});
 	}
 	public String[] getURI() {
 		return URI;
