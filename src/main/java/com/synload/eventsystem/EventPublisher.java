@@ -1,10 +1,7 @@
 package com.synload.eventsystem;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.synload.eventsystem.events.RequestEvent;
 import com.synload.eventsystem.events.WebEvent;
-import com.synload.framework.SynloadFramework;
-import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Event.Type;
 
 public class EventPublisher {

@@ -16,13 +16,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.CloseEvent;
 import com.synload.eventsystem.events.ConnectEvent;
 import com.synload.framework.OOnPage;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.elements.JavascriptIncludes;
+import com.synload.framework.handlers.Data;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
 import com.synload.framework.users.User;
@@ -75,7 +75,7 @@ public class WSHandler{
 			sendingThreadVar.start();
 			SynloadFramework.clients.add(this);
 			if(SynloadFramework.isSiteDefaults()){
-			session.getRemote().sendString(SynloadFramework.ow.writeValueAsString(new JavascriptIncludes()));
+				session.getRemote().sendString(SynloadFramework.ow.writeValueAsString(new JavascriptIncludes()));
 			}
 			System.out.println("[WS] "+session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!");
 		} catch (IOException e) {
@@ -96,6 +96,13 @@ public class WSHandler{
 	}
 	public void send(Response r){
 		OOnPage.newPage(this, r);
+		try {
+			queue.add(SynloadFramework.ow.writeValueAsString(r));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+	}
+	public void send(Data r){
 		try {
 			queue.add(SynloadFramework.ow.writeValueAsString(r));
 		} catch (JsonProcessingException e) {

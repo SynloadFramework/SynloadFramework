@@ -274,12 +274,14 @@ public class HTTPRouting{
 		}
 		//System.out.println("[WB][I] Route not found checking for files!!");
 		boolean file = false;
-		try {
-			Pattern regex = Pattern.compile("\\.\\.", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.MULTILINE);
-			Matcher regexMatcher = regex.matcher(URI[1]+"/"+URI[2]);
-			file = regexMatcher.find();
-		} catch (PatternSyntaxException ex) {
-			// Syntax error in the regular expression
+		if(URI.length==3){
+			try {
+				Pattern regex = Pattern.compile("\\.\\.", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.MULTILINE);
+				Matcher regexMatcher = regex.matcher(URI[1]+"/"+URI[2]);
+				file = regexMatcher.find();
+			} catch (PatternSyntaxException ex) {
+				// Syntax error in the regular expression
+			}
 		}
 		if(URI.length==3){
 			//System.out.println("[WB][I] Checking if route is a file <"+URI[1]+"><"+URI[2]+">!");

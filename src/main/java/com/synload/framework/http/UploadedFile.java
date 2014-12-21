@@ -1,11 +1,12 @@
 package com.synload.framework.http;
 
 public class UploadedFile {
-	public String name, path, tempName = "";
+	public String name, path, tempName, user = "";
 	public long size = (long)0;
-	public UploadedFile(String name, String path, String tempName, long size){
+	public UploadedFile(String name, String path, String tempName, String user, long size){
 		this.size = size;
 		this.name = name;
+		this.user = user;
 		this.path = path;
 		this.tempName = tempName;
 	}
@@ -32,6 +33,12 @@ public class UploadedFile {
 	}
 	public void setSize(long size) {
 		this.size = size;
+	}
+	public String getUser() {
+		return user;
+	}
+	public void setUser(String user) {
+		this.user = user;
 	}
 	
 }

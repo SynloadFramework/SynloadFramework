@@ -36,14 +36,16 @@ public class ModuleLoader {
                 fileName = listOfFiles[i].getName();
                 if (fileName.endsWith(".jar")) {
                     try {
-                        URLClassLoader cl = new URLClassLoader(
+                        @SuppressWarnings("resource")
+						URLClassLoader cl = new URLClassLoader(
                                 new URL[] { new File(path + fileName).toURI()
                                         .toURL() });
                         List<String> classList = getClasses(path + fileName);
                         ModuleClass module = null;
                         for (String clazz : classList) {
                             try {
-                                Class loadedClass = cl.loadClass(clazz);
+                                @SuppressWarnings("rawtypes")
+								Class loadedClass = cl.loadClass(clazz);
                                 try {
                                     ModuleClass tmp = register(
                                             loadedClass, Handler.MODULE,
@@ -74,8 +76,8 @@ public class ModuleLoader {
     /*
      * Checks for Addons, Methods in each class
      */
-    @SuppressWarnings("unchecked")
-    public static ModuleClass register(Class c,
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static ModuleClass register( Class c,
             Handler annotationClass, TYPE type, ModuleClass module)
             throws InstantiationException, IllegalAccessException {
         if (TYPE.CLASS == type) {
@@ -101,31 +103,34 @@ public class ModuleLoader {
                     EventTrigger et = new EventTrigger();
                     
                     Event eventAnnotation = (Event) m.getAnnotation(Handler.EVENT.getAnnotationClass());
-                    et.setHostClass(c);
-                    et.setMethod(m);
-                    et.setModule(module);
-                    
-                    et.setTrigger(eventAnnotation.trigger());
-                    et.setFlags(eventAnnotation.flags());
-                    et.setEventType(eventAnnotation.type());
-                    
-                    System.out.println("[INFO] Loaded Method: " + m.getName());
-                    System.out.println("[INFO] \tDescription: " + eventAnnotation.description());
-                    try {
-						System.out.println("[INFO] \tTrigger: " + SynloadFramework.ow.writeValueAsString(eventAnnotation.trigger()));
-					} catch (JsonProcessingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-                    HandlerRegistry.register(
-                            annotationClass.getAnnotationClass(), et);
+                    if(eventAnnotation.enabled()){
+	                    et.setHostClass(c);
+	                    et.setMethod(m);
+	                    et.setModule(module);
+	                    
+	                    et.setTrigger(eventAnnotation.trigger());
+	                    et.setFlags(eventAnnotation.flags());
+	                    et.setEventType(eventAnnotation.type());
+	                    System.out.println("[INFO] \tEvent Registered ["+eventAnnotation.type()+"]");
+	                    System.out.println("[INFO] Loaded Method: " + m.getName());
+	                    System.out.println("[INFO] \tDescription: " + eventAnnotation.description());
+	                    try {
+							System.out.println("[INFO] \tTrigger: " + SynloadFramework.ow.writeValueAsString(eventAnnotation.trigger()));
+						} catch (JsonProcessingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	                    HandlerRegistry.register(
+	                            annotationClass.getAnnotationClass(), et);
+                    }
                 }
             }
         }
         return null;
     }
 
-    public static List<String> getClasses(String file) throws IOException {
+    @SuppressWarnings("resource")
+	public static List<String> getClasses(String file) throws IOException {
         List<String> classNames = new ArrayList<String>();
         ZipInputStream zip = new ZipInputStream(new FileInputStream(file));
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip

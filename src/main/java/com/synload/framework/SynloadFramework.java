@@ -3,7 +3,6 @@ package com.synload.framework;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -18,15 +17,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.server.AbstractNetworkConnector;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.spdy.server.http.HTTPSPDYServerConnector;
-import org.xeustechnologies.jcl.JarClassLoader;
-import org.xeustechnologies.jcl.JclObjectFactory;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -40,7 +34,6 @@ import com.synload.framework.js.Javascript;
 import com.synload.framework.menu.MenuItem;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.framework.modules.ModuleLoader.TYPE;
-import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.ws.DefaultWSPages;
 import com.synload.framework.ws.WSHandler;
 import com.synload.framework.ws.WSRequest;
@@ -65,7 +58,9 @@ public class SynloadFramework{
 	public static HashMap<String, HashMap<String, Object>> getHtmlFiles() {
 		return htmlFiles;
 	}
-
+	public static int getTimestamp(){
+		return (int) (System.currentTimeMillis() / 1000L);
+	}
 	public static void setHtmlFiles(
 			HashMap<String, HashMap<String, Object>> htmlFiles) {
 		SynloadFramework.htmlFiles = htmlFiles;
@@ -235,9 +230,7 @@ public class SynloadFramework{
 			SynloadFramework.buildJavascript();
 			System.out.println("[DS] Fully loaded defaults");
 			System.out.println("[ML] Loading modules");
-	        JarClassLoader jcl = new JarClassLoader();
 	        String path = "modules/";
-	        String fileName;
 	        File folder = new File(path);
 	        if(!folder.exists()){
 	            folder.mkdir();

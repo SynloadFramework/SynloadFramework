@@ -24,6 +24,7 @@ public @interface Event {
     	
     }
     public Type type();
+    public boolean enabled() default true;
     public String[] trigger() default {};
     public String[] flags() default {};
 }

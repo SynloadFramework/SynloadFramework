@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 public class HandlerRegistry {
-    private static Map<Class, List<EventTrigger>> triggers = new HashMap<Class, List<EventTrigger>>();
+    @SuppressWarnings("rawtypes")
+	private static Map<Class, List<EventTrigger>> triggers = new HashMap<Class, List<EventTrigger>>();
 
-    public static void register(Class handler, EventTrigger trigger) {
+    @SuppressWarnings("rawtypes")
+	public static void register(Class handler, EventTrigger trigger) {
         if (triggers.containsKey(handler)) {
             if (!triggers.get(handler).contains(trigger)) {
                 triggers.get(handler).add(trigger);
@@ -22,11 +24,13 @@ public class HandlerRegistry {
         }
     }
 
-    public static Map<Class, List<EventTrigger>> getHandlers() {
+    @SuppressWarnings("rawtypes")
+	public static Map<Class, List<EventTrigger>> getHandlers() {
         return triggers;
     }
 
-    public static List<EventTrigger> getHandlers(Class handler) {
+    @SuppressWarnings("rawtypes")
+	public static List<EventTrigger> getHandlers(Class handler) {
         return triggers.get(handler);
     }
 }

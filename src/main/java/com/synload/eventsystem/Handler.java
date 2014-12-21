@@ -6,13 +6,16 @@ import com.synload.framework.modules.annotations.Module;
 
 public enum Handler {
     EVENT(Event.class), MODULE(Module.class);
-    private Class annotationClass;
+    @SuppressWarnings("rawtypes")
+	private Class annotationClass;
 
-    private Handler(Class clazz) {
+    @SuppressWarnings("rawtypes")
+	private Handler(Class clazz) {
         this.annotationClass = clazz;
     }
 
-    public Class getAnnotationClass() {
+    @SuppressWarnings("rawtypes")
+	public Class getAnnotationClass() {
         return annotationClass;
     }
 }

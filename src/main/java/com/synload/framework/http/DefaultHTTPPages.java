@@ -32,9 +32,16 @@ public class DefaultHTTPPages {
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
         if(!baseRequest.getParameterMap().containsKey("key")){
+        	response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         	response.getWriter().println("{\"e\":\"no reference key provided\"}");
         	return;
 		}
+        if(!baseRequest.getParameterMap().containsKey("user")){
+        	response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        	response.getWriter().println("{\"e\":\"no user provided\"}");
+        	return;
+		}
+        
         try{
         	List<String> entry = new ArrayList<String>();
 			for(Part part :request.getParts()){
@@ -62,7 +69,8 @@ public class DefaultHTTPPages {
 								e.printStackTrace();
 							}
 						}
-						UploadedFile uf = new UploadedFile(URLDecoder.decode(part.getSubmittedFileName(), "UTF-8"),SynloadFramework.uploadPath,tempFile,part.getSize());
+						String user = StringUtils.join(baseRequest.getParameterMap().get("user"));
+						UploadedFile uf = new UploadedFile(URLDecoder.decode(part.getSubmittedFileName(), "UTF-8"),SynloadFramework.uploadPath,tempFile,user,part.getSize());
 						EventPublisher.raiseEvent(new FileUploadEvent(uf, StringUtils.join(baseRequest.getParameterMap().get("key"))),true,null);
 						entry.add(uf.getName());
 					}

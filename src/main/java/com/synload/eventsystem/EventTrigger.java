@@ -7,20 +7,24 @@ import com.synload.framework.modules.annotations.Event.Type;
 
 
 public class EventTrigger {
-    private Class hostClass;
+    @SuppressWarnings("rawtypes")
+	private Class hostClass;
     private Method method;
     private Object route;
     private String[] trigger;
     private String[] flags;
-    private Class type;
+    @SuppressWarnings("rawtypes")
+	private Class type;
     private Type eventType;
     private ModuleClass module;
 
-    public Class getHostClass() {
+    @SuppressWarnings("rawtypes")
+	public Class getHostClass() {
         return hostClass;
     }
 
-    public void setHostClass(Class hostClass) {
+    @SuppressWarnings("rawtypes")
+	public void setHostClass(Class hostClass) {
         this.hostClass = hostClass;
     }
 
@@ -48,10 +52,12 @@ public class EventTrigger {
         this.route = rte;
     }
 
+	@SuppressWarnings("rawtypes")
 	public Class getType() {
 		return type;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setType(Class type) {
 		this.type = type;
 	}

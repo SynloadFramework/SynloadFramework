@@ -17,7 +17,6 @@ import com.synload.framework.elements.RegisterBox;
 import com.synload.framework.elements.Success;
 import com.synload.framework.elements.UserSettingsForm;
 import com.synload.framework.elements.Wrapper;
-import com.synload.framework.handlers.Request;
 import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Event.Type;
 import com.synload.framework.users.Authentication;
