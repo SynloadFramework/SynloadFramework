@@ -13,8 +13,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class Data {
 	public Map<String, Object> p = new HashMap<String, Object>();
 	public String trigger = "";
-	public Data(HashMap<String, Object> params){
+	public Data(HashMap<String, Object> params, String trigger){
 		this.p = params;
+		this.trigger = trigger;
 	}
 	public Map<String, Object> getParams() {
 		return p;

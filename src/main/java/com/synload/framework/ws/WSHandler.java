@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.CloseEvent;
 import com.synload.eventsystem.events.ConnectEvent;
+import com.synload.framework.Log;
 import com.synload.framework.OOnPage;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.elements.JavascriptIncludes;
@@ -54,7 +55,7 @@ public class WSHandler{
 		SynloadFramework.clients.remove(this);
 		sendingThreadVar.stop();
 		sendingThreadVar.interrupt();
-        //System.out.println("Close: statusCode=" + statusCode + ", reason=" + reason);
+		Log.debug("Close: statusCode=" + statusCode + ", reason=" + reason,this.getClass());
 	}
 	
 	public User getUser() {
@@ -77,7 +78,7 @@ public class WSHandler{
 			if(SynloadFramework.isSiteDefaults()){
 				session.getRemote().sendString(SynloadFramework.ow.writeValueAsString(new JavascriptIncludes()));
 			}
-			System.out.println("[WS] "+session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!");
+			Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!",this.getClass());
 		} catch (IOException e) {
 			if(SynloadFramework.debug){
 				e.printStackTrace();
@@ -89,7 +90,7 @@ public class WSHandler{
 	
 	@OnWebSocketError
 	public void onWebSocketError(Throwable t) {
-		//System.out.println("Error: " + t.getMessage());
+		Log.error(t.getMessage(),this.getClass());
 	}
 	public void send(String data){
 		queue.add(data);

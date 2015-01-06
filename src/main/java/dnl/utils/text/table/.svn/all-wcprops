@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/68/trunk/src/main/java/dnl/utils/text/table
+END
+TextTreeTableRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/43/trunk/src/main/java/dnl/utils/text/table/TextTreeTableRenderer.java
+END
+TextTableRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/67/trunk/src/main/java/dnl/utils/text/table/TextTableRenderer.java
+END
+MapBasedTableModel.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/67/trunk/src/main/java/dnl/utils/text/table/MapBasedTableModel.java
+END
+GuavaTableModel.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/68/trunk/src/main/java/dnl/utils/text/table/GuavaTableModel.java
+END
+TextTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/67/trunk/src/main/java/dnl/utils/text/table/TextTable.java
+END
+LastRowSeparatorPolicy.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/43/trunk/src/main/java/dnl/utils/text/table/LastRowSeparatorPolicy.java
+END
+TextTreeTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/43/trunk/src/main/java/dnl/utils/text/table/TextTreeTable.java
+END
+TextTableModel.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/62/trunk/src/main/java/dnl/utils/text/table/TextTableModel.java
+END
+TableRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/65/trunk/src/main/java/dnl/utils/text/table/TableRenderer.java
+END
+SeparatorPolicy.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/43/trunk/src/main/java/dnl/utils/text/table/SeparatorPolicy.java
+END

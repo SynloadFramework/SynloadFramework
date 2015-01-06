@@ -18,14 +18,23 @@ import com.synload.eventsystem.HandlerRegistry;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
+import com.synload.framework.modules.annotations.SQLTable;
+import com.synload.framework.sql.SQLRegistry;
+
+import dnl.utils.text.table.TextTable;
+
 
 public class ModuleLoader {
     public enum TYPE {
         METHOD, CLASS
     }
 
-    public static void load(String path) {
+    @SuppressWarnings("unchecked")
+	public static void load(String path) {
         String fileName;
+        List<Object[]> sql = new ArrayList<Object[]>();
+        List<Object[]> modules = new ArrayList<Object[]>();
+        List<Object[]> events = new ArrayList<Object[]>();
         File folder = new File(path);
         if (!folder.exists()) {
             folder.mkdir();
@@ -47,13 +56,16 @@ public class ModuleLoader {
                                 @SuppressWarnings("rawtypes")
 								Class loadedClass = cl.loadClass(clazz);
                                 try {
-                                    ModuleClass tmp = register(
-                                            loadedClass, Handler.MODULE,
-                                            TYPE.CLASS, null);
-                                    if (tmp != null)
-                                        module = tmp;
-                                    register(loadedClass,
-                                            Handler.EVENT, TYPE.METHOD, module);
+                                	Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
+                                	if(obj!=null){
+                                		module = (ModuleClass) obj[0];
+                                		modules.add((Object[]) obj[1]);
+                                	}
+                                	Object[] obsql = registerSQL(loadedClass, module);
+                                	if(obsql!=null){
+                                		sql.add(obsql);
+                                	}
+                                    events.addAll((List<Object[]>)register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
                                 } catch (InstantiationException e) {
                                     e.printStackTrace();
                                 } catch (IllegalAccessException e) {
@@ -71,13 +83,38 @@ public class ModuleLoader {
                 }
             }
         }
+        System.out.println("\nModules Loaded");
+        TextTable tt = new TextTable(new String[]{"Class", "Name", "Author", "Version"}, modules.toArray(new Object[modules.size()][]));
+        tt.printTable();
+        System.out.println("\nEvents Loaded");
+        tt = new TextTable(new String[]{"Class", "Module", "Method Name", "Type", "Description", "Trigger"}, events.toArray(new Object[events.size()][]));
+        tt.printTable();
+        System.out.println("\nSQL Tables Loaded");
+        tt = new TextTable(new String[]{"Class", "Name", "Description", "Version"}, sql.toArray(new Object[sql.size()][]));
+        tt.printTable();
+        System.out.print("\n");
     }
-
+    
+	public static <T> Object[] registerSQL( Class<T> c, ModuleClass module ){
+        if (c.isAnnotationPresent(SQLTable.class)){
+        	SQLTable tbl = (SQLTable) c.getAnnotation(SQLTable.class);
+        	Object[] obj = new Object[4];
+        	obj[0] = c.getName();
+        	obj[1] = tbl.name();
+        	obj[2] = tbl.description();
+        	obj[3] = tbl.version();
+            SQLRegistry.register(c);
+            return obj;
+        }
+		return null;
+    }
+    
     /*
      * Checks for Addons, Methods in each class
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static ModuleClass register( Class c,
+    
+    @SuppressWarnings("unchecked")
+	public static <T> Object[] register( Class<T> c,
             Handler annotationClass, TYPE type, ModuleClass module)
             throws InstantiationException, IllegalAccessException {
         if (TYPE.CLASS == type) {
@@ -85,19 +122,21 @@ public class ModuleLoader {
                 /*
                  * Loaded a module, declare it as such and register it!
                  */
+            	Object[] obj = new Object[4];
                 Module moduleAnnotation = (Module) c
                         .getAnnotation(Handler.MODULE.getAnnotationClass());
                 ModuleClass mod = (ModuleClass) c.newInstance();
                 ModuleRegistry.getLoadedModules().put(moduleAnnotation.name(),
                         mod);
-                System.out.println("[INFO] Loaded module: "
-                        + moduleAnnotation.name());
-                System.out.println("[INFO] Author: "
-                        + moduleAnnotation.author());
+                obj[0] = c.getName();
+                obj[1] = moduleAnnotation.name();
+                obj[2] = moduleAnnotation.author();
+                obj[3] = moduleAnnotation.version();
                 mod.initialize();
-                return mod;
+                return new Object[]{mod,obj};
             }
         } else if (TYPE.METHOD == type) {
+        	List<Object[]> obj = new ArrayList<Object[]>();
             for (Method m : c.getMethods()) {
                 if (m.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                     EventTrigger et = new EventTrigger();
@@ -107,24 +146,33 @@ public class ModuleLoader {
 	                    et.setHostClass(c);
 	                    et.setMethod(m);
 	                    et.setModule(module);
-	                    
 	                    et.setTrigger(eventAnnotation.trigger());
 	                    et.setFlags(eventAnnotation.flags());
 	                    et.setEventType(eventAnnotation.type());
-	                    System.out.println("[INFO] \tEvent Registered ["+eventAnnotation.type()+"]");
-	                    System.out.println("[INFO] Loaded Method: " + m.getName());
-	                    System.out.println("[INFO] \tDescription: " + eventAnnotation.description());
+	                    
+	                    Object[] obj_tmp = new Object[6];
+	                    if(module!=null){
+	                    	Module modul = (Module) module.getClass().getAnnotation(Handler.MODULE.getAnnotationClass());
+	                    	obj_tmp[1] = modul.name();
+	                    }else{
+	                    	obj_tmp[1] = "";
+	                    }
+	                    obj_tmp[0] = c.getName();
+	                    obj_tmp[2] = m.getName();
+	                    obj_tmp[3] = eventAnnotation.type();
+	                    obj_tmp[4] = eventAnnotation.description();
 	                    try {
-							System.out.println("[INFO] \tTrigger: " + SynloadFramework.ow.writeValueAsString(eventAnnotation.trigger()));
-						} catch (JsonProcessingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							obj_tmp[5] = SynloadFramework.ow.writeValueAsString(eventAnnotation.trigger());
+						} catch (JsonProcessingException e1) {
+							e1.printStackTrace();
 						}
+	                    obj.add(obj_tmp);
 	                    HandlerRegistry.register(
 	                            annotationClass.getAnnotationClass(), et);
                     }
                 }
             }
+            return new Object[]{obj};
         }
         return null;
     }
