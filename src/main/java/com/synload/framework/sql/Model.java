@@ -228,7 +228,7 @@ public class Model {
 	public void _addToList(Object s, Field f, Object id) throws IllegalArgumentException, IllegalAccessException{
 		String ids = (String) f.get(s);
 		List<String> comb = null;
-		if(ids==null){
+		if(ids==null || ids.equals("")){
 			comb = new ArrayList<String>();
 		}else{
 			comb = new ArrayList<String>(Arrays.asList(ids.split(",")));

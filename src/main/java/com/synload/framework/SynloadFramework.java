@@ -101,14 +101,14 @@ public class SynloadFramework{
 			debug = Boolean.valueOf(prop.getProperty("debug"));
 			uploadPath = prop.getProperty("uploadPath");
 			maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
-			
+			Log.info("CONF", SynloadFramework.class);
 	        sql = DriverManager.getConnection( 
 					prop.getProperty("jdbc"), 
 					prop.getProperty("dbuser"), 
 					prop.getProperty("dbpass") );
 	        
-			SynloadFramework.buildMenu();
-			
+			//SynloadFramework.buildMenu();
+	        
 			ModuleLoader.register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null);
 			
 			SynloadFramework.buildDefaultHTTP();
@@ -118,8 +118,12 @@ public class SynloadFramework{
 	        if(!folder.exists()){
 	            folder.mkdir();
 	        }
+	        
+	        Log.info("Modules loading", SynloadFramework.class);
+	        
 	        ModuleLoader.load(path);
 
+	        Log.info("SQL versions", SynloadFramework.class);
 	        SQLRegistry.checkVersions();
 	        
 			if(args.length>=1){
