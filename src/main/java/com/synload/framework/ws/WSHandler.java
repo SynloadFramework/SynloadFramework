@@ -1,10 +1,33 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.AlgorithmParameters;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -12,10 +35,16 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import sun.misc.BASE64Decoder;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.CloseEvent;
 import com.synload.eventsystem.events.ConnectEvent;
@@ -38,6 +67,7 @@ public class WSHandler{
 	@JsonIgnore public Session session = null;
 	@JsonIgnore public List<String> queue = new ArrayList<String>();
 	public User user = null;
+	public boolean encrypt = false;
 	@JsonIgnore public boolean isSending = false;
 	@JsonIgnore private Thread sendingThreadVar = null;
 	/*@OnWebSocketFrame
@@ -71,19 +101,13 @@ public class WSHandler{
 		
 		this.session = session;
 		SynloadFramework.users.add(session);
-		try {
-			sendingThreadVar = (new Thread(new sendingThread(this)));
-			sendingThreadVar.start();
-			SynloadFramework.clients.add(this);
-			if(SynloadFramework.isSiteDefaults()){
-				session.getRemote().sendString(SynloadFramework.ow.writeValueAsString(new JavascriptIncludes()));
-			}
-			Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!",this.getClass());
-		} catch (IOException e) {
-			if(SynloadFramework.debug){
-				e.printStackTrace();
-			}
+		sendingThreadVar = (new Thread(new sendingThread(this)));
+		sendingThreadVar.start();
+		SynloadFramework.clients.add(this);
+		if(SynloadFramework.isSiteDefaults()){
+			send(new JavascriptIncludes());
 		}
+		Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!",this.getClass());
         //System.out.println("Connect: " + session.getRemoteAddress().getAddress());
         EventPublisher.raiseEvent(new ConnectEvent(this), null);
 	}
@@ -142,7 +166,17 @@ public class WSHandler{
 						Iterator<String> queueIterator = queueTemp.iterator();
 						while(queueIterator.hasNext()){
 							ws.isSending=true;
-							ws.session.getRemote().sendString(queueIterator.next(),new verifySend(ws));
+							if(SynloadFramework.encrypt){
+								SecureRandom random = new SecureRandom();
+								ws.session.getRemote().sendString(
+									SynloadFramework.ow.writeValueAsString(
+										encrypt(queueIterator.next(), getRandomHexString(64), getRandomHexString(32))
+									),
+									new verifySend(ws)
+								);
+							}else{
+								ws.session.getRemote().sendString(queueIterator.next(),new verifySend(ws));
+							}
 						}
 					}
 					Thread.sleep(1);
@@ -153,6 +187,30 @@ public class WSHandler{
 				}
 			}
 		}
+	}
+	/*
+	 * COPIED CODE FROM http://stackoverflow.com/questions/14622622/generating-a-random-hex-string-of-length-50-in-java-me-j2me
+	 * */
+	private String getRandomHexString(int numchars){
+        Random r = new Random();
+        StringBuffer sb = new StringBuffer();
+        while(sb.length() < numchars){
+            sb.append(Integer.toHexString(r.nextInt()));
+        }
+
+        return sb.toString().substring(0, numchars);
+    }
+	public String encrypt(String data, String salt, String iv) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException{
+		String passphrase = SynloadFramework.encryptKey;
+		AesUtil aesUtil = new AesUtil(128, 1000);
+		String eData = aesUtil.encrypt(salt, iv, passphrase, data);
+		String enDat = eData+":"+salt+":"+iv;
+		return enDat;
+	}
+	public String decrypt(String data, String salt, String iv) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, Base64DecodingException, IOException{
+		String passphrase = SynloadFramework.encryptKey;
+		AesUtil aesUtil = new AesUtil(128, 1000);
+		return aesUtil.decrypt(salt, iv, passphrase, data);
 	}
 	public class verifySend implements WriteCallback{
 		private WSHandler ws= null;
@@ -172,7 +230,24 @@ public class WSHandler{
 	public void onWebSocketText(String message){
 		ObjectMapper mapper = new ObjectMapper();
 		try {
-			Request request = mapper.readValue(message, Request.class);
+			Request request = null;
+			if(SynloadFramework.encrypt){
+				String[] s = message.split(":");
+				try {
+					request = mapper.readValue(decrypt(s[0],s[1],s[2]), Request.class);
+					System.out.println(SynloadFramework.ow.writeValueAsString(request));
+				} catch (InvalidKeyException | NoSuchAlgorithmException
+						| InvalidKeySpecException
+						| InvalidParameterSpecException
+						| IllegalBlockSizeException | BadPaddingException
+						| NoSuchPaddingException
+						| InvalidAlgorithmParameterException
+						| Base64DecodingException e) {
+					e.printStackTrace();
+				}
+			}else{
+				request = mapper.readValue(message, Request.class);
+			}
 			(new Thread(new HandleRequest(this,request))).start();
 		} catch (IOException e) {
 			if(SynloadFramework.debug){

@@ -132,7 +132,7 @@ public class ModuleLoader {
                 obj[1] = moduleAnnotation.name();
                 obj[2] = moduleAnnotation.author();
                 obj[3] = moduleAnnotation.version();
-                mod.initialize();
+                //mod.initialize();
                 return new Object[]{mod,obj};
             }
         } else if (TYPE.METHOD == type) {

@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,12 +63,12 @@ public class Model {
 			}
 		}
 	}
-	public void _save(String tableName, Object data) throws SQLException, IllegalArgumentException, IllegalAccessException{
+	public void _save(String colName, Object data) throws SQLException, IllegalArgumentException, IllegalAccessException{
 		for(Field f:this.getClass().getDeclaredFields()){
 			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
 			if(sqt.AutoIncrement()){
 				f.setAccessible(true);
-				String sql = "UPDATE `"+this.getClass().getSimpleName().toLowerCase()+"s` SET `"+tableName+"`=? WHERE `"+f.getName()+"`=? LIMIT 1;";
+				String sql = "UPDATE `"+this.getClass().getSimpleName().toLowerCase()+"s` SET `"+colName+"`=? WHERE `"+f.getName()+"`=? LIMIT 1;";
 				PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
 				ps.setObject(1, data);
 				ps.setObject(2, f.get(this));
@@ -287,7 +289,28 @@ public class Model {
 			Log.error("Set relation failed "+c.getSimpleName()+" => "+this.getClass().getSimpleName(), this.getClass());
 		}
 	}
-	
+	public void _merge(Map<String, String> items){
+		for(Entry<String, String> item:items.entrySet()){
+			try {
+				Field f = this.getClass().getField(item.getKey());
+				if(f!=null){
+					SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
+					if(!sqt.AutoIncrement()){
+						try {
+							if(f.get(this)!=this._convert(f.getType(), item.getValue())){
+								f.set(this, this._convert(f.getType(), item.getValue()));
+								this._save(f.getName(),this._convert(f.getType(), item.getValue()));
+							}
+						} catch (IllegalArgumentException | IllegalAccessException | SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			} catch (NoSuchFieldException | SecurityException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	@SuppressWarnings("rawtypes")
 	public static Object[] _getFieldAnnotation(Class from, Class look){
 		for(Field f: from.getFields()){
