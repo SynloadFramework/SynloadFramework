@@ -13,6 +13,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.sql.Model;
 
 @SuppressWarnings("serial")
 @JsonTypeInfo(
@@ -20,7 +21,7 @@ import com.synload.framework.SynloadFramework;
     include = JsonTypeInfo.As.PROPERTY,
     property = "class"
 )
-public class User implements Serializable{
+public class User extends Model{
 	public User(){}
 	public User(ResultSet rs){
 		try {

@@ -5,9 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.SQLTable;
-import com.synload.framework.modules.annotations.SQLType;
 
 import dnl.utils.text.table.TextTable;
 
@@ -21,21 +21,22 @@ public class SQLRegistry {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void updateTable(Class table, SQLType s, Field f) throws SQLException{
+	public static void updateTable(Class table, Field f) throws SQLException{
 		String sql = "";
-		sql += "ALTER TABLE  `"+table.getSimpleName().toLowerCase()+"s` CHANGE `"+f.getName()+"` "+s.Type()+"";
-		if(!s.Collation().equalsIgnoreCase("")){
-			sql += " COLLATE "+s.Collation();
+		ColumnData cd = new ColumnData(f);
+		sql += "ALTER TABLE  `"+table.getSimpleName().toLowerCase()+"s` CHANGE `"+f.getName()+"` "+cd.getType()+"";
+		if(!cd.getCollation().equalsIgnoreCase("")){
+			sql += " COLLATE "+cd.getCollation();
 		}
-		if(s.NULL()){
+		if(cd.isNullV()){
 			sql += " NULL";
 		}else{
 			sql += " NOT NULL";
 		}
-		if(!s.Default().equalsIgnoreCase("")){
-			sql += "DEFAULT '"+s.Default()+"'";
+		if(!cd.getDefaultV().equalsIgnoreCase("")){
+			sql += "DEFAULT '"+cd.getDefaultV()+"'";
 		}
-		if(s.AutoIncrement()){
+		if(cd.isAutoIncrement()){
 			sql += " AUTO_INCREMENT";
 		}
 		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
@@ -44,7 +45,7 @@ public class SQLRegistry {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addIndex(Class table, SQLType s, Field f) throws SQLException{
+	public static void addIndex(Class table, Field f) throws SQLException{
 		String sql = "ALTER TABLE  `"+table.getSimpleName().toLowerCase()+"s` ADD INDEX (  `"+f.getName()+"` )";
 		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
 		ps.execute();
@@ -64,7 +65,7 @@ public class SQLRegistry {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void dropIndex(Class table, SQLType s, Field f) throws SQLException{
+	public static void dropIndex(Class table, Field f) throws SQLException{
 		String sql = "ALTER TABLE tags DROP INDEX "+f.getName();
 		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
 		ps.execute();
@@ -72,7 +73,7 @@ public class SQLRegistry {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addKey(Class table, SQLType s, Field f) throws SQLException{
+	public static void addKey(Class table, Field f) throws SQLException{
 		String sql = "ALTER TABLE `"+table.getSimpleName().toLowerCase()+"s` ADD PRIMARY KEY(`"+f.getName()+"`)";
 		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
 		ps.execute();
@@ -96,27 +97,27 @@ public class SQLRegistry {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addColumn(Class table, SQLType s, Field f) throws SQLException{
-		String sql = "ALTER TABLE  `"+table.getSimpleName().toLowerCase()+"s` ADD `"+f.getName()+"` "+s.Type()+"";
-		if(!s.Collation().equalsIgnoreCase("")){
-			sql += " COLLATE "+s.Collation();
+	public static void addColumn(Class table, Field f) throws SQLException{
+		ColumnData cd = new ColumnData(f);
+		String sql = "ALTER TABLE  `"+table.getSimpleName().toLowerCase()+"s` ADD `"+f.getName()+"` "+cd.getType()+"";
+		if(!cd.getCollation().equalsIgnoreCase("")){
+			sql += " COLLATE "+cd.getCollation();
 		}
-		if(s.NULL()){
+		if(cd.isNullV()){
 			sql += " NULL";
 		}else{
 			sql += " NOT NULL";
 		}
-		if(!s.Default().equalsIgnoreCase("")){
-			sql += "DEFAULT '"+s.Default()+"'";
+		if(!cd.getDefaultV().equalsIgnoreCase("")){
+			sql += "DEFAULT '"+cd.getDefaultV()+"'";
 		}
-		if(s.AutoIncrement()){
+		if(cd.isAutoIncrement()){
 			sql += " AUTO_INCREMENT";
 		}
 		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
 		ps.execute();
 		ps.close();
 	}
-	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void checkVersions(){
 		
@@ -149,23 +150,23 @@ public class SQLRegistry {
 					return;
 				}
 				for(Field f:fs){
-					SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
+					ColumnData cd = new ColumnData(f);
 					boolean notFound = true;
 					for(TableInfo ti: tis){
 						if(f.getName().equalsIgnoreCase(ti.getField())){
 							notFound = false;
 							foundTables.remove(ti);
-							if(sqt.NULL()!=ti.getNull().equalsIgnoreCase("YES")){
+							if(cd.isNullV()!=ti.getNull().equalsIgnoreCase("YES")){
 								obj[3] += ", \""+ti.getField()+"\" null changed";
 								try {
-									updateTable(table,sqt,f);
+									updateTable(table,f);
 								} catch (SQLException e) {
 									e.printStackTrace();
 								}
-							}else if(sqt.Collation().equalsIgnoreCase(ti.getCollation())){
+							}else if(cd.getCollation().equalsIgnoreCase(ti.getCollation())){
 								obj[3] += ", \""+ti.getField()+"\" collation changed";
 								try {
-									updateTable(table,sqt,f);
+									updateTable(table,f);
 								} catch (SQLException e) {
 									e.printStackTrace();
 								}
@@ -175,7 +176,7 @@ public class SQLRegistry {
 					if(notFound){
 						obj[3] += ", added column \""+f.getName()+"\"";
 						try {
-							addColumn(table,sqt,f);
+							addColumn(table,f);
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}
@@ -211,16 +212,7 @@ public class SQLRegistry {
 			}else{
 				t = false;
 			}
-			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
-			sql += "`"+f.getName()+"` " + sqt.Type();
-			if(sqt.NULL()){
-				sql += " NULL";
-			}else{
-				sql += " NOT NULL";
-			}
-			if(sqt.AutoIncrement()){
-				sql += " AUTO_INCREMENT, PRIMARY KEY (`"+f.getName()+"`) ";
-			}
+			sql += columnCreate(f);
 		}
 		SQLTable sqltable = (SQLTable) table.getAnnotation(SQLTable.class);
 		sql += ") ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE = utf8_bin COMMENT = '"+sqltable.version()+"';";
@@ -228,11 +220,25 @@ public class SQLRegistry {
 		boolean worked = ps.execute();
 		ps.close();
 		for(Field f:fs){
-			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
-			if(sqt.Index()){
-				addIndex(table, sqt, f);
+			ColumnData cd = new ColumnData(f);
+			if(cd.isIndex()){
+				addIndex(table, f);
 			}
 		}
 		return worked;
+	}
+	public static String columnCreate( Field f){
+		ColumnData cd = new ColumnData(f);
+		String sql = "";
+		sql += "`"+f.getName()+"` " + cd.getType() ;
+		if(cd.isNullV()){
+			sql += " NULL";
+		}else{
+			sql += " NOT NULL";
+		}
+		if(cd.isAutoIncrement()){
+			sql += " AUTO_INCREMENT, PRIMARY KEY (`"+f.getName()+"`) ";
+		}
+		return sql;
 	}
 }

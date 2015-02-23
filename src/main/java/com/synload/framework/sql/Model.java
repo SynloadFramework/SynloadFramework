@@ -20,7 +20,6 @@ import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.HasMany;
 import com.synload.framework.modules.annotations.HasOne;
-import com.synload.framework.modules.annotations.SQLType;
 
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,
@@ -65,8 +64,8 @@ public class Model {
 	}
 	public void _save(String colName, Object data) throws SQLException, IllegalArgumentException, IllegalAccessException{
 		for(Field f:this.getClass().getDeclaredFields()){
-			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
-			if(sqt.AutoIncrement()){
+			ColumnData cd = new ColumnData(f);
+			if(cd.isAutoIncrement()){
 				f.setAccessible(true);
 				String sql = "UPDATE `"+this.getClass().getSimpleName().toLowerCase()+"s` SET `"+colName+"`=? WHERE `"+f.getName()+"`=? LIMIT 1;";
 				PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
@@ -151,8 +150,8 @@ public class Model {
 		String sqlQs = "";
 		Field autoincrement = null;
 		for(Field f: this.getClass().getFields()){
-			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
-			if(!sqt.AutoIncrement()){
+			ColumnData cd = new ColumnData(f);
+			if(!cd.isAutoIncrement()){
 				//if(f.get(this)!=null){
 					sql += ((!sql.equals(""))?", ":"")+"`"+f.getName()+"`";
 					sqlQs +=((!sqlQs.equals(""))?", ?":"?");
@@ -183,8 +182,8 @@ public class Model {
 	public static boolean _exists(String where, Class c, Object... objs){
 		Object key = null;
 		for(Field f: c.getFields()){
-			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
-			if(sqt.AutoIncrement()){
+			ColumnData cd = new ColumnData(f);
+			if(cd.isAutoIncrement()){
 				key = f.getName();
 			}
 		}
@@ -294,12 +293,12 @@ public class Model {
 			try {
 				Field f = this.getClass().getField(item.getKey());
 				if(f!=null){
-					SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
-					if(!sqt.AutoIncrement()){
+					ColumnData cd = new ColumnData(f);
+					if(!cd.isAutoIncrement()){
 						try {
-							if(f.get(this)!=this._convert(f.getType(), item.getValue())){
-								f.set(this, this._convert(f.getType(), item.getValue()));
-								this._save(f.getName(),this._convert(f.getType(), item.getValue()));
+							if(f.get(this)!=_convert(f.getType(), item.getValue())){
+								f.set(this, _convert(f.getType(), item.getValue()));
+								this._save(f.getName(),_convert(f.getType(), item.getValue()));
 							}
 						} catch (IllegalArgumentException | IllegalAccessException | SQLException e) {
 							e.printStackTrace();

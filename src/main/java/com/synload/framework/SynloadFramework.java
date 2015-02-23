@@ -34,7 +34,6 @@ import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HTTPResponse;
 import com.synload.framework.http.HTTPRouting;
 import com.synload.framework.js.Javascript;
-import com.synload.framework.menu.MenuItem;
 import com.synload.framework.modules.ModuleClass;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.framework.modules.ModuleRegistry;
@@ -70,9 +69,7 @@ public class SynloadFramework{
 	public static List<Javascript> javascripts = new ArrayList<Javascript>();
 	public static String authKey = "s9V0l3v1GsrE2j50VrUp1Elp1jY4Xh97bNkuHBnOVCL28I"+
 			"TyH17u5TRD25UDsRrb2Bny61y1XXv0zZSWq4O9gARzO881amS3lAgy";
-	public static List<MenuItem> menus = new ArrayList<MenuItem>();
 	public static ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-	public static HashMap<String,MenuItem> referenceMenus = new HashMap<String,MenuItem>();
 	public static int port = 80;
 	public static Level loglevel = null;
 	public static String path = "modules/";
@@ -199,30 +196,6 @@ public class SynloadFramework{
 		}
 	}
 	
-	public static void buildMenu(){
-		MenuItem menu = SynloadFramework.createMenu("Account", "account", new Request("", ""), null, "r", 999);
-		SynloadFramework.createMenu("Edit Profile", "usersettings", new Request("get", "userSettings"), menu, "r", 7);
-		SynloadFramework.registerMenuItem(menu);
-		
-	}
-	
-	public static void registerMenuItem(MenuItem mi){
-		SynloadFramework.menus.add(mi);
-	}
-	
-	public static MenuItem createMenu(String name, String uname, Request request, MenuItem parent, String flag, Integer priority){
-		//System.out.println("[MU] Added "+name+" with parent <"+((parent!=null)?parent.getName():"")+">");
-		MenuItem m = new MenuItem();
-		m.setName(name);
-		m.setUname(uname);
-		m.setFlag(flag);
-		m.setPriority(priority);
-		m.setRequest(request);
-		if(parent!=null){
-			parent.addMenus(m);
-		}
-		return m;
-	}
 	public static void broadcast(String data){
 		for(WSHandler user: SynloadFramework.clients){
 			user.send(data);
@@ -372,14 +345,6 @@ public class SynloadFramework{
 		SynloadFramework.authKey = authKey;
 	}
 
-	public static List<MenuItem> getMenus() {
-		return menus;
-	}
-
-	public static void setMenus(List<MenuItem> menus) {
-		SynloadFramework.menus = menus;
-	}
-
 	public static ObjectWriter getOw() {
 		return ow;
 	}
@@ -388,11 +353,4 @@ public class SynloadFramework{
 		SynloadFramework.ow = ow;
 	}
 
-	public static HashMap<String, MenuItem> getReferenceMenus() {
-		return referenceMenus;
-	}
-
-	public static void setReferenceMenus(HashMap<String, MenuItem> referenceMenus) {
-		SynloadFramework.referenceMenus = referenceMenus;
-	}
 }
