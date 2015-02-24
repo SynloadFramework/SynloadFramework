@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface BooleanColumn {
-	public int length();
 	public String Type() default "boolean";
 	public String CharSet() default "";
 	public String Default() default "";

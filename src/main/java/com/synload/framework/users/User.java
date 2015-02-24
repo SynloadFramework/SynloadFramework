@@ -1,6 +1,5 @@
 package com.synload.framework.users;
 
-import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
@@ -13,20 +12,52 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.annotations.SQLTable;
+import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
+import com.synload.framework.modules.annotations.sql.BooleanColumn;
+import com.synload.framework.modules.annotations.sql.LongBlobColumn;
+import com.synload.framework.modules.annotations.sql.StringColumn;
 import com.synload.framework.sql.Model;
 
-@SuppressWarnings("serial")
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,
     property = "class"
 )
+@SQLTable(name="User Model",version=1.2, description = "users table contains passwords and emails")
 public class User extends Model{
+	
+	@BigIntegerColumn(length=20, Key=true, AutoIncrement=true)
+	public long id;
+	
+	@BigIntegerColumn(length=11)
+	public long created_date;
+	
+	@StringColumn(length=128)
+	public String username;
+	
+	@StringColumn(length=128)
+	@JsonIgnore
+	private String email;
+	
+	@LongBlobColumn()
+	public String flags;
+	
+	@BooleanColumn()
+	public boolean admin;
+	
+	@BooleanColumn()
+	public boolean free;
+	
+	@StringColumn(length=255)
+	@JsonIgnore 
+	private String password;
+	
 	public User(){}
 	public User(ResultSet rs){
 		try {
 			this.setUsername(rs.getString("username"));
-			this.flags = new ArrayList<String>(Arrays.asList(rs.getString("flags").replace("]", "").replace("[", "").split(",")));
+			this.flags = rs.getString("flags");
 			this.password = rs.getString("password");
 			this.setEmail(rs.getString("email"));
 			this.setAdmin(rs.getBoolean("admin"));
@@ -64,12 +95,6 @@ public class User extends Model{
 			}
 		}
 	}
-	public long id,createdDate;
-	public String username = "";
-	@JsonIgnore private String email = "";
-	public List<String> flags = new ArrayList<String>();
-	public boolean admin = false;
-	@JsonIgnore private String password = "";
 	
 	public long getId() {
 		return id;
@@ -78,25 +103,28 @@ public class User extends Model{
 		this.id = id;
 	}
 	public List<String> getFlags() {
-		return flags;
+		return new ArrayList<String>(Arrays.asList(flags.replace("]", "").replace("[", "").split(",")));
 	}
 	public boolean hasFlag(String flag){
-		return flags.contains(flag);
+		ArrayList<String> flagsV = new ArrayList<String>(Arrays.asList(flags.replace("]", "").replace("[", "").split(",")));
+		return flagsV.contains(flag);
 	}
 	public void setFlags(List<String> flags) {
-		this.flags = flags;
+		this.flags = flags.toString();
 	}
 	public void addFlags(String flag) {
-		this.flags.add(flag);
+		ArrayList<String> flagsV = new ArrayList<String>(Arrays.asList(flags.replace("]", "").replace("[", "").split(",")));
+		flagsV.add(flag);
+		flags = flagsV.toString();
 	}
 	public boolean isAdmin() {
 		return admin;
 	}
 	public long getCreatedDate() {
-		return createdDate;
+		return created_date;
 	}
 	public void setCreatedDate(long createdDate) {
-		this.createdDate = createdDate;
+		this.created_date = createdDate;
 	}
 	public void setAdmin(boolean admin) {
 		this.admin = admin;

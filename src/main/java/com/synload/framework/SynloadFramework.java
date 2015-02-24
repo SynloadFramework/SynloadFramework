@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.Level;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.websocket.api.Session;
@@ -23,12 +22,10 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.spdy.server.http.HTTPSPDYServerConnector;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.synload.eventsystem.Handler;
-import com.synload.framework.handlers.Request;
 import com.synload.framework.http.DefaultHTTPPages;
 import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HTTPResponse;
@@ -61,15 +58,13 @@ public class SynloadFramework{
 	public static String uploadPath = "uploads/";
 	public static boolean siteDefaults = false;
 	public static Server server = null;
-	public static boolean encrypt = false;
+	public static boolean encrypt;
 	public static String encryptKey = "";
 	public static Properties prop = new Properties();
 	public static List<WSHandler> clients = new ArrayList<WSHandler>();
 	public static Map<String,List<Long>> failedAttempts = new HashMap<String,List<Long>>();
 	public static List<Javascript> javascripts = new ArrayList<Javascript>();
-	public static String authKey = "s9V0l3v1GsrE2j50VrUp1Elp1jY4Xh97bNkuHBnOVCL28I"+
-			"TyH17u5TRD25UDsRrb2Bny61y1XXv0zZSWq4O9gARzO881amS3lAgy";
-	public static ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+	public static ObjectWriter ow = new ObjectMapper().writer();
 	public static int port = 80;
 	public static Level loglevel = null;
 	public static String path = "modules/";
@@ -79,7 +74,6 @@ public class SynloadFramework{
 			
 			if((new File("config.ini")).exists()){
 				prop.load(new FileInputStream("config.ini"));
-				authKey = prop.getProperty("authKey");
 				port = Integer.valueOf(prop.getProperty("port"));
 				handleUpload = Boolean.valueOf(prop.getProperty("handleUploads"));
 				siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
@@ -87,7 +81,6 @@ public class SynloadFramework{
 				encrypt = Boolean.valueOf(prop.getProperty("encrypt"));
 				encryptKey = prop.getProperty("encryptKey");
 			}else{
-				prop.setProperty("authKey", authKey);
 				prop.setProperty("jdbc", "jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true");
 				prop.setProperty("dbuser", "root");
 				prop.setProperty("dbpass", "pass");
@@ -337,20 +330,20 @@ public class SynloadFramework{
 		SynloadFramework.javascripts = javascripts;
 	}
 
-	public static String getAuthKey() {
-		return authKey;
-	}
-
-	public static void setAuthKey(String authKey) {
-		SynloadFramework.authKey = authKey;
-	}
-
 	public static ObjectWriter getOw() {
 		return ow;
 	}
 
 	public static void setOw(ObjectWriter ow) {
 		SynloadFramework.ow = ow;
+	}
+
+	public static boolean isEncrypt() {
+		return encrypt;
+	}
+
+	public static void setEncrypt(boolean encrypt) {
+		SynloadFramework.encrypt = encrypt;
 	}
 
 }

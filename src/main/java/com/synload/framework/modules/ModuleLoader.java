@@ -20,6 +20,8 @@ import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.modules.annotations.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
+import com.synload.framework.users.Session;
+import com.synload.framework.users.User;
 
 import dnl.utils.text.table.TextTable;
 
@@ -65,7 +67,10 @@ public class ModuleLoader {
                                 	if(obsql!=null){
                                 		sql.add(obsql);
                                 	}
-                                    events.addAll((List<Object[]>)register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+                                    events.addAll(
+                                    	(List<Object[]>)
+                                    	register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]
+                                    );
                                 } catch (InstantiationException e) {
                                     e.printStackTrace();
                                 } catch (IllegalAccessException e) {
@@ -83,6 +88,15 @@ public class ModuleLoader {
                 }
             }
         }
+        // Defaults
+        Object[] obsql = registerSQL(User.class, null);
+        if(obsql!=null){
+        	sql.add(obsql);
+        }
+    	obsql = registerSQL(Session.class, null);
+    	if(obsql!=null){
+    		sql.add(obsql);
+    	}
         System.out.println("\nModules Loaded");
         TextTable tt = new TextTable(new String[]{"Class", "Name", "Author", "Version"}, modules.toArray(new Object[modules.size()][]));
         tt.printTable();
