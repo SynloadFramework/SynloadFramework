@@ -74,7 +74,7 @@ public class ObjectCloner {
      * @param c
      * @param privateFieldName
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void ignoreConstant(final Class<?> c, final String privateFieldName) {
         try {
             final Field field = c.getDeclaredField( privateFieldName );

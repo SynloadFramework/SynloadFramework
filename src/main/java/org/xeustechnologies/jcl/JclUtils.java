@@ -45,7 +45,7 @@ import org.xeustechnologies.jcl.utils.ObjectCloner;
 @SuppressWarnings("unchecked")
 public class JclUtils {
 
-    public static Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
+    public static Object createProxy(Object object, Class<?> superClass, Class<?>[] interfaces, ClassLoader cl) {
         return ProxyProviderFactory.create().createProxy( object, superClass, interfaces, cl );
     }
 
@@ -57,7 +57,7 @@ public class JclUtils {
      * @param clazz
      * @return castable
      */
-    public static Object toCastable(Object object, Class clazz) {
+    public static Object toCastable(Object object, Class<?> clazz) {
         return createProxy( object, clazz, new Class[] { clazz }, null );
     }
 
@@ -70,7 +70,7 @@ public class JclUtils {
      *            []
      * @return castable
      */
-    public static Object toCastable(Object object, Class[] clazz) {
+    public static Object toCastable(Object object, Class<?>[] clazz) {
         return createProxy( object, clazz[0], clazz, null );
     }
 
@@ -82,7 +82,7 @@ public class JclUtils {
      * @param cl
      * @return castable
      */
-    public static Object toCastable(Object object, Class clazz, ClassLoader cl) {
+    public static Object toCastable(Object object, Class<?> clazz, ClassLoader cl) {
         return createProxy( object, clazz, new Class[] { clazz }, cl );
     }
 
@@ -95,7 +95,7 @@ public class JclUtils {
      * @param cl
      * @return castable
      */
-    public static Object toCastable(Object object, Class[] clazz, ClassLoader cl) {
+    public static Object toCastable(Object object, Class<?>[] clazz, ClassLoader cl) {
         return createProxy( object, clazz[0], clazz, cl );
     }
 

@@ -58,7 +58,7 @@ public abstract class ProxyClassLoader implements Comparable<ProxyClassLoader> {
      * @param resolveIt
      * @return class
      */
-    public abstract Class loadClass(String className, boolean resolveIt);
+	public abstract Class<?> loadClass(String className, boolean resolveIt);
 
     /**
      * Loads the resource

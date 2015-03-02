@@ -11,15 +11,28 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+
+import nl.captcha.Captcha;
+import nl.captcha.backgrounds.GradiatedBackgroundProducer;
+import nl.captcha.backgrounds.SquigglesBackgroundProducer;
+import nl.captcha.gimpy.DropShadowGimpyRenderer;
+import nl.captcha.gimpy.FishEyeGimpyRenderer;
+import nl.captcha.gimpy.RippleGimpyRenderer;
+import nl.captcha.gimpy.ShearGimpyRenderer;
+import nl.captcha.noise.CurvedLineNoiseProducer;
+import nl.captcha.text.producer.DefaultTextProducer;
+
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,6 +44,7 @@ import com.synload.eventsystem.events.ConnectEvent;
 import com.synload.framework.Log;
 import com.synload.framework.OOnPage;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.elements.EncryptAuth;
 import com.synload.framework.elements.JavascriptIncludes;
 import com.synload.framework.handlers.Data;
 import com.synload.framework.handlers.Request;
@@ -48,6 +62,7 @@ public class WSHandler{
 	@JsonIgnore public List<String> queue = new ArrayList<String>();
 	public User user = null;
 	public boolean encrypt = false;
+	public String encryptKey = "";
 	@JsonIgnore public boolean isSending = false;
 	@JsonIgnore private Thread sendingThreadVar = null;
 	/*@OnWebSocketFrame
@@ -84,12 +99,35 @@ public class WSHandler{
 		sendingThreadVar = (new Thread(new sendingThread(this)));
 		sendingThreadVar.start();
 		SynloadFramework.clients.add(this);
-		if(SynloadFramework.isSiteDefaults()){
-			send(new JavascriptIncludes());
+		if(SynloadFramework.isEncryptEnabled()){
+			Captcha c = generateCaptcha();
+			try {
+				send(new EncryptAuth(c));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			encryptKey = c.getAnswer();
+		}else{
+			if(SynloadFramework.isSiteDefaults()){
+				send(new JavascriptIncludes());
+			}
 		}
 		Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")+" connected!",this.getClass());
         //System.out.println("Connect: " + session.getRemoteAddress().getAddress());
         EventPublisher.raiseEvent(new ConnectEvent(this), null);
+	}
+	
+	public Captcha generateCaptcha(){
+		Captcha captcha = new Captcha.Builder(800, 300)
+			.addBackground(new SquigglesBackgroundProducer())
+			.addText(new DefaultTextProducer(13))
+			.addNoise()
+			.gimp(new FishEyeGimpyRenderer())
+			.addNoise()
+			.addNoise()
+			.addNoise(new CurvedLineNoiseProducer())
+			.build();
+		return captcha;
 	}
 	
 	@OnWebSocketError
@@ -132,7 +170,7 @@ public class WSHandler{
 		}
 	}
 	public class sendingThread implements Runnable{
-		private WSHandler ws= null;
+		private WSHandler ws = null;
 		public sendingThread(WSHandler ws){
 			this.ws = ws;
 		}
@@ -146,13 +184,16 @@ public class WSHandler{
 						Iterator<String> queueIterator = queueTemp.iterator();
 						while(queueIterator.hasNext()){
 							ws.isSending=true;
-							if(SynloadFramework.isEncrypt()){
+							if(ws.encrypt){
 								ws.session.getRemote().sendString(
 									encrypt(SynloadFramework.ow.writeValueAsString(queueIterator.next()), getRandomHexString(64), getRandomHexString(32)),
 									new verifySend(ws)
 								);
 							}else{
 								ws.session.getRemote().sendString(queueIterator.next(),new verifySend(ws));
+								if(SynloadFramework.isEncryptEnabled()){
+									ws.encrypt = true;
+								}
 							}
 						}
 					}
@@ -178,14 +219,14 @@ public class WSHandler{
         return sb.toString().substring(0, numchars);
     }
 	public String encrypt(String data, String salt, String iv) throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException{
-		String passphrase = SynloadFramework.encryptKey;
+		String passphrase = encryptKey;
 		AesUtil aesUtil = new AesUtil(128, 1000);
 		String eData = aesUtil.encrypt(salt, iv, passphrase, data);
 		String enDat = eData+":"+salt+":"+iv;
 		return enDat;
 	}
 	public String decrypt(String data, String salt, String iv) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, InvalidAlgorithmParameterException, Base64DecodingException, IOException{
-		String passphrase = SynloadFramework.encryptKey;
+		String passphrase = encryptKey;
 		AesUtil aesUtil = new AesUtil(128, 1000);
 		return aesUtil.decrypt(salt, iv, passphrase, data);
 	}
@@ -208,11 +249,10 @@ public class WSHandler{
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			Request request = null;
-			if(SynloadFramework.encrypt){
+			if(encrypt){
 				String[] s = message.split(":");
 				try {
 					request = mapper.readValue(decrypt(s[0],s[1],s[2]), Request.class);
-					System.out.println(SynloadFramework.ow.writeValueAsString(request));
 				} catch (InvalidKeyException | NoSuchAlgorithmException
 						| InvalidKeySpecException
 						| InvalidParameterSpecException

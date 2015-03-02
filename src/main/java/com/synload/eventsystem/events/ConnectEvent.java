@@ -6,6 +6,7 @@ package com.synload.eventsystem.events;
 
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
+import com.synload.framework.modules.annotations.Event.Type;
 import com.synload.framework.ws.WSHandler;
 
 public class ConnectEvent extends EventClass{
@@ -13,6 +14,7 @@ public class ConnectEvent extends EventClass{
     public ConnectEvent(WSHandler session){
     	this.setSession(session);
     	this.setHandler(Handler.EVENT);
+    	this.setType(Type.WEBSOCKET);
     }
 	public WSHandler getSession() {
 		return session;

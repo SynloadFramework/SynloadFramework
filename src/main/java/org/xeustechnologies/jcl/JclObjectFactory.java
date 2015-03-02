@@ -103,7 +103,7 @@ public class JclObjectFactory {
             }
         }
 
-        Class[] types = new Class[args.length];
+        Class<?>[] types = new Class[args.length];
 
         for (int i = 0; i < args.length; i++)
             types[i] = args[i].getClass();
@@ -122,7 +122,7 @@ public class JclObjectFactory {
      * @param types
      * @return Object
      */
-    public Object create(JarClassLoader jcl, String className, Object[] args, Class[] types) {
+    public Object create(JarClassLoader jcl, String className, Object[] args, Class<?>[] types) {
         Object obj = null;
 
         if (args == null || args.length == 0) {
@@ -160,7 +160,7 @@ public class JclObjectFactory {
                 throw new JclException( e );
             }
         }
-        Class[] types = new Class[args.length];
+        Class<?>[] types = new Class[args.length];
 
         for (int i = 0; i < args.length; i++)
             types[i] = args[i].getClass();
@@ -179,7 +179,7 @@ public class JclObjectFactory {
      * @param types
      * @return Object
      */
-    public Object create(JarClassLoader jcl, String className, String methodName, Object[] args, Class[] types) {
+    public Object create(JarClassLoader jcl, String className, String methodName, Object[] args, Class<?>[] types) {
         Object obj = null;
         if (args == null || args.length == 0) {
             try {
@@ -207,7 +207,7 @@ public class JclObjectFactory {
     private Object newInstance(Object object) {
         if (autoProxy) {
 
-            Class superClass = null;
+            Class<?> superClass = null;
 
             // Check class
             try {
@@ -216,12 +216,12 @@ public class JclObjectFactory {
             } catch (ClassNotFoundException e) {
             }
 
-            Class[] interfaces = object.getClass().getInterfaces();
+            Class<?>[] interfaces = object.getClass().getInterfaces();
 
-            List<Class> il = new ArrayList<Class>();
+            List<Class<?>> il = new ArrayList<Class<?>>();
 
             // Check available interfaces
-            for (Class i : interfaces) {
+            for (Class<?> i : interfaces) {
                 try {
                     Class.forName( i.getClass().getName() );
                     il.add( i );

@@ -25,7 +25,6 @@ import org.eclipse.jetty.spdy.server.http.HTTPSPDYServerConnector;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.synload.eventsystem.Handler;
 import com.synload.framework.http.DefaultHTTPPages;
 import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HTTPResponse;
@@ -34,9 +33,7 @@ import com.synload.framework.js.Javascript;
 import com.synload.framework.modules.ModuleClass;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.framework.modules.ModuleRegistry;
-import com.synload.framework.modules.ModuleLoader.TYPE;
 import com.synload.framework.sql.SQLRegistry;
-import com.synload.framework.ws.DefaultWSPages;
 import com.synload.framework.ws.WSHandler;
 import com.synload.framework.ws.WSRequest;
 import com.synload.framework.ws.WSResponse;
@@ -58,8 +55,7 @@ public class SynloadFramework{
 	public static String uploadPath = "uploads/";
 	public static boolean siteDefaults = false;
 	public static Server server = null;
-	public static boolean encrypt;
-	public static String encryptKey = "";
+	public static boolean encryptEnabled;
 	public static Properties prop = new Properties();
 	public static List<WSHandler> clients = new ArrayList<WSHandler>();
 	public static Map<String,List<Long>> failedAttempts = new HashMap<String,List<Long>>();
@@ -78,8 +74,7 @@ public class SynloadFramework{
 				handleUpload = Boolean.valueOf(prop.getProperty("handleUploads"));
 				siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
 				path = prop.getProperty("modulePath");
-				encrypt = Boolean.valueOf(prop.getProperty("encrypt"));
-				encryptKey = prop.getProperty("encryptKey");
+				encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
 			}else{
 				prop.setProperty("jdbc", "jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true");
 				prop.setProperty("dbuser", "root");
@@ -90,7 +85,6 @@ public class SynloadFramework{
 				prop.setProperty("siteDefaults", "false");
 				prop.setProperty("debug", "false");
 				prop.setProperty("encrypt", "false");
-				prop.setProperty("encryptKey", "password");
 				prop.setProperty("handleUploads", "false");
 				prop.setProperty("maxUploadSize", "26214400");
 				prop.setProperty("uploadPath", "uploads/");
@@ -107,8 +101,6 @@ public class SynloadFramework{
 					prop.getProperty("dbpass") );
 	        
 			//SynloadFramework.buildMenu();
-	        
-			ModuleLoader.register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null);
 			
 			SynloadFramework.buildDefaultHTTP();
 			SynloadFramework.buildJavascript();
@@ -338,12 +330,12 @@ public class SynloadFramework{
 		SynloadFramework.ow = ow;
 	}
 
-	public static boolean isEncrypt() {
-		return encrypt;
+	public static boolean isEncryptEnabled() {
+		return encryptEnabled;
 	}
 
-	public static void setEncrypt(boolean encrypt) {
-		SynloadFramework.encrypt = encrypt;
+	public static void setEncryptEnabled(boolean encrypt) {
+		SynloadFramework.encryptEnabled = encrypt;
 	}
 
 }

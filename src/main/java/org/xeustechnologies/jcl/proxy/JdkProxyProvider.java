@@ -57,7 +57,8 @@ public class JdkProxyProvider implements ProxyProvider {
         }
     }
 
-    public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
+    @SuppressWarnings("rawtypes")
+	public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
         JdkProxyHandler handler = new JdkProxyHandler( object );
         return Proxy.newProxyInstance( cl == null ? JclUtils.class.getClassLoader() : cl, interfaces, handler );
     }

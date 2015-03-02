@@ -75,7 +75,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * 
      * @see java.lang.ClassLoader#loadClass(java.lang.String)
      */
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public Class loadClass(String className) throws ClassNotFoundException {
         return ( loadClass( className, true ) );
     }
@@ -87,7 +88,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * 
      * @see java.lang.ClassLoader#loadClass(java.lang.String, boolean)
      */
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public Class loadClass(String className, boolean resolveIt) throws ClassNotFoundException {
         if (className == null || className.trim().equals( "" ))
             return null;
@@ -165,7 +167,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
             enabled = Configuration.isSystemLoaderEnabled();
         }
 
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
 
@@ -208,7 +211,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
             enabled = Configuration.isParentLoaderEnabled();
         }
 
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
 
@@ -251,7 +255,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
             enabled = Configuration.isCurrentLoaderEnabled();
         }
 
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
 
@@ -295,7 +300,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
             enabled = Configuration.isThreadContextLoaderEnabled();
         }
 
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
             try {
@@ -344,7 +350,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
             order = 0;
         }
 
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Class loadClass(String className, boolean resolveIt) {
             Class clazz = null;
 

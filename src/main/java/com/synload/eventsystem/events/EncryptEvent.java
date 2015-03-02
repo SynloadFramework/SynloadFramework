@@ -5,9 +5,9 @@ import com.synload.eventsystem.Handler;
 import com.synload.framework.modules.annotations.Event.Type;
 import com.synload.framework.ws.WSHandler;
 
-public class CloseEvent extends EventClass {
+public class EncryptEvent extends EventClass{
 	public WSHandler session;
-	public CloseEvent(WSHandler session){
+	public EncryptEvent(WSHandler session){
     	this.setSession(session);
     	this.setHandler(Handler.EVENT);
     	this.setType(Type.WEBSOCKET);

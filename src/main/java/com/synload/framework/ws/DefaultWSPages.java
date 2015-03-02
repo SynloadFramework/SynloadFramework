@@ -8,10 +8,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.synload.eventsystem.EventPublisher;
+import com.synload.eventsystem.events.EncryptEvent;
 import com.synload.eventsystem.events.RequestEvent;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.elements.Failed;
 import com.synload.framework.elements.FullPage;
+import com.synload.framework.elements.JavascriptIncludes;
 import com.synload.framework.elements.LoginBox;
 import com.synload.framework.elements.RegisterBox;
 import com.synload.framework.elements.Success;
@@ -33,6 +36,21 @@ public class DefaultWSPages {
 				)
 			)
 		);
+	}
+	
+	@Event(name="",description="",trigger={"get","encrypt_confirm"},type=Type.WEBSOCKET)
+	public void getEncryptAuth(RequestEvent event) throws JsonProcessingException, IOException{
+		if(event.getSession().encrypt){
+			EventPublisher.raiseEvent(new EncryptEvent(event.getSession()), null);
+		}
+	}
+	@Event(name="",description="",trigger={},type=Type.WEBSOCKET)
+	public void getEncryptAuth(EncryptEvent event) throws JsonProcessingException, IOException{
+		if(event.getSession().encrypt){
+			if(SynloadFramework.isSiteDefaults()){
+				event.getSession().send(new JavascriptIncludes());
+			}
+		}
 	}
 	
 	@Event(name="",description="",trigger={"get","ping"},type=Type.WEBSOCKET)

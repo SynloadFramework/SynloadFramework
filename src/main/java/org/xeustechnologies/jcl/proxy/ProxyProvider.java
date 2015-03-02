@@ -31,5 +31,6 @@ package org.xeustechnologies.jcl.proxy;
  * 
  */
 public interface ProxyProvider {
-    public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl);
+    @SuppressWarnings("rawtypes")
+	public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl);
 }

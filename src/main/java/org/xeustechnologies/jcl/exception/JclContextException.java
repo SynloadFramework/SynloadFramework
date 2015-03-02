@@ -31,6 +31,7 @@ package org.xeustechnologies.jcl.exception;
  * @author Kamran
  * 
  */
+@SuppressWarnings("serial")
 public class JclContextException extends JclException {
 
     public JclContextException() {

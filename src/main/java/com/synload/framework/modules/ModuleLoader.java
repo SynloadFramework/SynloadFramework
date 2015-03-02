@@ -22,6 +22,7 @@ import com.synload.framework.modules.annotations.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
 import com.synload.framework.users.Session;
 import com.synload.framework.users.User;
+import com.synload.framework.ws.DefaultWSPages;
 
 import dnl.utils.text.table.TextTable;
 
@@ -67,10 +68,7 @@ public class ModuleLoader {
                                 	if(obsql!=null){
                                 		sql.add(obsql);
                                 	}
-                                    events.addAll(
-                                    	(List<Object[]>)
-                                    	register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]
-                                    );
+                                    events.addAll( (List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0] );
                                 } catch (InstantiationException e) {
                                     e.printStackTrace();
                                 } catch (IllegalAccessException e) {
@@ -88,7 +86,19 @@ public class ModuleLoader {
                 }
             }
         }
-        // Defaults
+        
+        /* 
+         * Hardcoded defaults!
+         */
+		try {
+			events.addAll( (List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         Object[] obsql = registerSQL(User.class, null);
         if(obsql!=null){
         	sql.add(obsql);
@@ -97,6 +107,10 @@ public class ModuleLoader {
     	if(obsql!=null){
     		sql.add(obsql);
     	}
+    	/*
+    	 * Defaults setting end
+    	 */
+    	
         System.out.println("\nModules Loaded");
         TextTable tt = new TextTable(new String[]{"Class", "Name", "Author", "Version"}, modules.toArray(new Object[modules.size()][]));
         tt.printTable();

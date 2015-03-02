@@ -51,7 +51,8 @@ public class JarClassLoader extends AbstractClassLoader {
     /**
      * Class cache
      */
-    protected final Map<String, Class> classes;
+    @SuppressWarnings("rawtypes")
+	protected final Map<String, Class> classes;
 
     protected final ClasspathResources classpathResources;
     private char classNameReplacementChar;
@@ -59,7 +60,8 @@ public class JarClassLoader extends AbstractClassLoader {
 
     private static Logger logger = Logger.getLogger( JarClassLoader.class.getName() );
 
-    public JarClassLoader() {
+    @SuppressWarnings("rawtypes")
+	public JarClassLoader() {
         classpathResources = new ClasspathResources();
         classes = Collections.synchronizedMap( new HashMap<String, Class>() );
         initialize();
@@ -88,7 +90,8 @@ public class JarClassLoader extends AbstractClassLoader {
      * 
      * @param sources
      */
-    public JarClassLoader(List sources) {
+    @SuppressWarnings("rawtypes")
+	public JarClassLoader(List sources) {
         this();
         addAll( sources );
     }
@@ -109,7 +112,8 @@ public class JarClassLoader extends AbstractClassLoader {
      * 
      * @param sources
      */
-    public void addAll(List sources) {
+    @SuppressWarnings("rawtypes")
+	public void addAll(List sources) {
         for (Object source : sources) {
             add( source );
         }
@@ -234,7 +238,8 @@ public class JarClassLoader extends AbstractClassLoader {
             enabled = Configuration.isLocalLoaderEnabled();
         }
 
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result = null;
             byte[] classBytes;
@@ -317,7 +322,8 @@ public class JarClassLoader extends AbstractClassLoader {
      * 
      * @return Map
      */
-    public Map<String, Class> getLoadedClasses() {
+    @SuppressWarnings("rawtypes")
+	public Map<String, Class> getLoadedClasses() {
         return Collections.unmodifiableMap( classes );
     }
 }

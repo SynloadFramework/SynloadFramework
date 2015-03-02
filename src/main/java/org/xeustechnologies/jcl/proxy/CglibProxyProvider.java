@@ -63,7 +63,8 @@ public class CglibProxyProvider implements ProxyProvider {
         }
     }
 
-    public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
+    @SuppressWarnings("rawtypes")
+	public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
         CglibProxyHandler handler = new CglibProxyHandler( object );
 
         Enhancer enhancer = new Enhancer();

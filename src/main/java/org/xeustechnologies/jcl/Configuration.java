@@ -67,7 +67,7 @@ public class Configuration {
         return Boolean.parseBoolean( System.getProperty( AUTO_PROXY ) );
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes" })
     public static boolean isLoaderEnabled(Class cls) {
         if (System.getProperty( cls.getName() ) == null)
             return true;

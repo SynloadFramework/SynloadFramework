@@ -63,7 +63,6 @@ public class WebAppPathResolver implements PathResolver {
      * @see org.xeustechnologies.jcl.utils.PathResolver#resolvePath(java.lang.String)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public Object[] resolvePath(String path) {
         if (path.startsWith( WEB_APP )) {
             String webpath = "/" + path.split( ":" )[1];
