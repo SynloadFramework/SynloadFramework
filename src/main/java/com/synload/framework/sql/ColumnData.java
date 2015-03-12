@@ -16,7 +16,7 @@ public class ColumnData {
 	public String type = "", defaultV = "", collation = "";
 	public ColumnData(Field f){
 		if(f.isAnnotationPresent(SQLType.class)){
-			SQLType sqt = (SQLType) f.getAnnotation(SQLType.class);
+			SQLType sqt = f.getAnnotation(SQLType.class);
 			nullV = sqt.NULL();
 			type = sqt.Type();
 			autoIncrement = sqt.AutoIncrement();
@@ -24,7 +24,7 @@ public class ColumnData {
 			collation = sqt.Collation();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(BigIntegerColumn.class)){
-			BigIntegerColumn sqt = (BigIntegerColumn) f.getAnnotation(BigIntegerColumn.class);
+			BigIntegerColumn sqt = f.getAnnotation(BigIntegerColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type()+"("+sqt.length()+")";
 			autoIncrement = sqt.AutoIncrement();
@@ -32,7 +32,7 @@ public class ColumnData {
 			collation = sqt.Collation();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(FloatColumn.class)){
-			FloatColumn sqt = (FloatColumn) f.getAnnotation(FloatColumn.class);
+			FloatColumn sqt = f.getAnnotation(FloatColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type();
 			autoIncrement = sqt.AutoIncrement();
@@ -40,7 +40,7 @@ public class ColumnData {
 			collation = sqt.Collation();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(DoubleColumn.class)){
-			DoubleColumn sqt = (DoubleColumn) f.getAnnotation(DoubleColumn.class);
+			DoubleColumn sqt = f.getAnnotation(DoubleColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type();
 			autoIncrement = sqt.AutoIncrement();
@@ -48,7 +48,7 @@ public class ColumnData {
 			collation = sqt.Collation();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(MediumIntegerColumn.class)){
-			MediumIntegerColumn sqt = (MediumIntegerColumn) f.getAnnotation(MediumIntegerColumn.class);
+			MediumIntegerColumn sqt = f.getAnnotation(MediumIntegerColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type()+"("+sqt.length()+")";
 			defaultV = sqt.Default();
@@ -56,7 +56,7 @@ public class ColumnData {
 			collation = sqt.Collation();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(StringColumn.class)){
-			StringColumn sqt = (StringColumn) f.getAnnotation(StringColumn.class);
+			StringColumn sqt = f.getAnnotation(StringColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type()+"("+sqt.length()+")";
 			defaultV = sqt.Default();
@@ -64,7 +64,7 @@ public class ColumnData {
 			collation = sqt.Collation();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(BooleanColumn.class)){
-			BooleanColumn sqt = (BooleanColumn) f.getAnnotation(BooleanColumn.class);
+			BooleanColumn sqt = f.getAnnotation(BooleanColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type();
 			defaultV = sqt.Default();
@@ -72,7 +72,7 @@ public class ColumnData {
 			autoIncrement = sqt.AutoIncrement();
 			index = sqt.Index();
 		}else if(f.isAnnotationPresent(LongBlobColumn.class)){
-			LongBlobColumn sqt = (LongBlobColumn) f.getAnnotation(LongBlobColumn.class);
+			LongBlobColumn sqt = f.getAnnotation(LongBlobColumn.class);
 			nullV = sqt.NULL();
 			type = sqt.Type();
 			defaultV = sqt.Default();

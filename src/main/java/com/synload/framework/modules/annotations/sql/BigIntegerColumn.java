@@ -8,6 +8,9 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+/*
+ * 
+ */
 public @interface BigIntegerColumn {
 	public int length();
 	public String Type() default "bigint";

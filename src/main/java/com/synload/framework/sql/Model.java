@@ -15,11 +15,19 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.mysql.jdbc.Statement;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.HasMany;
 import com.synload.framework.modules.annotations.HasOne;
+import com.synload.framework.modules.annotations.NonSQL;
+import com.synload.framework.modules.annotations.SQLType;
+import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
+import com.synload.framework.modules.annotations.sql.BooleanColumn;
+import com.synload.framework.modules.annotations.sql.DoubleColumn;
+import com.synload.framework.modules.annotations.sql.FloatColumn;
+import com.synload.framework.modules.annotations.sql.LongBlobColumn;
+import com.synload.framework.modules.annotations.sql.MediumIntegerColumn;
+import com.synload.framework.modules.annotations.sql.StringColumn;
 
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,
@@ -31,7 +39,9 @@ public class Model {
 		try {
 			for(Field f:this.getClass().getDeclaredFields()){
 				try {
-					f.set(this, _convert( f.getType(), rs.getString(f.getName()) ));
+					if(_annotationPresent(f) || f.isAnnotationPresent(NonSQL.class)){
+						f.set(this, _convert( f.getType(), rs.getString(f.getName()) ));
+					}
 				} catch (SecurityException e) {
 					e.printStackTrace();
 				} catch (IllegalArgumentException e) {
@@ -62,12 +72,22 @@ public class Model {
 			}
 		}
 	}
+	public static String _tableName(String name){
+		String nm = name.toLowerCase();
+		switch(nm.substring(nm.length()-1)){
+			case "y":
+				return nm.substring(0,nm.length()-1)+"ies";
+			default:
+				return nm+"s";
+		}
+		
+	}
 	public void _save(String colName, Object data) throws SQLException, IllegalArgumentException, IllegalAccessException{
 		for(Field f:this.getClass().getDeclaredFields()){
 			ColumnData cd = new ColumnData(f);
 			if(cd.isAutoIncrement()){
 				f.setAccessible(true);
-				String sql = "UPDATE `"+this.getClass().getSimpleName().toLowerCase()+"s` SET `"+colName+"`=? WHERE `"+f.getName()+"`=? LIMIT 1;";
+				String sql = "UPDATE `"+_tableName(this.getClass().getSimpleName())+"` SET `"+colName+"`=? WHERE `"+f.getName()+"`=? LIMIT 1;";
 				PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
 				ps.setObject(1, data);
 				ps.setObject(2, f.get(this));
@@ -80,17 +100,40 @@ public class Model {
 	}
 	
 	public static <T> String[] _getColumns(Class<T> s){
-		String[] columns = new String[s.getDeclaredFields().length];
 		int x = 0;
 		for(Field f:s.getDeclaredFields()){
-			columns[x]=f.getName();
-			x++;
+			if(_annotationPresent(f)){
+				x++;
+			}
+		}
+		String[] columns = new String[x];
+		x = 0;
+		for(Field f:s.getDeclaredFields()){
+			if(_annotationPresent(f)){
+				columns[x]=f.getName();
+				x++;
+			}
 		}
 		return columns;
 	}
+	public static boolean _annotationPresent(Field f){
+		if(f.isAnnotationPresent(BigIntegerColumn.class) ||
+				f.isAnnotationPresent(BooleanColumn.class) ||
+				f.isAnnotationPresent(DoubleColumn.class) ||
+				f.isAnnotationPresent(FloatColumn.class) ||
+				f.isAnnotationPresent(LongBlobColumn.class) || 
+				f.isAnnotationPresent(MediumIntegerColumn.class) || 
+				f.isAnnotationPresent(StringColumn.class) ||
+				f.isAnnotationPresent(HasMany.class) ||
+				f.isAnnotationPresent(HasOne.class) ||
+				f.isAnnotationPresent(SQLType.class)){
+			return true;
+		}
+		return false;
+	}
 	
 	public static <T> QuerySet _find(Class<T> s, String where, Object... data) throws InstantiationException, IllegalAccessException{
-		return new QuerySet(where, data, _getColumns(s), s.getSimpleName().toLowerCase()+"s");
+		return new QuerySet(where, data, _getColumns(s), _tableName(s.getSimpleName()));
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -119,7 +162,11 @@ public class Model {
 				HasMany hsm = f.getAnnotation(HasMany.class);
 				if(hsm.of()==c){
 					try {
-						return new QuerySet("`"+hsm.key()+"` IN (?)", new Object[]{f.get(this)}, _getColumns(c), c.getSimpleName().toLowerCase()+"s");
+						if(!((String)f.get(this)).equalsIgnoreCase("")){
+							return new QuerySet("`"+hsm.key()+"` IN ("+((String)f.get(this))+")", new Object[]{}, _getColumns(c), _tableName(c.getSimpleName()));
+						}else{
+							return new QuerySet("`"+hsm.key()+"`=0", new Object[]{}, _getColumns(c), _tableName(c.getSimpleName()));
+						}
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
@@ -130,7 +177,7 @@ public class Model {
 				HasOne hso = f.getAnnotation(HasOne.class);
 				if(hso.of()==c){
 					try {
-						return new QuerySet("`"+hso.key()+"`=?", new Object[]{f.get(this)}, _getColumns(c), c.getSimpleName().toLowerCase()+"s");
+						return new QuerySet("`"+hso.key()+"`=?", new Object[]{f.get(this)}, _getColumns(c), _tableName(c.getSimpleName()));
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
@@ -139,7 +186,7 @@ public class Model {
 				}
 			}
 		}
-		Log.error("No relation for "+c.getSimpleName().toLowerCase()+"s", this.getClass());
+		Log.error("No relation for "+_tableName(c.getSimpleName()), this.getClass());
 		return null; 
 	}
 	@SuppressWarnings("unused")
@@ -163,8 +210,8 @@ public class Model {
 			}
 		}
 		Object[] valuesA = values.toArray();
-		sql ="INSERT INTO `"+this.getClass().getSimpleName().toLowerCase()+"s` ( "+sql+" ) VALUES ( "+sqlQs+");";
-		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+		sql ="INSERT INTO `"+_tableName(this.getClass().getSimpleName())+"` ( "+sql+" ) VALUES ( "+sqlQs+");";
+		PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,java.sql.Statement.RETURN_GENERATED_KEYS);
 		for(int i=0;i<valuesA.length;i++){
 			ps.setObject(i+1, valuesA[i]);
 		}
@@ -187,7 +234,7 @@ public class Model {
 				key = f.getName();
 			}
 		}
-		QuerySet qs = new QuerySet(where, objs, _getColumns(c), c.getSimpleName().toLowerCase()+"s");
+		QuerySet qs = new QuerySet(where, objs, _getColumns(c), _tableName(c.getSimpleName()));
 		qs.ret = new String[]{"COUNT(`"+key+"`) as c"};
 		Object obj = null;
 		try {
@@ -264,7 +311,7 @@ public class Model {
 			}else if(HasOne.class.isInstance(local[1])){
 				HasOne hso = (HasOne) local[1];
 				refIdRemote = this._getKeyFromAnnotation(c, obj, hso.key());
-				localField.set(obj,refIdRemote);
+				localField.set(this,refIdRemote);
 			}
 			this._save(localField.getName(), localField.get(this));
 		}else{

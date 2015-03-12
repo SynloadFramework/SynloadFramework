@@ -7,9 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-
 import com.synload.framework.SynloadFramework;
 
 public class QuerySet{
@@ -98,19 +96,7 @@ public class QuerySet{
 	{
 		Object c = null;
 		String sql = "SELECT ";
-		if(this.ret.length==1){
-			if(this.ret[0].equals("*")){
-				sql += this.columnToString(columns);
-			}else{
-				if(this.ret[0].contains("`")){
-					sql += this.ret[0];
-				}else{
-					sql += "`"+this.ret[0]+"`";
-				}
-			}
-		}else{
-			sql += this.columnToString(this.ret);
-		}
+		sql += "COUNT(*) as c";
 		sql += " FROM `"+name+"`";
 		if(where!=""){
 			sql += " WHERE " + where;

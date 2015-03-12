@@ -5,17 +5,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.synload.framework.modules.annotations.NonSQL;
+
 public class TableInfo extends Model {
 	
-	public String Field;
-	public String Type;
-	public String Collation;
-	public String Null;
-	public String Key;
-	public String Default;
-	public String Extra;
-	public String Privileges;
-	public String Comment;
+	@NonSQL public String Field;
+	@NonSQL public String Type;
+	@NonSQL public String Collation;
+	@NonSQL public String Null;
+	@NonSQL public String Key;
+	@NonSQL public String Default;
+	@NonSQL public String Extra;
+	@NonSQL public String Privileges;
+	@NonSQL public String Comment;
 	
 	public TableInfo(ResultSet rs) {
 		super(rs);
@@ -24,7 +26,7 @@ public class TableInfo extends Model {
 	@SuppressWarnings("rawtypes")
 	public static List<TableInfo> getTableInfo(Class c){
 		try {
-			return TableInfo._sqlFetch( TableInfo.class, "SHOW FULL COLUMNS FROM `"+c.getSimpleName().toLowerCase()+"s`");
+			return Model._sqlFetch( TableInfo.class, "SHOW FULL COLUMNS FROM `"+Model._tableName(c.getSimpleName())+"`");
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {

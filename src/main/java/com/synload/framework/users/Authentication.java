@@ -16,7 +16,7 @@ public class Authentication{
 		}
 		return null;
 	}
-	public static boolean create(String username, String password, String email, List<String> flags){
+	public static boolean create(String username, String password, String email, List<String> flags, int admin){
 		boolean validEmail = false;
 		try {
 			Pattern regex = Pattern.compile("[A-Z0-9._%+-]+@[A-Z0-9.-]+", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
@@ -25,7 +25,7 @@ public class Authentication{
 		} catch (PatternSyntaxException ex) {
 		}
 		if(User.existsUser(username)==0 && username.length()>3 && password.length()>3 && validEmail){
-			new User( username, password, email, flags );
+			new User("username", username, "password", password, "email", email, "flags", flags.toString(), "admin", admin, "created_date", "UNIX_TIMESTAMP()");
 			return true;
 		}else{
 			return false;

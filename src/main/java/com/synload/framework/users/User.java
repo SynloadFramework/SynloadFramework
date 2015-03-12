@@ -24,7 +24,7 @@ import com.synload.framework.sql.Model;
     include = JsonTypeInfo.As.PROPERTY,
     property = "class"
 )
-@SQLTable(name="User Model",version=1.2, description = "users table contains passwords and emails")
+@SQLTable(name="User Model",version=1.3, description = "users table contains passwords and emails")
 public class User extends Model{
 	
 	@BigIntegerColumn(length=20, Key=true, AutoIncrement=true)
@@ -36,9 +36,9 @@ public class User extends Model{
 	@StringColumn(length=128)
 	public String username;
 	
-	@StringColumn(length=128)
 	@JsonIgnore
-	private String email;
+	@StringColumn(length=128)
+	public String email;
 	
 	@LongBlobColumn()
 	public String flags;
@@ -46,15 +46,12 @@ public class User extends Model{
 	@BooleanColumn()
 	public boolean admin;
 	
-	@BooleanColumn()
-	public boolean free;
-	
-	@StringColumn(length=255)
 	@JsonIgnore 
-	private String password;
+	@StringColumn(length=255)
+	public String password;
 	
-	public User(){}
-	public User(ResultSet rs){
+	//public User(){}
+	/*public User(ResultSet rs){
 		try {
 			this.setUsername(rs.getString("username"));
 			this.flags = rs.getString("flags");
@@ -69,19 +66,27 @@ public class User extends Model{
 				e.printStackTrace();
 			}
 		}
+	}*/
+	public User(ResultSet rs) {
+		super(rs);
 	}
-	public User(String username, String password, String email, List<String> flags){
+	public User(Object... data){
+		super(data);
+	}
+	/*public User(String username, String password, String email, List<String> flags, int admin){
 		this.setUsername(username.toLowerCase());
 		this.setPassword(password);
 		this.setEmail(email);
 		this.setFlags(flags);
 		try{
-			PreparedStatement s = SynloadFramework.sql.prepareStatement("INSERT INTO `users` ( `username`, `password`, `email`, `flags`, `created_date`) VALUES ( ?, ?, ?, ?, UNIX_TIMESTAMP() )");
+			PreparedStatement s = SynloadFramework.sql.prepareStatement("INSERT INTO `users` ( `username`, `password`, `email`, `flags`, `created_date`,`admin`) VALUES ( ?, ?, ?, ?, UNIX_TIMESTAMP(), ? )");
 			s.setString(1, this.getUsername());
 			s.setString(2, this.getPassword());
 			s.setString(3, this.getEmail());
 			s.setString(4, this.getFlags().toString());
+			s.setInt(5, admin);
 			s.execute();
+			s.close();
 			User m = User.findUser(this.getUsername());
 			if(m!=null){
 				this.setId(m.getId());
@@ -94,7 +99,7 @@ public class User extends Model{
 				e.printStackTrace();
 			}
 		}
-	}
+	}*/
 	
 	public long getId() {
 		return id;
@@ -152,7 +157,7 @@ public class User extends Model{
 	public void setPassword(String Password) {
 		String hashedPass = "";
 		try {
-			hashedPass = this.hashGenerator(Password);
+			hashedPass = User.hashGenerator(Password);
 			try{
 				PreparedStatement s = SynloadFramework.sql.prepareStatement("UPDATE users SET password=? WHERE id=?");
 				s.setString(1, hashedPass);
@@ -178,7 +183,7 @@ public class User extends Model{
 	public boolean passwordMatch(String Password){
 		String hashedPass = "";
 		try {
-			hashedPass = this.hashGenerator(Password);
+			hashedPass = User.hashGenerator(Password);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
@@ -353,7 +358,7 @@ public class User extends Model{
 			}
 		}
 	}
-	private String hashGenerator(String Password) throws NoSuchAlgorithmException{
+	public static String hashGenerator(String Password) throws NoSuchAlgorithmException{
 		MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(Password.getBytes());
         byte byteData[] = md.digest();

@@ -14,9 +14,11 @@ public class Form extends Response{
 		this.setAction("alone");
 	}
 	public Request request = null;
+	@Override
 	public Request getRequest() {
 		return request;
 	}
+	@Override
 	public void setRequest(Request request) {
 		this.request = request;
 	}

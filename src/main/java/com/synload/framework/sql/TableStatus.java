@@ -5,27 +5,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.annotations.NonSQL;
 
 public class TableStatus extends Model {
 	
-	public String Name;
-	public String Engine;
-	public long Version;
-	public String Row_format;
-	public long Rows;
-	public long Avg_row_length;
-	public long Data_length;
-	public long Max_data_length;
-	public long Index_length;
-	public long Data_free;
-	public String Auto_increment;
-	public String Create_time;
-	public String Update_time;
-	public String Check_time;
-	public String Collation;
-	public String Checksum;
-	public String Create_options;
-	public String Comment;
+	@NonSQL public String Name;
+	@NonSQL public String Engine;
+	@NonSQL public long Version;
+	@NonSQL public String Row_format;
+	@NonSQL public long Rows;
+	@NonSQL public long Avg_row_length;
+	@NonSQL public long Data_length;
+	@NonSQL public long Max_data_length;
+	@NonSQL public long Index_length;
+	@NonSQL public long Data_free;
+	@NonSQL public String Auto_increment;
+	@NonSQL public String Create_time;
+	@NonSQL public String Update_time;
+	@NonSQL public String Check_time;
+	@NonSQL public String Collation;
+	@NonSQL public String Checksum;
+	@NonSQL public String Create_options;
+	@NonSQL public String Comment;
 	
 	public TableStatus(ResultSet rs){
 		super(rs);
@@ -35,7 +36,7 @@ public class TableStatus extends Model {
 	public static TableStatus get(Class c){
 		try {
 			PreparedStatement ps = SynloadFramework.sql.prepareStatement("SHOW TABLE STATUS LIKE ?");
-			ps.setString(1, c.getSimpleName().toLowerCase()+"s");
+			ps.setString(1, Model._tableName(c.getSimpleName()));
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()){
 				TableStatus out = new TableStatus(rs);

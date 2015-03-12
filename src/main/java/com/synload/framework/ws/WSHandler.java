@@ -17,12 +17,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import nl.captcha.Captcha;
-import nl.captcha.backgrounds.GradiatedBackgroundProducer;
 import nl.captcha.backgrounds.SquigglesBackgroundProducer;
-import nl.captcha.gimpy.DropShadowGimpyRenderer;
 import nl.captcha.gimpy.FishEyeGimpyRenderer;
-import nl.captcha.gimpy.RippleGimpyRenderer;
-import nl.captcha.gimpy.ShearGimpyRenderer;
 import nl.captcha.noise.CurvedLineNoiseProducer;
 import nl.captcha.text.producer.DefaultTextProducer;
 
@@ -159,6 +155,7 @@ public class WSHandler{
 			this.request = request;
 			this.handler = handler;
 		}
+		@Override
 		public void run (){
 			try {
 				WSRouting.page(this.handler,this.request);
@@ -209,7 +206,7 @@ public class WSHandler{
 	/*
 	 * COPIED CODE FROM http://stackoverflow.com/questions/14622622/generating-a-random-hex-string-of-length-50-in-java-me-j2me
 	 * */
-	private String getRandomHexString(int numchars){
+	public static String getRandomHexString(int numchars){
         Random r = new Random();
         StringBuffer sb = new StringBuffer();
         while(sb.length() < numchars){

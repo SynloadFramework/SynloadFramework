@@ -181,7 +181,8 @@ public class DefaultWSPages {
 				event.getRequest().getData().get("username").toLowerCase(),
 				event.getRequest().getData().get("password"),
 				event.getRequest().getData().get("email"),
-				flags);
+				flags,
+				0);
 		if(authedUser){
 			event.getSession().send(SynloadFramework.ow.writeValueAsString(new Success("register")));
 			// Should redirect to login box!
