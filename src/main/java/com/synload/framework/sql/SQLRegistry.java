@@ -5,9 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.SQLTable;
 

@@ -3,18 +3,21 @@ package com.synload.framework.modules;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
+import org.apache.commons.io.IOUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.synload.eventsystem.EventTrigger;
 import com.synload.eventsystem.Handler;
 import com.synload.eventsystem.HandlerRegistry;
+import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
@@ -27,7 +30,30 @@ import com.synload.framework.ws.DefaultWSPages;
 import dnl.utils.text.table.TextTable;
 
 
-public class ModuleLoader {
+public class ModuleLoader extends ClassLoader  {
+	public static Hashtable<String,Class<?>> cache = new Hashtable<String,Class<?>>();
+	public ModuleLoader(ClassLoader parent) {
+	      super(parent);
+	}
+	public synchronized Class<?> loadClass(String clazzName){
+		Class<?> c = cache.get(clazzName);
+		if(c==null){
+			try {
+				c = Class.forName(clazzName);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		return c;
+	}
+	public void loadClass(String clazzName, byte[] clazzBytes){
+		try {
+			Class.forName(clazzName);
+		} catch (ClassNotFoundException e) {
+			Class<?> c = defineClass(clazzName,clazzBytes,0,clazzBytes.length);
+			cache.put(clazzName,c);
+		}
+	}
     public enum TYPE {
         METHOD, CLASS
     }
@@ -42,61 +68,68 @@ public class ModuleLoader {
         if (!folder.exists()) {
             folder.mkdir();
         }
+        List<String> classes = new ArrayList<String>();
         File[] listOfFiles = folder.listFiles();
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
                 fileName = listOfFiles[i].getName();
                 if (fileName.endsWith(".jar")) {
                     try {
-                        @SuppressWarnings("resource")
 						URLClassLoader cl = new URLClassLoader(
                                 new URL[] { new File(path + fileName).toURI()
                                         .toURL() });
                         List<String> classList = getClasses(path + fileName);
-                        ModuleClass module = null;
                         for (String clazz : classList) {
-                            try {
-                                @SuppressWarnings("rawtypes")
-								Class loadedClass = cl.loadClass(clazz);
-                                try {
-                                	Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
-                                	if(obj!=null){
-                                		module = (ModuleClass) obj[0];
-                                		modules.add((Object[]) obj[1]);
-                                	}
-                                	Object[] obsql = registerSQL(loadedClass, module);
-                                	if(obsql!=null){
-                                		sql.add(obsql);
-                                	}
-                                    events.addAll( (List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0] );
-                                } catch (InstantiationException e) {
-                                    e.printStackTrace();
-                                } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
-                                }
-                                // cl.close();
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
-                            }
+                        	String clazzFile = clazz.replaceAll("(?i)\\.", "/")+".class";
+                        	System.out.println("Loading class data for "+clazz+"[R:{"+clazzFile+"}]");
+                        	Log.debug("Loading class data for "+clazz+"[R:{"+clazzFile+"}]", ModuleLoader.class);
+                        	InputStream is = cl.getResourceAsStream(clazzFile);
+                        	if(is==null){
+                        		System.out.println("Resource Error for "+clazz+"[R:{"+clazzFile+"}]");
+                        	}
+                        	byte[] clazzBytes = IOUtils.toByteArray(is);
+                        	is.close();
+							ModuleLoader ml = new ModuleLoader(Thread.currentThread().getContextClassLoader());
+							ml.loadClass(clazz, clazzBytes);
+							classes.add(clazz);
                         }
-
+                        cl.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
         }
-        
+        for(String clazz: classes){
+			Class<?> loadedClass;
+			try {
+				loadedClass =(new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz);
+				//loadedClass = Class.forName();
+	        	ModuleClass module = null;
+	        	Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
+	        	if(obj!=null){
+	        		module = (ModuleClass) obj[0];
+	        		modules.add((Object[]) obj[1]);
+	        	}
+	        	Object[] obsql = registerSQL(loadedClass, module);
+	        	if(obsql!=null){
+	        		sql.add(obsql);
+	        	}
+	            events.addAll( (List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0] );
+	        } catch (InstantiationException e) {
+	            e.printStackTrace();
+	        } catch (IllegalAccessException e) {
+	            e.printStackTrace();
+			}
+        }
         /* 
          * Hardcoded defaults!
          */
 		try {
 			events.addAll( (List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         Object[] obsql = registerSQL(User.class, null);
