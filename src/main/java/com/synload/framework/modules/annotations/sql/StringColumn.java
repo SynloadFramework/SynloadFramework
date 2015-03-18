@@ -10,13 +10,21 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface StringColumn {
-	public int length();
-	public String Type() default "varchar";
-	public String CharSet() default "utf8";
-	public String Default() default "utf8_general_ci";
-	public String Collation() default "";
-	public boolean NULL() default false;
-	public boolean AutoIncrement() default false;
-	public boolean Index() default false;
-	public boolean Key() default false;
+    public int length();
+
+    public String Type() default "varchar";
+
+    public String CharSet() default "utf8";
+
+    public String Default() default "utf8_general_ci";
+
+    public String Collation() default "";
+
+    public boolean NULL() default false;
+
+    public boolean AutoIncrement() default false;
+
+    public boolean Index() default false;
+
+    public boolean Key() default false;
 }

@@ -10,12 +10,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface SQLType {
-	public String Type();
-	public String CharSet();
-	public String Default();
-	public String Collation();
-	public boolean NULL();
-	public boolean AutoIncrement();
-	public boolean Index();
-	public boolean Key();
+    public String Type();
+
+    public String CharSet();
+
+    public String Default();
+
+    public String Collation();
+
+    public boolean NULL();
+
+    public boolean AutoIncrement();
+
+    public boolean Index();
+
+    public boolean Key();
 }

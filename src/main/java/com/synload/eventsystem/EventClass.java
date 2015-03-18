@@ -15,19 +15,19 @@ public class EventClass {
         this.handler = handler;
     }
 
-	public String[] getTrigger() {
-		return trigger;
-	}
+    public String[] getTrigger() {
+        return trigger;
+    }
 
-	public void setTrigger(String[] trigger) {
-		this.trigger = trigger;
-	}
+    public void setTrigger(String[] trigger) {
+        this.trigger = trigger;
+    }
 
-	public Type getType() {
-		return type;
-	}
+    public Type getType() {
+        return type;
+    }
 
-	public void setType(Type type) {
-		this.type = type;
-	}
+    public void setType(Type type) {
+        this.type = type;
+    }
 }

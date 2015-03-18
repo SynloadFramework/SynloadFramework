@@ -10,8 +10,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface HasOne {
-	public Class<?> of();
-	public String key();
+    public Class<?> of();
+
+    public String key();
 }/*
- * MANY -> one
- */
+  * MANY -> one
+  */

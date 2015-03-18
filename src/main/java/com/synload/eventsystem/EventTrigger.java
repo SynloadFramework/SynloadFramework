@@ -5,26 +5,25 @@ import java.lang.reflect.Method;
 import com.synload.framework.modules.ModuleClass;
 import com.synload.framework.modules.annotations.Event.Type;
 
-
 public class EventTrigger {
     @SuppressWarnings("rawtypes")
-	private Class hostClass;
+    private Class hostClass;
     private Method method;
     private Object route;
     private String[] trigger;
     private String[] flags;
     @SuppressWarnings("rawtypes")
-	private Class type;
+    private Class type;
     private Type eventType;
     private ModuleClass module;
 
     @SuppressWarnings("rawtypes")
-	public Class getHostClass() {
+    public Class getHostClass() {
         return hostClass;
     }
 
     @SuppressWarnings("rawtypes")
-	public void setHostClass(Class hostClass) {
+    public void setHostClass(Class hostClass) {
         this.hostClass = hostClass;
     }
 
@@ -52,37 +51,37 @@ public class EventTrigger {
         this.route = rte;
     }
 
-	@SuppressWarnings("rawtypes")
-	public Class getType() {
-		return type;
-	}
+    @SuppressWarnings("rawtypes")
+    public Class getType() {
+        return type;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public void setType(Class type) {
-		this.type = type;
-	}
+    @SuppressWarnings("rawtypes")
+    public void setType(Class type) {
+        this.type = type;
+    }
 
-	public String[] getTrigger() {
-		return trigger;
-	}
+    public String[] getTrigger() {
+        return trigger;
+    }
 
-	public void setTrigger(String[] trigger) {
-		this.trigger = trigger;
-	}
+    public void setTrigger(String[] trigger) {
+        this.trigger = trigger;
+    }
 
-	public String[] getFlags() {
-		return flags;
-	}
+    public String[] getFlags() {
+        return flags;
+    }
 
-	public void setFlags(String[] flags) {
-		this.flags = flags;
-	}
+    public void setFlags(String[] flags) {
+        this.flags = flags;
+    }
 
-	public Type getEventType() {
-		return eventType;
-	}
+    public Type getEventType() {
+        return eventType;
+    }
 
-	public void setEventType(Type eventType) {
-		this.eventType = eventType;
-	}
+    public void setEventType(Type eventType) {
+        this.eventType = eventType;
+    }
 }

@@ -23,6 +23,6 @@ public @interface Module {
     public String name() default "";
 
     public String[] depend() default {};
-    
+
     public String version() default "0.1";
 }

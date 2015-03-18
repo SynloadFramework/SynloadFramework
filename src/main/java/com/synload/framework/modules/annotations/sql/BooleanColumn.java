@@ -10,12 +10,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface BooleanColumn {
-	public String Type() default "boolean";
-	public String CharSet() default "";
-	public String Default() default "";
-	public String Collation() default "";
-	public boolean NULL() default false;
-	public boolean AutoIncrement() default false;
-	public boolean Index() default false;
-	public boolean Key() default false;
+    public String Type() default "boolean";
+
+    public String CharSet() default "";
+
+    public String Default() default "";
+
+    public String Collation() default "";
+
+    public boolean NULL() default false;
+
+    public boolean AutoIncrement() default false;
+
+    public boolean Index() default false;
+
+    public boolean Key() default false;
 }
