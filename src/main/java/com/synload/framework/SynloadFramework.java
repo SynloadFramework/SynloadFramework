@@ -3,6 +3,7 @@ package com.synload.framework;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -15,13 +16,17 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.spdy.server.http.HTTPSPDYServerConnector;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -77,7 +82,7 @@ public class SynloadFramework {
                 prop.load(new FileInputStream("config.ini"));
                 port = Integer.valueOf(prop.getProperty("port"));
                 handleUpload = Boolean.valueOf(prop
-                        .getProperty("handleUploads"));
+                        .getProperty("enableUploads"));
                 siteDefaults = Boolean
                         .valueOf(prop.getProperty("siteDefaults"));
                 path = prop.getProperty("modulePath");
@@ -88,16 +93,28 @@ public class SynloadFramework {
                         "jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true");
                 prop.setProperty("dbuser", "root");
                 prop.setProperty("dbpass", "pass");
+                prop.setProperty("name", "My New Server");
                 prop.setProperty("port", "80");
                 prop.setProperty("loglevel", "INFO");
                 prop.setProperty("modulePath", "modules/");
-                prop.setProperty("siteDefaults", "false");
+                prop.setProperty("siteDefaults", "true");
                 prop.setProperty("debug", "false");
                 prop.setProperty("encrypt", "false");
-                prop.setProperty("handleUploads", "false");
+                prop.setProperty("enableUploads", "false");
                 prop.setProperty("maxUploadSize", "26214400");
                 prop.setProperty("uploadPath", "uploads/");
-                prop.store(new FileOutputStream("config.ini"), null);
+                //prop.store(new FileOutputStream("config.ini"), "----Default Configuration----");
+                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/config.ini");
+                FileOutputStream os = new FileOutputStream(new File("./config.ini"));
+                IOUtils.copy(is, os);
+                os.close();
+                is.close();
+                is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/bbcodes.xml");
+                os = new FileOutputStream(new File("./bbcodes.xml"));
+                IOUtils.copy(is, os);
+                os.close();
+                is.close();
+                System.exit(0);
             }
             loglevel = Level.toLevel(prop.getProperty("loglevel"));
             debug = Boolean.valueOf(prop.getProperty("debug"));
@@ -106,8 +123,6 @@ public class SynloadFramework {
             Log.info("CONF", SynloadFramework.class);
             sql = DriverManager.getConnection(prop.getProperty("jdbc"),
                     prop.getProperty("dbuser"), prop.getProperty("dbpass"));
-
-            // SynloadFramework.buildMenu();
 
             SynloadFramework.buildDefaultHTTP();
             SynloadFramework.buildJavascript();

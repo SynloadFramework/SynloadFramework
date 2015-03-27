@@ -179,9 +179,10 @@ public class Model {
                     try {
                         if (!((String) f.get(this)).equalsIgnoreCase("")) {
                             return new QuerySet("`" + hsm.key() + "` IN ("
-                                    + ((String) f.get(this)) + ")",
-                                    new Object[] {}, _getColumns(c),
-                                    _tableName(c.getSimpleName()));
+                                + ((String) f.get(this)) + ")",
+                                new Object[] {}, _getColumns(c),
+                                _tableName(c.getSimpleName())
+                            );
                         } else {
                             return new QuerySet("`" + hsm.key() + "`=0",
                                     new Object[] {}, _getColumns(c),
@@ -193,7 +194,7 @@ public class Model {
                         e.printStackTrace();
                     }
                 }
-            } else if (this.getClass().isAnnotationPresent(HasOne.class)) {
+            } else if (f.isAnnotationPresent(HasOne.class)) {
                 HasOne hso = f.getAnnotation(HasOne.class);
                 if (hso.of() == c) {
                     try {
@@ -210,7 +211,7 @@ public class Model {
         }
         Log.error("No relation for " + _tableName(c.getSimpleName()),
                 this.getClass());
-        return null;
+        return new QuerySet("",new Object[]{}, _getColumns(c),_tableName(c.getSimpleName()));
     }
 
     @SuppressWarnings("unused")
@@ -222,17 +223,19 @@ public class Model {
         String sqlQs = "";
         Field autoincrement = null;
         for (Field f : this.getClass().getFields()) {
-            ColumnData cd = new ColumnData(f);
-            if (!cd.isAutoIncrement()) {
-                // if(f.get(this)!=null){
-                sql += ((!sql.equals("")) ? ", " : "") + "`" + f.getName()
-                        + "`";
-                sqlQs += ((!sqlQs.equals("")) ? ", ?" : "?");
-                values.add(_getDefault(f.get(this), f.getType()));
-                x++;
-                // }
-            } else {
-                autoincrement = f;
+            if (_annotationPresent(f)){
+                ColumnData cd = new ColumnData(f);
+                if (!cd.isAutoIncrement()) {
+                    // if(f.get(this)!=null){
+                    sql += ((!sql.equals("")) ? ", " : "") + "`" + f.getName()
+                            + "`";
+                    sqlQs += ((!sqlQs.equals("")) ? ", ?" : "?");
+                    values.add(_getDefault(f.get(this), f.getType()));
+                    x++;
+                    // }
+                } else {
+                    autoincrement = f;
+                }
             }
         }
         Object[] valuesA = values.toArray();
@@ -258,9 +261,11 @@ public class Model {
     public static boolean _exists(String where, Class c, Object... objs) {
         Object key = null;
         for (Field f : c.getFields()) {
-            ColumnData cd = new ColumnData(f);
-            if (cd.isAutoIncrement()) {
-                key = f.getName();
+            if (_annotationPresent(f)){
+                ColumnData cd = new ColumnData(f);
+                if (cd.isAutoIncrement()) {
+                    key = f.getName();
+                }
             }
         }
         QuerySet qs = new QuerySet(where, objs, _getColumns(c),
@@ -386,20 +391,22 @@ public class Model {
         for (Entry<String, String> item : items.entrySet()) {
             try {
                 Field f = this.getClass().getField(item.getKey());
-                if (f != null) {
-                    ColumnData cd = new ColumnData(f);
-                    if (!cd.isAutoIncrement()) {
-                        try {
-                            if (f.get(this) != _convert(f.getType(),
-                                    item.getValue())) {
-                                f.set(this,
-                                        _convert(f.getType(), item.getValue()));
-                                this._save(f.getName(),
-                                        _convert(f.getType(), item.getValue()));
+                if (_annotationPresent(f)){
+                    if (f != null) {
+                        ColumnData cd = new ColumnData(f);
+                        if (!cd.isAutoIncrement()) {
+                            try {
+                                if (f.get(this) != _convert(f.getType(),
+                                        item.getValue())) {
+                                    f.set(this,
+                                            _convert(f.getType(), item.getValue()));
+                                    this._save(f.getName(),
+                                            _convert(f.getType(), item.getValue()));
+                                }
+                            } catch (IllegalArgumentException
+                                    | IllegalAccessException | SQLException e) {
+                                e.printStackTrace();
                             }
-                        } catch (IllegalArgumentException
-                                | IllegalAccessException | SQLException e) {
-                            e.printStackTrace();
                         }
                     }
                 }

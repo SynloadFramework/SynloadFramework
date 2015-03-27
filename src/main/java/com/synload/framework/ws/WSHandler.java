@@ -187,28 +187,29 @@ public class WSHandler {
                 try {
                     if (ws.queue.size() > 0) {
                         List<String> queueTemp = new ArrayList<String>(ws.queue);
-                        ws.queue = new ArrayList<String>();
                         Iterator<String> queueIterator = queueTemp.iterator();
+                        int c=0;
                         while (queueIterator.hasNext()) {
                             ws.isSending = true;
                             if (ws.encrypt) {
-                                ws.session
-                                        .getRemote()
-                                        .sendString(
-                                                encrypt(SynloadFramework.ow
-                                                        .writeValueAsString(queueIterator
-                                                                .next()),
-                                                        getRandomHexString(64),
-                                                        getRandomHexString(32)),
-                                                new verifySend(ws));
+                                ws.session.getRemote().sendString(
+                                     encrypt(
+                                         SynloadFramework.ow.writeValueAsString(queueIterator.next()),
+                                         getRandomHexString(64),
+                                         getRandomHexString(32)),
+                                         new verifySend(ws)
+                                     );
                             } else {
                                 ws.session.getRemote().sendString(
-                                        queueIterator.next(),
-                                        new verifySend(ws));
+                                    queueIterator.next(),
+                                    new verifySend(ws)
+                                );
                                 if (SynloadFramework.isEncryptEnabled()) {
                                     ws.encrypt = true;
                                 }
                             }
+                            ws.queue.remove(c);
+                            c++;
                         }
                     }
                     Thread.sleep(1);

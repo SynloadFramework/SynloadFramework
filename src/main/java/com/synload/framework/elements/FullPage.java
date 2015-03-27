@@ -12,6 +12,6 @@ public class FullPage extends Response {
         }
         this.setAction("alone");
         this.setParent("#inner[element='body']");
-        this.setParentTemplate("full");
+        //this.setParentTemplate("full");
     }
 }
