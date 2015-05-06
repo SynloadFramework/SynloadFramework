@@ -12,46 +12,50 @@ import dnl.utils.text.table.TextTableModel;
  * @author Daniel Orr
  * 
  */
+@SuppressWarnings("serial")
 public class MapBasedTableModel extends TextTableModel {
 
-	private List<String> columnNames;
-	private List<Map> maps;
+    private List<String> columnNames;
+    @SuppressWarnings("rawtypes")
+    private List<Map> maps;
 
-	public MapBasedTableModel(List<Map> maps) {
-		this.columnNames = new ArrayList<>(maps.get(0).keySet());
-		this.maps = maps;
-	}
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public MapBasedTableModel(List<Map> maps) {
+        this.columnNames = new ArrayList<>(maps.get(0).keySet());
+        this.maps = maps;
+    }
 
-	@Override
-	public int getRowCount() {
-		return maps.size();
-	}
+    @Override
+    public int getRowCount() {
+        return maps.size();
+    }
 
-	@Override
-	public int getColumnCount() {
-		return columnNames.size();
-	}
+    @Override
+    public int getColumnCount() {
+        return columnNames.size();
+    }
 
-	@Override
-	public String getColumnName(int column) {
-		return columnNames.get(column);
-	}
+    @Override
+    public String getColumnName(int column) {
+        return columnNames.get(column);
+    }
 
-	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		Map m = maps.get(rowIndex);
-		String columnName = columnNames.get(columnIndex);
-		return m.get(columnName);
-	}
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        Map m = maps.get(rowIndex);
+        String columnName = columnNames.get(columnIndex);
+        return m.get(columnName);
+    }
 
-	@Override
-	public boolean allowNumberingAt(int row) {
-		return false;
-	}
+    @Override
+    public boolean allowNumberingAt(int row) {
+        return false;
+    }
 
-	@Override
-	public boolean addSeparatorAt(int row) {
-		return false;
-	}
+    @Override
+    public boolean addSeparatorAt(int row) {
+        return false;
+    }
 
 }

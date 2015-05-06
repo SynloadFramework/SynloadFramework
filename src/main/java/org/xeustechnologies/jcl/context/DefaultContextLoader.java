@@ -42,7 +42,8 @@ public class DefaultContextLoader implements JclContextLoader {
     private final JclContext jclContext;
     private final JarClassLoader jcl;
 
-    private static Logger logger = Logger.getLogger( DefaultContextLoader.class.getName() );
+    private static Logger logger = Logger.getLogger(DefaultContextLoader.class
+            .getName());
 
     public DefaultContextLoader(JarClassLoader jcl) {
         jclContext = new JclContext();
@@ -56,10 +57,10 @@ public class DefaultContextLoader implements JclContextLoader {
      */
     @Override
     public void loadContext() {
-        jclContext.addJcl( JclContext.DEFAULT_NAME, jcl );
+        jclContext.addJcl(JclContext.DEFAULT_NAME, jcl);
 
-        if (logger.isLoggable( Level.FINER ))
-            logger.finer( "Default JarClassLoader loaded into context." );
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Default JarClassLoader loaded into context.");
     }
 
     @Override

@@ -57,37 +57,43 @@ public class CglibProxyProvider implements ProxyProvider {
          *      java.lang.reflect.Method, java.lang.Object[],
          *      net.sf.cglib.proxy.MethodProxy)
          */
-        public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-            Method delegateMethod = delegate.getClass().getMethod( method.getName(), method.getParameterTypes() );
-            return delegateMethod.invoke( delegate, args );
+        @Override
+        public Object intercept(Object obj, Method method, Object[] args,
+                MethodProxy proxy) throws Throwable {
+            Method delegateMethod = delegate.getClass().getMethod(
+                    method.getName(), method.getParameterTypes());
+            return delegateMethod.invoke(delegate, args);
         }
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
-	public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
-        CglibProxyHandler handler = new CglibProxyHandler( object );
+    public Object createProxy(Object object, Class superClass,
+            Class[] interfaces, ClassLoader cl) {
+        CglibProxyHandler handler = new CglibProxyHandler(object);
 
         Enhancer enhancer = new Enhancer();
 
-        if( superClass != null ) {
-            enhancer.setSuperclass( superClass );
+        if (superClass != null) {
+            enhancer.setSuperclass(superClass);
         }
 
-        enhancer.setCallback( handler );
+        enhancer.setCallback(handler);
 
-        if( interfaces != null ) {
+        if (interfaces != null) {
             List<Class> il = new ArrayList<Class>();
 
-            for( Class i : interfaces ) {
-                if( i.isInterface() ) {
-                    il.add( i );
+            for (Class i : interfaces) {
+                if (i.isInterface()) {
+                    il.add(i);
                 }
             }
 
-            enhancer.setInterfaces( il.toArray( new Class[il.size()] ) );
+            enhancer.setInterfaces(il.toArray(new Class[il.size()]));
         }
 
-        enhancer.setClassLoader( cl == null ? JclUtils.class.getClassLoader() : cl );
+        enhancer.setClassLoader(cl == null ? JclUtils.class.getClassLoader()
+                : cl);
 
         return enhancer.create();
     }

@@ -1,5 +1,6 @@
 package com.synload.framework.sql;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +30,22 @@ public class TableInfo extends Model {
     public String Comment;
 
     public TableInfo(ResultSet rs) {
-        super(rs);
+        try {
+            for (Field f : this.getClass().getDeclaredFields()) {
+                try {
+                    f.set(this,
+                                _convert(f.getType(), rs.getString(f.getName())));
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @SuppressWarnings("rawtypes")

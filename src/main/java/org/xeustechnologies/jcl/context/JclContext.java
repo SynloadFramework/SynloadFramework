@@ -42,7 +42,7 @@ import org.xeustechnologies.jcl.exception.JclContextException;
  */
 public class JclContext {
     private static final Map<String, JarClassLoader> loaders = Collections
-            .synchronizedMap( new HashMap<String, JarClassLoader>() );
+            .synchronizedMap(new HashMap<String, JarClassLoader>());
     public static final String DEFAULT_NAME = "jcl";
 
     public JclContext() {
@@ -50,8 +50,9 @@ public class JclContext {
     }
 
     private void validate() {
-        if( isLoaded() ) {
-            throw new JclContextException( "Context already loaded. Destroy the existing context to create a new one." );
+        if (isLoaded()) {
+            throw new JclContextException(
+                    "Context already loaded. Destroy the existing context to create a new one.");
         }
     }
 
@@ -66,30 +67,31 @@ public class JclContext {
      * @param jcl
      */
     public void addJcl(String name, JarClassLoader jcl) {
-        if( loaders.containsKey( name ) )
-            throw new JclContextException( "JarClassLoader[" + name + "] already exist. Name must be unique" );
+        if (loaders.containsKey(name))
+            throw new JclContextException("JarClassLoader[" + name
+                    + "] already exist. Name must be unique");
 
-        loaders.put( name, jcl );
+        loaders.put(name, jcl);
     }
 
     /**
      * Clears the context
      */
     public static void destroy() {
-        if( isLoaded() ) {
+        if (isLoaded()) {
             loaders.clear();
         }
     }
 
     public static JarClassLoader get() {
-        return loaders.get( DEFAULT_NAME );
+        return loaders.get(DEFAULT_NAME);
     }
 
     public static JarClassLoader get(String name) {
-        return loaders.get( name );
+        return loaders.get(name);
     }
 
     public static Map<String, JarClassLoader> getAll() {
-        return Collections.unmodifiableMap( loaders );
+        return Collections.unmodifiableMap(loaders);
     }
 }

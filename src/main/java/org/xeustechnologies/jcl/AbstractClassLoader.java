@@ -60,14 +60,14 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * No arguments constructor
      */
     public AbstractClassLoader() {
-        loaders.add( systemLoader );
-        loaders.add( parentLoader );
-        loaders.add( currentLoader );
-        loaders.add( threadLoader );
+        loaders.add(systemLoader);
+        loaders.add(parentLoader);
+        loaders.add(currentLoader);
+        loaders.add(threadLoader);
     }
 
     public void addLoader(ProxyClassLoader loader) {
-        loaders.add( loader );
+        loaders.add(loader);
     }
 
     /*
@@ -76,9 +76,9 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * @see java.lang.ClassLoader#loadClass(java.lang.String)
      */
     @SuppressWarnings("rawtypes")
-	@Override
+    @Override
     public Class loadClass(String className) throws ClassNotFoundException {
-        return ( loadClass( className, true ) );
+        return (loadClass(className, true));
     }
 
     /**
@@ -89,24 +89,25 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * @see java.lang.ClassLoader#loadClass(java.lang.String, boolean)
      */
     @SuppressWarnings("rawtypes")
-	@Override
-    public Class loadClass(String className, boolean resolveIt) throws ClassNotFoundException {
-        if (className == null || className.trim().equals( "" ))
+    @Override
+    public Class loadClass(String className, boolean resolveIt)
+            throws ClassNotFoundException {
+        if (className == null || className.trim().equals(""))
             return null;
 
-        Collections.sort( loaders );
+        Collections.sort(loaders);
 
         Class clazz = null;
 
         // Check osgi boot delegation
         if (osgiBootLoader.isEnabled()) {
-            clazz = osgiBootLoader.loadClass( className, resolveIt );
+            clazz = osgiBootLoader.loadClass(className, resolveIt);
         }
 
         if (clazz == null) {
             for (ProxyClassLoader l : loaders) {
                 if (l.isEnabled()) {
-                    clazz = l.loadClass( className, resolveIt );
+                    clazz = l.loadClass(className, resolveIt);
                     if (clazz != null)
                         break;
                 }
@@ -114,7 +115,7 @@ public abstract class AbstractClassLoader extends ClassLoader {
         }
 
         if (clazz == null)
-            throw new ClassNotFoundException( className );
+            throw new ClassNotFoundException(className);
 
         return clazz;
     }
@@ -128,22 +129,22 @@ public abstract class AbstractClassLoader extends ClassLoader {
      */
     @Override
     public InputStream getResourceAsStream(String name) {
-        if (name == null || name.trim().equals( "" ))
+        if (name == null || name.trim().equals(""))
             return null;
 
-        Collections.sort( loaders );
+        Collections.sort(loaders);
 
         InputStream is = null;
 
         // Check osgi boot delegation
         if (osgiBootLoader.isEnabled()) {
-            is = osgiBootLoader.loadResource( name );
+            is = osgiBootLoader.loadResource(name);
         }
 
         if (is == null) {
             for (ProxyClassLoader l : loaders) {
                 if (l.isEnabled()) {
-                    is = l.loadResource( name );
+                    is = l.loadResource(name);
                     if (is != null)
                         break;
                 }
@@ -160,7 +161,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      */
     class SystemLoader extends ProxyClassLoader {
 
-        private final Logger logger = Logger.getLogger( SystemLoader.class.getName() );
+        private final Logger logger = Logger.getLogger(SystemLoader.class
+                .getName());
 
         public SystemLoader() {
             order = 5;
@@ -168,29 +170,29 @@ public abstract class AbstractClassLoader extends ClassLoader {
         }
 
         @SuppressWarnings("rawtypes")
-		@Override
+        @Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
 
             try {
-                result = findSystemClass( className );
+                result = findSystemClass(className);
             } catch (ClassNotFoundException e) {
                 return null;
             }
 
-            if (logger.isLoggable( Level.FINEST ))
-                logger.finest( "Returning system class " + className );
+            if (logger.isLoggable(Level.FINEST))
+                logger.finest("Returning system class " + className);
 
             return result;
         }
 
         @Override
         public InputStream loadResource(String name) {
-            InputStream is = getSystemResourceAsStream( name );
+            InputStream is = getSystemResourceAsStream(name);
 
             if (is != null) {
-                if (logger.isLoggable( Level.FINEST ))
-                    logger.finest( "Returning system resource " + name );
+                if (logger.isLoggable(Level.FINEST))
+                    logger.finest("Returning system resource " + name);
 
                 return is;
             }
@@ -204,7 +206,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * 
      */
     class ParentLoader extends ProxyClassLoader {
-        private final Logger logger = Logger.getLogger( ParentLoader.class.getName() );
+        private final Logger logger = Logger.getLogger(ParentLoader.class
+                .getName());
 
         public ParentLoader() {
             order = 3;
@@ -212,29 +215,31 @@ public abstract class AbstractClassLoader extends ClassLoader {
         }
 
         @SuppressWarnings("rawtypes")
-		@Override
+        @Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
 
             try {
-                result = getParent().loadClass( className );
+                result = getParent().loadClass(className);
             } catch (ClassNotFoundException e) {
                 return null;
             }
 
-            if (logger.isLoggable( Level.FINEST ))
-                logger.finest( "Returning class " + className + " loaded with parent classloader" );
+            if (logger.isLoggable(Level.FINEST))
+                logger.finest("Returning class " + className
+                        + " loaded with parent classloader");
 
             return result;
         }
 
         @Override
         public InputStream loadResource(String name) {
-            InputStream is = getParent().getResourceAsStream( name );
+            InputStream is = getParent().getResourceAsStream(name);
 
             if (is != null) {
-                if (logger.isLoggable( Level.FINEST ))
-                    logger.finest( "Returning resource " + name + " loaded with parent classloader" );
+                if (logger.isLoggable(Level.FINEST))
+                    logger.finest("Returning resource " + name
+                            + " loaded with parent classloader");
 
                 return is;
             }
@@ -248,7 +253,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * 
      */
     class CurrentLoader extends ProxyClassLoader {
-        private final Logger logger = Logger.getLogger( CurrentLoader.class.getName() );
+        private final Logger logger = Logger.getLogger(CurrentLoader.class
+                .getName());
 
         public CurrentLoader() {
             order = 2;
@@ -256,29 +262,32 @@ public abstract class AbstractClassLoader extends ClassLoader {
         }
 
         @SuppressWarnings("rawtypes")
-		@Override
+        @Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
 
             try {
-                result = getClass().getClassLoader().loadClass( className );
+                result = getClass().getClassLoader().loadClass(className);
             } catch (ClassNotFoundException e) {
                 return null;
             }
 
-            if (logger.isLoggable( Level.FINEST ))
-                logger.finest( "Returning class " + className + " loaded with current classloader" );
+            if (logger.isLoggable(Level.FINEST))
+                logger.finest("Returning class " + className
+                        + " loaded with current classloader");
 
             return result;
         }
 
         @Override
         public InputStream loadResource(String name) {
-            InputStream is = getClass().getClassLoader().getResourceAsStream( name );
+            InputStream is = getClass().getClassLoader().getResourceAsStream(
+                    name);
 
             if (is != null) {
-                if (logger.isLoggable( Level.FINEST ))
-                    logger.finest( "Returning resource " + name + " loaded with current classloader" );
+                if (logger.isLoggable(Level.FINEST))
+                    logger.finest("Returning resource " + name
+                            + " loaded with current classloader");
 
                 return is;
             }
@@ -293,7 +302,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * 
      */
     class ThreadContextLoader extends ProxyClassLoader {
-        private final Logger logger = Logger.getLogger( ThreadContextLoader.class.getName() );
+        private final Logger logger = Logger
+                .getLogger(ThreadContextLoader.class.getName());
 
         public ThreadContextLoader() {
             order = 4;
@@ -301,28 +311,32 @@ public abstract class AbstractClassLoader extends ClassLoader {
         }
 
         @SuppressWarnings("rawtypes")
-		@Override
+        @Override
         public Class loadClass(String className, boolean resolveIt) {
             Class result;
             try {
-                result = Thread.currentThread().getContextClassLoader().loadClass( className );
+                result = Thread.currentThread().getContextClassLoader()
+                        .loadClass(className);
             } catch (ClassNotFoundException e) {
                 return null;
             }
 
-            if (logger.isLoggable( Level.FINEST ))
-                logger.finest( "Returning class " + className + " loaded with thread context classloader" );
+            if (logger.isLoggable(Level.FINEST))
+                logger.finest("Returning class " + className
+                        + " loaded with thread context classloader");
 
             return result;
         }
 
         @Override
         public InputStream loadResource(String name) {
-            InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream( name );
+            InputStream is = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(name);
 
             if (is != null) {
-                if (logger.isLoggable( Level.FINEST ))
-                    logger.finest( "Returning resource " + name + " loaded with thread context classloader" );
+                if (logger.isLoggable(Level.FINEST))
+                    logger.finest("Returning resource " + name
+                            + " loaded with thread context classloader");
 
                 return is;
             }
@@ -337,7 +351,8 @@ public abstract class AbstractClassLoader extends ClassLoader {
      * 
      */
     public final class OsgiBootLoader extends ProxyClassLoader {
-        private final Logger logger = Logger.getLogger( OsgiBootLoader.class.getName() );
+        private final Logger logger = Logger.getLogger(OsgiBootLoader.class
+                .getName());
         private boolean strictLoading;
         private String[] bootDelagation;
 
@@ -351,20 +366,22 @@ public abstract class AbstractClassLoader extends ClassLoader {
         }
 
         @SuppressWarnings("rawtypes")
-		@Override
+        @Override
         public Class loadClass(String className, boolean resolveIt) {
             Class clazz = null;
 
-            if (enabled && isPartOfOsgiBootDelegation( className )) {
-                clazz = getParentLoader().loadClass( className, resolveIt );
+            if (enabled && isPartOfOsgiBootDelegation(className)) {
+                clazz = getParentLoader().loadClass(className, resolveIt);
 
                 if (clazz == null && strictLoading) {
-                    throw new JclException( new ClassNotFoundException( "JCL OSGi Boot Delegation: Class " + className
-                            + " not found." ) );
+                    throw new JclException(new ClassNotFoundException(
+                            "JCL OSGi Boot Delegation: Class " + className
+                                    + " not found."));
                 }
 
-                if (logger.isLoggable( Level.FINEST ))
-                    logger.finest( "Class " + className + " loaded via OSGi boot delegation." );
+                if (logger.isLoggable(Level.FINEST))
+                    logger.finest("Class " + className
+                            + " loaded via OSGi boot delegation.");
             }
 
             return clazz;
@@ -374,15 +391,18 @@ public abstract class AbstractClassLoader extends ClassLoader {
         public InputStream loadResource(String name) {
             InputStream is = null;
 
-            if (enabled && isPartOfOsgiBootDelegation( name )) {
-                is = getParentLoader().loadResource( name );
+            if (enabled && isPartOfOsgiBootDelegation(name)) {
+                is = getParentLoader().loadResource(name);
 
                 if (is == null && strictLoading) {
-                    throw new ResourceNotFoundException( "JCL OSGi Boot Delegation: Resource " + name + " not found." );
+                    throw new ResourceNotFoundException(
+                            "JCL OSGi Boot Delegation: Resource " + name
+                                    + " not found.");
                 }
 
-                if (logger.isLoggable( Level.FINEST ))
-                    logger.finest( "Resource " + name + " loaded via OSGi boot delegation." );
+                if (logger.isLoggable(Level.FINEST))
+                    logger.finest("Resource " + name
+                            + " loaded via OSGi boot delegation.");
             }
 
             return is;
@@ -395,16 +415,17 @@ public abstract class AbstractClassLoader extends ClassLoader {
          * @return
          */
         private boolean isPartOfOsgiBootDelegation(String resourceName) {
-            if (resourceName.startsWith( JAVA_PACKAGE ))
+            if (resourceName.startsWith(JAVA_PACKAGE))
                 return true;
 
             String[] bootPkgs = bootDelagation;
 
             if (bootPkgs != null) {
                 for (String bc : bootPkgs) {
-                    Pattern pat = Pattern.compile( Utils.wildcardToRegex( bc ), Pattern.CASE_INSENSITIVE );
+                    Pattern pat = Pattern.compile(Utils.wildcardToRegex(bc),
+                            Pattern.CASE_INSENSITIVE);
 
-                    Matcher matcher = pat.matcher( resourceName );
+                    Matcher matcher = pat.matcher(resourceName);
                     if (matcher.find()) {
                         return true;
                     }

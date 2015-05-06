@@ -45,8 +45,10 @@ import org.xeustechnologies.jcl.utils.ObjectCloner;
 @SuppressWarnings("unchecked")
 public class JclUtils {
 
-    public static Object createProxy(Object object, Class<?> superClass, Class<?>[] interfaces, ClassLoader cl) {
-        return ProxyProviderFactory.create().createProxy( object, superClass, interfaces, cl );
+    public static Object createProxy(Object object, Class<?> superClass,
+            Class<?>[] interfaces, ClassLoader cl) {
+        return ProxyProviderFactory.create().createProxy(object, superClass,
+                interfaces, cl);
     }
 
     /**
@@ -58,7 +60,7 @@ public class JclUtils {
      * @return castable
      */
     public static Object toCastable(Object object, Class<?> clazz) {
-        return createProxy( object, clazz, new Class[] { clazz }, null );
+        return createProxy(object, clazz, new Class[] { clazz }, null);
     }
 
     /**
@@ -71,7 +73,7 @@ public class JclUtils {
      * @return castable
      */
     public static Object toCastable(Object object, Class<?>[] clazz) {
-        return createProxy( object, clazz[0], clazz, null );
+        return createProxy(object, clazz[0], clazz, null);
     }
 
     /**
@@ -82,8 +84,9 @@ public class JclUtils {
      * @param cl
      * @return castable
      */
-    public static Object toCastable(Object object, Class<?> clazz, ClassLoader cl) {
-        return createProxy( object, clazz, new Class[] { clazz }, cl );
+    public static Object toCastable(Object object, Class<?> clazz,
+            ClassLoader cl) {
+        return createProxy(object, clazz, new Class[] { clazz }, cl);
     }
 
     /**
@@ -95,8 +98,9 @@ public class JclUtils {
      * @param cl
      * @return castable
      */
-    public static Object toCastable(Object object, Class<?>[] clazz, ClassLoader cl) {
-        return createProxy( object, clazz[0], clazz, cl );
+    public static Object toCastable(Object object, Class<?>[] clazz,
+            ClassLoader cl) {
+        return createProxy(object, clazz[0], clazz, cl);
     }
 
     /**
@@ -108,7 +112,7 @@ public class JclUtils {
      * @return casted
      */
     public static <T> T cast(Object object, Class<T> clazz) {
-        return (T) toCastable( object, clazz, null );
+        return (T) toCastable(object, clazz, null);
     }
 
     /**
@@ -121,7 +125,7 @@ public class JclUtils {
      * @return casted
      */
     public static <T> T cast(Object object, Class<T> clazz, ClassLoader cl) {
-        return (T) toCastable( object, clazz, cl );
+        return (T) toCastable(object, clazz, cl);
     }
 
     /**
@@ -143,19 +147,20 @@ public class JclUtils {
 
         try {
             // Increased buffer size
-            ByteArrayOutputStream bos = new ByteArrayOutputStream( 5120 );
-            ObjectOutputStream out = new ObjectOutputStream( bos );
-            out.writeObject( original );
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(5120);
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(original);
             out.flush();
             out.close();
 
-            ObjectInputStream in = new ObjectInputStream( new ByteArrayInputStream( bos.toByteArray() ) );
+            ObjectInputStream in = new ObjectInputStream(
+                    new ByteArrayInputStream(bos.toByteArray()));
             clone = in.readObject();
 
             in.close();
             bos.close();
         } catch (Exception e) {
-            throw new JclException( e );
+            throw new JclException(e);
         }
 
         return clone;
@@ -170,7 +175,7 @@ public class JclUtils {
     public static Object deepClone(Object original) {
         ObjectCloner cloner = new ObjectCloner();
 
-        return cloner.deepClone( original );
+        return cloner.deepClone(original);
     }
 
     /**
@@ -182,6 +187,6 @@ public class JclUtils {
     public static Object shallowClone(Object original) {
         ObjectCloner cloner = new ObjectCloner();
 
-        return cloner.shallowClone( original );
+        return cloner.shallowClone(original);
     }
 }

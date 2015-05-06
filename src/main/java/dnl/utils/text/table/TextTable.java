@@ -20,82 +20,82 @@ import dnl.utils.text.table.csv.CsvTableRenderer;
  */
 public class TextTable {
 
-	protected TableModel tableModel;
-	protected List<SeparatorPolicy> separatorPolicies = new ArrayList<SeparatorPolicy>();
+    protected TableModel tableModel;
+    protected List<SeparatorPolicy> separatorPolicies = new ArrayList<SeparatorPolicy>();
 
-	protected boolean addRowNumbering;
+    protected boolean addRowNumbering;
 
-	protected RowSorter<?> rowSorter;
+    protected RowSorter<?> rowSorter;
 
-	protected boolean headless;
+    protected boolean headless;
 
-	public TextTable(TableModel tableModel) {
-		this.tableModel = tableModel;
-	}
+    public TextTable(TableModel tableModel) {
+        this.tableModel = tableModel;
+    }
 
-	public TextTable(TableModel tableModel, boolean addNumbering) {
-		this.tableModel = tableModel;
-		this.addRowNumbering = addNumbering;
-	}
+    public TextTable(TableModel tableModel, boolean addNumbering) {
+        this.tableModel = tableModel;
+        this.addRowNumbering = addNumbering;
+    }
 
-	public TextTable(String[] columnNames, Object[][] data) {
-		this.tableModel = new DefaultTableModel(data, columnNames);
-	}
+    public TextTable(String[] columnNames, Object[][] data) {
+        this.tableModel = new DefaultTableModel(data, columnNames);
+    }
 
-	public TableModel getTableModel() {
-		return tableModel;
-	}
+    public TableModel getTableModel() {
+        return tableModel;
+    }
 
-	public void setAddRowNumbering(boolean addNumbering) {
-		this.addRowNumbering = addNumbering;
-	}
+    public void setAddRowNumbering(boolean addNumbering) {
+        this.addRowNumbering = addNumbering;
+    }
 
-	public void addSeparatorPolicy(SeparatorPolicy separatorPolicy) {
-		separatorPolicies.add(separatorPolicy);
-		separatorPolicy.setTableModel(tableModel);
-	}
+    public void addSeparatorPolicy(SeparatorPolicy separatorPolicy) {
+        separatorPolicies.add(separatorPolicy);
+        separatorPolicy.setTableModel(tableModel);
+    }
 
-	public void setSort(int column) {
-		setSort(column, SortOrder.ASCENDING);
-	}
+    public void setSort(int column) {
+        setSort(column, SortOrder.ASCENDING);
+    }
 
-	public void setSort(int column, SortOrder sortOrder) {
-		rowSorter = new TableRowSorter<TableModel>(this.tableModel);
-		List<RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
-		// sortKeys.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
-		sortKeys.add(new RowSorter.SortKey(column, sortOrder));
-		rowSorter.setSortKeys(sortKeys);
-	}
+    public void setSort(int column, SortOrder sortOrder) {
+        rowSorter = new TableRowSorter<TableModel>(this.tableModel);
+        List<RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
+        // sortKeys.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
+        sortKeys.add(new RowSorter.SortKey(column, sortOrder));
+        rowSorter.setSortKeys(sortKeys);
+    }
 
-	public void printTable() {
-		printTable(System.out, 0);
-	}
+    public void printTable() {
+        printTable(System.out, 0);
+    }
 
-	public void printTable(PrintStream ps, int indent) {
-		TextTableRenderer renderer = new TextTableRenderer(this);
-		renderer.render(ps, indent);
-	}
+    public void printTable(PrintStream ps, int indent) {
+        TextTableRenderer renderer = new TextTableRenderer(this);
+        renderer.render(ps, indent);
+    }
 
-	public void toCsv(OutputStream os) {
-		CsvTableRenderer csvTableRenderer = new CsvTableRenderer(this);
-		csvTableRenderer.render(os, 0);
-	}
+    public void toCsv(OutputStream os) {
+        CsvTableRenderer csvTableRenderer = new CsvTableRenderer(this);
+        csvTableRenderer.render(os, 0);
+    }
 
-	protected Object getValueAt(int row, int column) {
-		int rowIndex = row;
-		if (rowSorter != null) {
-			rowIndex = rowSorter.convertRowIndexToModel(row);
-		}
-		return tableModel.getValueAt(rowIndex, column);
-	}
+    protected Object getValueAt(int row, int column) {
+        int rowIndex = row;
+        if (rowSorter != null) {
+            rowIndex = rowSorter.convertRowIndexToModel(row);
+        }
+        return tableModel.getValueAt(rowIndex, column);
+    }
 
-	protected boolean hasSeparatorAt(int row) {
-		for (SeparatorPolicy separatorPolicy : separatorPolicies) {
-			if (separatorPolicy.hasSeparatorAt(row)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    protected boolean hasSeparatorAt(int row) {
+        for (SeparatorPolicy separatorPolicy : separatorPolicies) {
+            if (separatorPolicy.hasSeparatorAt(row)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

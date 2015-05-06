@@ -39,14 +39,14 @@ public class JclContextException extends JclException {
     }
 
     public JclContextException(String message, Throwable cause) {
-        super( message, cause );
+        super(message, cause);
     }
 
     public JclContextException(String message) {
-        super( message );
+        super(message);
     }
 
     public JclContextException(Throwable cause) {
-        super( cause );
+        super(cause);
     }
 }

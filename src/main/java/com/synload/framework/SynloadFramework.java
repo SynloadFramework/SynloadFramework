@@ -124,6 +124,10 @@ public class SynloadFramework {
             sql = DriverManager.getConnection(prop.getProperty("jdbc"),
                     prop.getProperty("dbuser"), prop.getProperty("dbpass"));
 
+            if(sql.isClosed()){
+                System.out.println("MySQL failed to connect!");
+                return;
+            }
             SynloadFramework.buildDefaultHTTP();
             SynloadFramework.buildJavascript();
 

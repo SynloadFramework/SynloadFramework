@@ -40,16 +40,16 @@ public class Utils {
      * @return regex
      */
     public static String wildcardToRegex(String wildcard) {
-        StringBuffer s = new StringBuffer( wildcard.length() );
-        s.append( '^' );
-        for( int i = 0, is = wildcard.length(); i < is; i++ ) {
-            char c = wildcard.charAt( i );
+        StringBuffer s = new StringBuffer(wildcard.length());
+        s.append('^');
+        for (int i = 0, is = wildcard.length(); i < is; i++) {
+            char c = wildcard.charAt(i);
             switch (c) {
             case '*':
-                s.append( ".*" );
+                s.append(".*");
                 break;
             case '?':
-                s.append( "." );
+                s.append(".");
                 break;
             case '(':
             case ')':
@@ -62,15 +62,15 @@ public class Utils {
             case '}':
             case '|':
             case '\\':
-                s.append( "\\" );
-                s.append( c );
+                s.append("\\");
+                s.append(c);
                 break;
             default:
-                s.append( c );
+                s.append(c);
                 break;
             }
         }
-        s.append( '$' );
-        return ( s.toString() );
+        s.append('$');
+        return (s.toString());
     }
 }

@@ -44,7 +44,8 @@ import org.xeustechnologies.jcl.exception.JclException;
 public class JclObjectFactory {
     private static JclObjectFactory jclObjectFactory = new JclObjectFactory();
     private static boolean autoProxy;
-    private final Logger logger = Logger.getLogger( JclObjectFactory.class.getName() );
+    private final Logger logger = Logger.getLogger(JclObjectFactory.class
+            .getName());
 
     /**
      * private constructor
@@ -82,7 +83,7 @@ public class JclObjectFactory {
      * @return Object
      */
     public Object create(JarClassLoader jcl, String className) {
-        return create( jcl, className, (Object[]) null );
+        return create(jcl, className, (Object[]) null);
     }
 
     /**
@@ -97,9 +98,9 @@ public class JclObjectFactory {
     public Object create(JarClassLoader jcl, String className, Object... args) {
         if (args == null || args.length == 0) {
             try {
-                return newInstance( jcl.loadClass( className ).newInstance() );
+                return newInstance(jcl.loadClass(className).newInstance());
             } catch (Throwable e) {
-                throw new JclException( e );
+                throw new JclException(e);
             }
         }
 
@@ -108,7 +109,7 @@ public class JclObjectFactory {
         for (int i = 0; i < args.length; i++)
             types[i] = args[i].getClass();
 
-        return create( jcl, className, args, types );
+        return create(jcl, className, args, types);
     }
 
     /**
@@ -122,24 +123,26 @@ public class JclObjectFactory {
      * @param types
      * @return Object
      */
-    public Object create(JarClassLoader jcl, String className, Object[] args, Class<?>[] types) {
+    public Object create(JarClassLoader jcl, String className, Object[] args,
+            Class<?>[] types) {
         Object obj = null;
 
         if (args == null || args.length == 0) {
             try {
-                obj = jcl.loadClass( className ).newInstance();
+                obj = jcl.loadClass(className).newInstance();
             } catch (Throwable e) {
-                throw new JclException( e );
+                throw new JclException(e);
             }
         } else {
             try {
-                obj = jcl.loadClass( className ).getConstructor( types ).newInstance( args );
+                obj = jcl.loadClass(className).getConstructor(types)
+                        .newInstance(args);
             } catch (Exception e) {
-                throw new JclException( e );
+                throw new JclException(e);
             }
         }
 
-        return newInstance( obj );
+        return newInstance(obj);
     }
 
     /**
@@ -152,12 +155,14 @@ public class JclObjectFactory {
      * @param args
      * @return Object
      */
-    public Object create(JarClassLoader jcl, String className, String methodName, Object... args) {
+    public Object create(JarClassLoader jcl, String className,
+            String methodName, Object... args) {
         if (args == null || args.length == 0) {
             try {
-                return newInstance( jcl.loadClass( className ).getMethod( methodName ).invoke( null ) );
+                return newInstance(jcl.loadClass(className)
+                        .getMethod(methodName).invoke(null));
             } catch (Exception e) {
-                throw new JclException( e );
+                throw new JclException(e);
             }
         }
         Class<?>[] types = new Class[args.length];
@@ -165,7 +170,7 @@ public class JclObjectFactory {
         for (int i = 0; i < args.length; i++)
             types[i] = args[i].getClass();
 
-        return create( jcl, className, methodName, args, types );
+        return create(jcl, className, methodName, args, types);
     }
 
     /**
@@ -179,23 +184,26 @@ public class JclObjectFactory {
      * @param types
      * @return Object
      */
-    public Object create(JarClassLoader jcl, String className, String methodName, Object[] args, Class<?>[] types) {
+    public Object create(JarClassLoader jcl, String className,
+            String methodName, Object[] args, Class<?>[] types) {
         Object obj = null;
         if (args == null || args.length == 0) {
             try {
-                obj = jcl.loadClass( className ).getMethod( methodName ).invoke( null );
+                obj = jcl.loadClass(className).getMethod(methodName)
+                        .invoke(null);
             } catch (Exception e) {
-                throw new JclException( e );
+                throw new JclException(e);
             }
         } else {
             try {
-                obj = jcl.loadClass( className ).getMethod( methodName, types ).invoke( null, args );
+                obj = jcl.loadClass(className).getMethod(methodName, types)
+                        .invoke(null, args);
             } catch (Exception e) {
-                throw new JclException( e );
+                throw new JclException(e);
             }
         }
 
-        return newInstance( obj );
+        return newInstance(obj);
     }
 
     /**
@@ -211,7 +219,7 @@ public class JclObjectFactory {
 
             // Check class
             try {
-                Class.forName( object.getClass().getSuperclass().getName() );
+                Class.forName(object.getClass().getSuperclass().getName());
                 superClass = object.getClass().getSuperclass();
             } catch (ClassNotFoundException e) {
             }
@@ -223,23 +231,26 @@ public class JclObjectFactory {
             // Check available interfaces
             for (Class<?> i : interfaces) {
                 try {
-                    Class.forName( i.getClass().getName() );
-                    il.add( i );
+                    Class.forName(i.getClass().getName());
+                    il.add(i);
                 } catch (ClassNotFoundException e) {
                 }
             }
 
-            if (logger.isLoggable( Level.FINER )) {
-                logger.finer( "Class: " + superClass );
-                logger.finer( "Class Interfaces: " + il );
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Class: " + superClass);
+                logger.finer("Class Interfaces: " + il);
             }
 
             if (superClass == null && il.size() == 0) {
-                throw new JclException( "Neither the class [" + object.getClass().getSuperclass().getName()
-                        + "] nor all the implemented interfaces found in the current classloader" );
+                throw new JclException(
+                        "Neither the class ["
+                                + object.getClass().getSuperclass().getName()
+                                + "] nor all the implemented interfaces found in the current classloader");
             }
 
-            return JclUtils.createProxy( object, superClass, il.toArray( new Class[il.size()] ), null );
+            return JclUtils.createProxy(object, superClass,
+                    il.toArray(new Class[il.size()]), null);
         }
 
         return object;

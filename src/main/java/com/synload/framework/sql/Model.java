@@ -33,10 +33,10 @@ import com.synload.framework.modules.annotations.sql.StringColumn;
 public class Model {
     public Model(ResultSet rs) {
         try {
-            for (Field f : this.getClass().getDeclaredFields()) {
+            for (Field f : Model._getFields(this.getClass())) {
                 try {
                     if (_annotationPresent(f)
-                            || f.isAnnotationPresent(NonSQL.class)) {
+                            && !f.isAnnotationPresent(NonSQL.class)) {
                         f.set(this,
                                 _convert(f.getType(), rs.getString(f.getName())));
                     }
@@ -76,10 +76,10 @@ public class Model {
     public static String _tableName(String name) {
         String nm = name.toLowerCase();
         switch (nm.substring(nm.length() - 1)) {
-        case "y":
-            return nm.substring(0, nm.length() - 1) + "ies";
-        default:
-            return nm + "s";
+            case "y":
+                return nm.substring(0, nm.length() - 1) + "ies";
+            default:
+                return nm + "s";
         }
 
     }
@@ -109,15 +109,33 @@ public class Model {
     public static <T> String[] _getColumns(Class<T> s) {
         int x = 0;
         for (Field f : s.getDeclaredFields()) {
-            if (_annotationPresent(f)) {
+            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
                 x++;
             }
         }
         String[] columns = new String[x];
         x = 0;
         for (Field f : s.getDeclaredFields()) {
-            if (_annotationPresent(f)) {
+            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
                 columns[x] = f.getName();
+                x++;
+            }
+        }
+        return columns;
+    }
+    
+    public static <T> Field[] _getFields(Class<T> s) {
+        int x = 0;
+        for (Field f : s.getDeclaredFields()) {
+            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
+                x++;
+            }
+        }
+        Field[] columns = new Field[x];
+        x = 0;
+        for (Field f : s.getDeclaredFields()) {
+            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
+                columns[x] = f;
                 x++;
             }
         }
@@ -223,7 +241,7 @@ public class Model {
         String sqlQs = "";
         Field autoincrement = null;
         for (Field f : this.getClass().getFields()) {
-            if (_annotationPresent(f)){
+            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
                 ColumnData cd = new ColumnData(f);
                 if (!cd.isAutoIncrement()) {
                     // if(f.get(this)!=null){
@@ -241,6 +259,7 @@ public class Model {
         Object[] valuesA = values.toArray();
         sql = "INSERT INTO `" + _tableName(this.getClass().getSimpleName())
                 + "` ( " + sql + " ) VALUES ( " + sqlQs + ");";
+        System.out.println(sql);
         PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,
                 java.sql.Statement.RETURN_GENERATED_KEYS);
         for (int i = 0; i < valuesA.length; i++) {
@@ -261,7 +280,7 @@ public class Model {
     public static boolean _exists(String where, Class c, Object... objs) {
         Object key = null;
         for (Field f : c.getFields()) {
-            if (_annotationPresent(f)){
+            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
                 ColumnData cd = new ColumnData(f);
                 if (cd.isAutoIncrement()) {
                     key = f.getName();
@@ -391,7 +410,7 @@ public class Model {
         for (Entry<String, String> item : items.entrySet()) {
             try {
                 Field f = this.getClass().getField(item.getKey());
-                if (_annotationPresent(f)){
+                if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
                     if (f != null) {
                         ColumnData cd = new ColumnData(f);
                         if (!cd.isAutoIncrement()) {

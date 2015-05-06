@@ -52,7 +52,7 @@ public class ResourceNotFoundException extends JclException {
      * @param message
      */
     public ResourceNotFoundException(String message) {
-        super( message );
+        super(message);
     }
 
     /**
@@ -60,9 +60,9 @@ public class ResourceNotFoundException extends JclException {
      * @param message
      */
     public ResourceNotFoundException(String resource, String message) {
-        super( message );
+        super(message);
         resourceName = resource;
-        determineResourceType( resource );
+        determineResourceType(resource);
     }
 
     /**
@@ -70,21 +70,25 @@ public class ResourceNotFoundException extends JclException {
      * @param resource
      * @param message
      */
-    public ResourceNotFoundException(Throwable e, String resource, String message) {
-        super( message, e );
+    public ResourceNotFoundException(Throwable e, String resource,
+            String message) {
+        super(message, e);
         resourceName = resource;
-        determineResourceType( resource );
+        determineResourceType(resource);
     }
 
     /**
      * @param resourceName
      */
     private void determineResourceType(String resourceName) {
-        if( resourceName.toLowerCase().endsWith( "." + ResourceType.CLASS.name().toLowerCase() ) )
+        if (resourceName.toLowerCase().endsWith(
+                "." + ResourceType.CLASS.name().toLowerCase()))
             resourceType = ResourceType.CLASS;
-        else if( resourceName.toLowerCase().endsWith( "." + ResourceType.PROPERTIES.name().toLowerCase() ) )
+        else if (resourceName.toLowerCase().endsWith(
+                "." + ResourceType.PROPERTIES.name().toLowerCase()))
             resourceType = ResourceType.PROPERTIES;
-        else if( resourceName.toLowerCase().endsWith( "." + ResourceType.XML.name().toLowerCase() ) )
+        else if (resourceName.toLowerCase().endsWith(
+                "." + ResourceType.XML.name().toLowerCase()))
             resourceType = ResourceType.XML;
         else
             resourceType = ResourceType.UNKNOWN;

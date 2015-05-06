@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.annotations.NonSQL;
 import com.synload.framework.modules.annotations.SQLTable;
 
 import dnl.utils.text.table.TextTable;
@@ -22,7 +24,7 @@ public class SQLRegistry {
 
     @SuppressWarnings("rawtypes")
     public static void updateTable(Class table, Field f) throws SQLException {
-        if (Model._annotationPresent(f)) {
+        if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
             String sql = "";
             ColumnData cd = new ColumnData(f);
             sql += "ALTER TABLE  `" + Model._tableName(table.getSimpleName())
@@ -148,86 +150,92 @@ public class SQLRegistry {
 
         List<Object[]> sql = new ArrayList<Object[]>();
         for (Class table : sqltables) {
-            Object[] obj = new Object[4];
-            Field[] fs = table.getDeclaredFields();
-            SQLTable sqltable = (SQLTable) table.getAnnotation(SQLTable.class);
-            TableStatus ts = TableStatus.get(table);
-            if (ts == null) {
-                try {
-                    createTable(table, fs);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                continue;
-            }
-            obj[0] = Model._tableName(table.getSimpleName());
-            obj[1] = String.valueOf(sqltable.version());
-            obj[2] = ts.getComment();
-            obj[3] = "";
-            if (ts.getComment().equals(String.valueOf(sqltable.version()))) {
-                obj[3] = "up to date!";
-            } else {
-                obj[3] += "not up to date!";
-                List<TableInfo> tis = TableInfo.getTableInfo(table);
-                List<TableInfo> foundTables = new ArrayList<TableInfo>(tis);
-                if (tis.size() == 0 || foundTables.size() == 0) {
-                    System.out.println("[SQL][ERROR]\t\t [" + sqltable.name()
-                            + "] table info not found");
-                    return;
-                }
-                for (Field f : fs) {
-                    if (Model._annotationPresent(f)) {
-                        ColumnData cd = new ColumnData(f);
-                        boolean notFound = true;
-                        for (TableInfo ti : tis) {
-                            if (f.getName().equalsIgnoreCase(ti.getField())) {
-                                notFound = false;
-                                foundTables.remove(ti);
-                                if (cd.isNullV() != ti.getNull()
-                                        .equalsIgnoreCase("YES")) {
-                                    obj[3] += ", \"" + ti.getField()
-                                            + "\" null changed";
-                                    try {
-                                        updateTable(table, f);
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
+            try{
+                Object[] obj = new Object[4];
+                Field[] fs = Model._getFields(table);
+                SQLTable sqltable = (SQLTable) table.getAnnotation(SQLTable.class);
+                TableStatus ts = TableStatus.get(table);
+                if (ts == null) {
+                    try {
+                        createTable(table, fs);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    obj[0] = Model._tableName(table.getSimpleName());
+                    obj[1] = String.valueOf(sqltable.version());
+                    obj[2] = ts.getComment();
+                    obj[3] = "";
+                    if (ts.getComment().equals(String.valueOf(sqltable.version()))) {
+                        obj[3] = "up to date!";
+                    } else {
+                        obj[3] += "not up to date!";
+                        List<TableInfo> tis = TableInfo.getTableInfo(table);
+                        List<TableInfo> foundTables = new ArrayList<TableInfo>(tis);
+                        if (tis.size() == 0 || foundTables.size() == 0) {
+                            System.out.println("[SQL][ERROR]\t\t [" + sqltable.name()
+                                    + "] table info not found");
+                            return;
+                        }
+                        for (Field f : fs) {
+                            if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
+                                ColumnData cd = new ColumnData(f);
+                                boolean notFound = true;
+                                for (TableInfo ti : tis) {
+                                    if (f.getName().equalsIgnoreCase(ti.getField())) {
+                                        notFound = false;
+                                        foundTables.remove(ti);
+                                        if (cd.isNullV() != ti.getNull()
+                                                .equalsIgnoreCase("YES")) {
+                                            obj[3] += ", \"" + ti.getField()
+                                                    + "\" null changed";
+                                            try {
+                                                updateTable(table, f);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                            }
+                                        } else if (cd.getCollation().equalsIgnoreCase(
+                                                ti.getCollation())) {
+                                            obj[3] += ", \"" + ti.getField()
+                                                    + "\" collation changed";
+                                            try {
+                                                updateTable(table, f);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
                                     }
-                                } else if (cd.getCollation().equalsIgnoreCase(
-                                        ti.getCollation())) {
-                                    obj[3] += ", \"" + ti.getField()
-                                            + "\" collation changed";
+                                }
+                                if (notFound) {
+                                    obj[3] += ", added column \"" + f.getName() + "\"";
                                     try {
-                                        updateTable(table, f);
+                                        addColumn(table, f);
                                     } catch (SQLException e) {
                                         e.printStackTrace();
                                     }
                                 }
                             }
                         }
-                        if (notFound) {
-                            obj[3] += ", added column \"" + f.getName() + "\"";
-                            try {
-                                addColumn(table, f);
-                            } catch (SQLException e) {
-                                e.printStackTrace();
+                        for (TableInfo col : foundTables) {
+                            if (!col.getField().equalsIgnoreCase("")) {
+                                obj[3] += ", removed column \"" + col.getField() + "\"";
+                                try {
+                                    dropColumn(table, col);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
+                    
+                    sql.add(obj);
+                    updateComment(table);
                 }
-                for (TableInfo col : foundTables) {
-                    if (!col.getField().equalsIgnoreCase("")) {
-                        obj[3] += ", removed column \"" + col.getField() + "\"";
-                        try {
-                            dropColumn(table, col);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+            }catch(Exception e1){
+                e1.printStackTrace();
             }
-            sql.add(obj);
-            updateComment(table);
         }
+            
         System.out.println("SQL Version Checks");
         TextTable tt = new TextTable(new String[] { "Table", "Model Version",
                 "SQL Version", "Actions" },
@@ -243,7 +251,7 @@ public class SQLRegistry {
                 + Model._tableName(table.getSimpleName()) + "` ( ";
         boolean t = true;
         for (Field f : fs) {
-            if (Model._annotationPresent(f)) {
+            if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
                 if (!t) {
                     sql += ", ";
                 } else {
@@ -259,7 +267,7 @@ public class SQLRegistry {
         boolean worked = ps.execute();
         ps.close();
         for (Field f : fs) {
-            if (Model._annotationPresent(f)) {
+            if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
                 ColumnData cd = new ColumnData(f);
                 if (cd.isIndex()) {
                     addIndex(table, f);
@@ -271,7 +279,7 @@ public class SQLRegistry {
 
     public static String columnCreate(Field f) {
         String sql = "";
-        if (Model._annotationPresent(f)) {
+        if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
             ColumnData cd = new ColumnData(f);
             sql += "`" + f.getName() + "` " + cd.getType();
             if (cd.isNullV()) {

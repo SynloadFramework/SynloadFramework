@@ -51,15 +51,22 @@ public class JdkProxyProvider implements ProxyProvider {
          * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object,
          *      java.lang.reflect.Method, java.lang.Object[])
          */
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Method delegateMethod = delegate.getClass().getMethod( method.getName(), method.getParameterTypes() );
-            return delegateMethod.invoke( delegate, args );
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args)
+                throws Throwable {
+            Method delegateMethod = delegate.getClass().getMethod(
+                    method.getName(), method.getParameterTypes());
+            return delegateMethod.invoke(delegate, args);
         }
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
-	public Object createProxy(Object object, Class superClass, Class[] interfaces, ClassLoader cl) {
-        JdkProxyHandler handler = new JdkProxyHandler( object );
-        return Proxy.newProxyInstance( cl == null ? JclUtils.class.getClassLoader() : cl, interfaces, handler );
+    public Object createProxy(Object object, Class superClass,
+            Class[] interfaces, ClassLoader cl) {
+        JdkProxyHandler handler = new JdkProxyHandler(object);
+        return Proxy.newProxyInstance(
+                cl == null ? JclUtils.class.getClassLoader() : cl, interfaces,
+                handler);
     }
 }

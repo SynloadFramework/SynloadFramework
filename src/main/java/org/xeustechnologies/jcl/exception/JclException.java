@@ -49,14 +49,14 @@ public class JclException extends RuntimeException {
      * @param message
      */
     public JclException(String message) {
-        super( message );
+        super(message);
     }
 
     /**
      * @param cause
      */
     public JclException(Throwable cause) {
-        super( cause );
+        super(cause);
     }
 
     /**
@@ -64,6 +64,6 @@ public class JclException extends RuntimeException {
      * @param cause
      */
     public JclException(String message, Throwable cause) {
-        super( message, cause );
+        super(message, cause);
     }
 }

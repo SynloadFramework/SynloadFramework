@@ -47,7 +47,8 @@ import org.xeustechnologies.jcl.utils.PathResolver;
  */
 public class WebAppPathResolver implements PathResolver {
 
-    private static Logger logger = Logger.getLogger( WebAppPathResolver.class.getName() );
+    private static Logger logger = Logger.getLogger(WebAppPathResolver.class
+            .getName());
 
     private static final String JAR = ".jar";
     private static final String WEB_APP = "webapp:";
@@ -64,18 +65,19 @@ public class WebAppPathResolver implements PathResolver {
      */
     @Override
     public Object[] resolvePath(String path) {
-        if (path.startsWith( WEB_APP )) {
-            String webpath = "/" + path.split( ":" )[1];
+        if (path.startsWith(WEB_APP)) {
+            String webpath = "/" + path.split(":")[1];
 
-            if (isJar( webpath )) {
-                if (logger.isLoggable( Level.FINEST )) {
-                    logger.finest( "Found jar: " + webpath );
+            if (isJar(webpath)) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("Found jar: " + webpath);
                 }
 
-                return new InputStream[] { servletContext.getResourceAsStream( webpath ) };
+                return new InputStream[] { servletContext
+                        .getResourceAsStream(webpath) };
             }
 
-            Set<String> paths = servletContext.getResourcePaths( webpath );
+            Set<String> paths = servletContext.getResourcePaths(webpath);
 
             if (paths.size() > 0) {
                 Iterator<String> itr = paths.iterator();
@@ -84,20 +86,21 @@ public class WebAppPathResolver implements PathResolver {
                 while (itr.hasNext()) {
                     String source = itr.next();
 
-                    if (isJar( source )) {
-                        InputStream stream = servletContext.getResourceAsStream( source );
+                    if (isJar(source)) {
+                        InputStream stream = servletContext
+                                .getResourceAsStream(source);
 
                         if (stream != null) {
-                            if (logger.isLoggable( Level.FINEST )) {
-                                logger.finest( "Found jar: " + source );
+                            if (logger.isLoggable(Level.FINEST)) {
+                                logger.finest("Found jar: " + source);
                             }
 
-                            streams.add( stream );
+                            streams.add(stream);
                         }
                     }
                 }
 
-                return streams.toArray( new InputStream[streams.size()] );
+                return streams.toArray(new InputStream[streams.size()]);
             }
 
         }
@@ -106,6 +109,6 @@ public class WebAppPathResolver implements PathResolver {
     }
 
     private boolean isJar(String path) {
-        return path.toLowerCase().endsWith( JAR );
+        return path.toLowerCase().endsWith(JAR);
     }
 }
