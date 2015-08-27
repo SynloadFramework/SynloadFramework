@@ -56,6 +56,7 @@ public class WSHandler {
     public List<String> queue = new ArrayList<String>();
     public User user = null;
     public boolean encrypt = false;
+    public List<String> flags = new ArrayList<String>();
     public String encryptKey = "";
     @JsonIgnore
     public boolean isSending = false;

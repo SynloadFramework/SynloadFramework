@@ -27,7 +27,8 @@ public class EventPublisher {
         if (HandlerRegistry.getHandlers().containsKey(
                 event.getHandler().getAnnotationClass())) {
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event
-                    .getHandler().getAnnotationClass())) {
+                    .getHandler().getAnnotationClass()))
+            {
                 if (event.getClass() == RequestEvent.class
                         && RequestEvent.class == trigger.getMethod()
                                 .getParameterTypes()[0]

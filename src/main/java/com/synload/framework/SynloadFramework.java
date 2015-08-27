@@ -16,17 +16,16 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.spdy.server.http.HTTPSPDYServerConnector;
-
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -44,6 +43,7 @@ import com.synload.framework.ws.WSRequest;
 import com.synload.framework.ws.WSResponse;
 import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
+import com.synload.talksystem.ServerTalk;
 
 public class SynloadFramework {
     public SynloadFramework() {
@@ -62,6 +62,11 @@ public class SynloadFramework {
     public static boolean handleUpload = false;
     public static String uploadPath = "uploads/";
     public static boolean siteDefaults = false;
+    public static boolean graphDBEnable = false;
+    public static String graphDBPath = "";
+    public static boolean sqlManager = false;
+    public static String graphDBConfig = "";
+    public static GraphDatabaseService graphDB = null;
     public static Server server = null;
     public static boolean encryptEnabled;
     public static Properties prop = new Properties();
@@ -70,14 +75,14 @@ public class SynloadFramework {
     public static List<Javascript> javascripts = new ArrayList<Javascript>();
     public static ObjectWriter ow = new ObjectMapper().writer();
     public static int port = 80;
+    public static boolean serverTalkEnable = false;
+    public static int serverTalkPort = 8081;
     public static Level loglevel = null;
     public static String path = "modules/";
 
     public static void main(String[] args) {
-        Log.info("Starting Synload Development Framework Server",
-                SynloadFramework.class);
+        Log.info( "Starting Synload Development Framework Server", SynloadFramework.class );
         try {
-
             if ((new File("config.ini")).exists()) {
                 prop.load(new FileInputStream("config.ini"));
                 port = Integer.valueOf(prop.getProperty("port"));
@@ -86,24 +91,18 @@ public class SynloadFramework {
                 siteDefaults = Boolean
                         .valueOf(prop.getProperty("siteDefaults"));
                 path = prop.getProperty("modulePath");
+                sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
+                graphDBPath = prop.getProperty("graphDBPath");
+                graphDBConfig = prop.getProperty("graphDBConfig");
+                loglevel = Level.toLevel(prop.getProperty("loglevel"));
+                debug = Boolean.valueOf(prop.getProperty("debug"));
+                uploadPath = prop.getProperty("uploadPath");
+                maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
+                serverTalkEnable = Boolean.valueOf(prop.getProperty("serverTalkEnable"));
+                serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
+                graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
             } else {
-                prop.setProperty(
-                        "jdbc",
-                        "jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true");
-                prop.setProperty("dbuser", "root");
-                prop.setProperty("dbpass", "pass");
-                prop.setProperty("name", "My New Server");
-                prop.setProperty("port", "80");
-                prop.setProperty("loglevel", "INFO");
-                prop.setProperty("modulePath", "modules/");
-                prop.setProperty("siteDefaults", "true");
-                prop.setProperty("debug", "false");
-                prop.setProperty("encrypt", "false");
-                prop.setProperty("enableUploads", "false");
-                prop.setProperty("maxUploadSize", "26214400");
-                prop.setProperty("uploadPath", "uploads/");
-                //prop.store(new FileOutputStream("config.ini"), "----Default Configuration----");
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/config.ini");
                 FileOutputStream os = new FileOutputStream(new File("./config.ini"));
                 IOUtils.copy(is, os);
@@ -116,16 +115,13 @@ public class SynloadFramework {
                 is.close();
                 System.exit(0);
             }
-            loglevel = Level.toLevel(prop.getProperty("loglevel"));
-            debug = Boolean.valueOf(prop.getProperty("debug"));
-            uploadPath = prop.getProperty("uploadPath");
-            maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
+            
             Log.info("CONF", SynloadFramework.class);
             sql = DriverManager.getConnection(prop.getProperty("jdbc"),
                     prop.getProperty("dbuser"), prop.getProperty("dbpass"));
 
             if(sql.isClosed()){
-                System.out.println("MySQL failed to connect!");
+                Log.error("MySQL failed to connect!",SynloadFramework.class);
                 return;
             }
             SynloadFramework.buildDefaultHTTP();
@@ -140,8 +136,30 @@ public class SynloadFramework {
 
             ModuleLoader.load(path);
 
+            Log.info("Modules loaded", SynloadFramework.class);
+            
+            if(serverTalkEnable){
+                Log.info("Server talk enabled, starting up!", SynloadFramework.class);
+                new Thread (new ServerTalk()).start();
+            }else{
+                Log.info("Server talk system disabled, skipping", SynloadFramework.class);
+            }
+            if(graphDBEnable){
+                Log.info("Neo4J enabled, starting up!", SynloadFramework.class);
+                if (!(new File(graphDBPath)).exists()) {
+                    (new File(graphDBPath)).mkdir();
+                }
+                graphDB = new GraphDatabaseFactory()
+                    .newEmbeddedDatabaseBuilder(graphDBPath)
+                    .loadPropertiesFromFile( graphDBConfig )
+                    .newGraphDatabase();
+            }else{
+                Log.info("Neo4J disabled, skipping!", SynloadFramework.class);
+            }
+            
             for (Entry<String, ModuleClass> mod : ModuleRegistry
                     .getLoadedModules().entrySet()) {
+                Log.info("Module ["+mod.getKey()+"] Initializing", SynloadFramework.class);
                 mod.getValue().initialize();
             }
 
@@ -151,7 +169,8 @@ public class SynloadFramework {
             if (args.length >= 1) {
                 port = Integer.valueOf(args[0]);
             }
-
+            
+            Log.info("Setting up http/websocket server", SynloadFramework.class);
             LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(
                     150);
             ExecutorThreadPool pool = new ExecutorThreadPool(50, 200, 10,

@@ -105,7 +105,7 @@ public class DefaultWSPages {
     @Event(name = "", description = "", trigger = { "get", "sessionlogin" }, type = Type.WEBSOCKET)
     public void getSessionLogin(RequestEvent event)
             throws JsonProcessingException, IOException {
-        User authedUser = Authentication.session(String.valueOf(event
+        User authedUser = Authentication.session(event.getSession(), String.valueOf(event
                 .getSession().session.getUpgradeRequest()
                 .getHeader("X-Real-IP")),
                 event.getRequest().getData().get("sessionid"));
@@ -158,7 +158,7 @@ public class DefaultWSPages {
     @Event(name = "", description = "", trigger = { "action", "login" }, type = Type.WEBSOCKET)
     public void getLogin(RequestEvent event) throws JsonProcessingException,
             IOException {
-        User authedUser = Authentication.login(event.getRequest().getData()
+        User authedUser = Authentication.login(event.getSession(), event.getRequest().getData()
                 .get("username").toLowerCase(), event.getRequest().getData()
                 .get("password"));
         if (authedUser != null) {

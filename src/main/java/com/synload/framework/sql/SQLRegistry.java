@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.NonSQL;
 import com.synload.framework.modules.annotations.SQLTable;
@@ -147,7 +148,10 @@ public class SQLRegistry {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void checkVersions() {
-
+        if(!SynloadFramework.sqlManager){
+            Log.info("SQL Manager Disabled", SQLRegistry.class);
+            return;
+        }
         List<Object[]> sql = new ArrayList<Object[]>();
         for (Class table : sqltables) {
             try{
@@ -235,13 +239,12 @@ public class SQLRegistry {
                 e1.printStackTrace();
             }
         }
-            
-        System.out.println("SQL Version Checks");
+        Log.info("SQL Version Checks", SQLRegistry.class);
         TextTable tt = new TextTable(new String[] { "Table", "Model Version",
                 "SQL Version", "Actions" },
                 sql.toArray(new Object[sql.size()][]));
         tt.printTable();
-        System.out.print("\n");
+        Log.info("\n", SQLRegistry.class);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
