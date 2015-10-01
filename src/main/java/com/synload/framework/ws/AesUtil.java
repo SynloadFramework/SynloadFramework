@@ -49,6 +49,13 @@ public class AesUtil {
             throw fail(e);
         }
     }
+    public String encrypt(String salt, String iv, String passphrase,
+            byte[] plaintext) {
+        SecretKey key = generateKey(salt, passphrase);
+        byte[] encrypted = doFinal(Cipher.ENCRYPT_MODE, key, iv,
+                plaintext);
+        return base64(encrypted);
+    }
 
     public String decrypt(String salt, String iv, String passphrase,
             String ciphertext) {
@@ -60,6 +67,13 @@ public class AesUtil {
         } catch (UnsupportedEncodingException e) {
             throw fail(e);
         }
+    }
+    public byte[] decryptByte(String salt, String iv, String passphrase,
+            String ciphertext) {
+        SecretKey key = generateKey(salt, passphrase);
+        byte[] decrypted = doFinal(Cipher.DECRYPT_MODE, key, iv,
+                base64(ciphertext));
+        return decrypted;
     }
 
     private byte[] doFinal(int encryptMode, SecretKey key, String iv,

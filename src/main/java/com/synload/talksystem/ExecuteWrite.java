@@ -4,11 +4,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import org.apache.commons.io.IOUtils;
 
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import com.synload.framework.Log;
 
 class ExecuteWrite implements Runnable{
@@ -30,7 +39,7 @@ class ExecuteWrite implements Runnable{
                     Log.info("Created "+senders+" data connections to the file bridge", ExecuteWrite.class);
                     for(int g=0;g<senders;g++){
                         try {
-                            Client tempFileBridge = Client.createConnection(client.getAddress(), client.getPort(), true);
+                            Client tempFileBridge = Client.createConnection(client.getAddress(), client.getPort(), true, client.getKey());
                             for(int x=0;x<3;x++){
                                 if(this.queue.size()>0){
                                     Object item = this.queue.get(0);
@@ -49,7 +58,6 @@ class ExecuteWrite implements Runnable{
                             this.getClient().close();
                             Thread.currentThread().stop();
                         } catch (IOException e1) {
-                            // TODO Auto-generated catch block
                             e1.printStackTrace();
                         }
                     }
@@ -64,8 +72,18 @@ class ExecuteWrite implements Runnable{
                         IOUtils.closeQuietly(out);
                         IOUtils.closeQuietly(arrayOut);
                         byte[] bytes = arrayOut.toByteArray();
-                        dOut.writeInt(bytes.length);
-                        dOut.write(bytes);
+                        try {
+                            bytes = Client.encrypt(client.key, bytes).getBytes();
+                            dOut.writeInt(bytes.length);
+                            dOut.write(bytes);
+                        } catch (InvalidKeyException | NoSuchAlgorithmException
+                                | InvalidKeySpecException
+                                | InvalidParameterSpecException
+                                | IllegalBlockSizeException
+                                | BadPaddingException
+                                | NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -76,7 +94,6 @@ class ExecuteWrite implements Runnable{
                             this.getClient().close();
                             Thread.currentThread().stop();
                         } catch (IOException e1) {
-                            // TODO Auto-generated catch block
                             e1.printStackTrace();
                         }
                     }
