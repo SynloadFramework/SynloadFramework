@@ -43,7 +43,7 @@ public class Client implements Runnable {
      */
     public static Client createConnection(String address, int port, boolean closeAfterSend, String key) throws UnknownHostException, IOException{
         Socket clientSocket = new Socket(address, port);
-        Client c = new Client(clientSocket);
+        Client c = new Client(clientSocket,key);
         c.setAddress(address);
         c.setPort(port);
         c.setCloseAfterSend(closeAfterSend);
@@ -140,9 +140,11 @@ public class Client implements Runnable {
         this.dIn = dIn;
     }
 
-    public Client(Socket socket){
+    public Client(Socket socket, String key){
         this.socket = socket;
+        this.setKey(key);
         try {
+            
             dOut = new DataOutputStream(socket.getOutputStream());
             ew = new ExecuteWrite(dOut, this, this.isCloseAfterSend());
             new Thread(ew).start();

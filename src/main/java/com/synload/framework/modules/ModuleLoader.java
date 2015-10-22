@@ -86,15 +86,14 @@ public class ModuleLoader extends ClassLoader {
                         for (String clazz : classList) {
                             String clazzFile = clazz.replaceAll("(?i)\\.", "/")
                                     + ".class";
-                            System.out.println("Loading class data for "
-                                    + clazz + "[R:{" + clazzFile + "}]");
                             Log.debug("Loading class data for " + clazz
                                     + "[R:{" + clazzFile + "}]",
                                     ModuleLoader.class);
                             InputStream is = cl.getResourceAsStream(clazzFile);
                             if (is == null) {
-                                System.out.println("Resource Error for "
-                                        + clazz + "[R:{" + clazzFile + "}]");
+                                Log.error("Resource Error for "
+                                        + clazz + "[R:{" + clazzFile + "}]",
+                                        ModuleLoader.class);
                             }
                             byte[] clazzBytes = IOUtils.toByteArray(is);
                             is.close();
@@ -205,6 +204,9 @@ public class ModuleLoader extends ClassLoader {
                 Module moduleAnnotation = (Module) c
                         .getAnnotation(Handler.MODULE.getAnnotationClass());
                 ModuleClass mod = (ModuleClass) c.newInstance();
+                
+                SynloadFramework.plugins.add(mod);
+                
                 ModuleRegistry.getLoadedModules().put(moduleAnnotation.name(),
                         mod);
                 obj[0] = c.getName();

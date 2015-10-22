@@ -7,6 +7,10 @@ import java.util.UUID;
 public class ConnectionDocument implements Serializable {
     public String typeName = "";
     public UUID chain = null;
+    public ConnectionDocument(String type, UUID chain){
+        this.chain = chain;
+        this.typeName = type;
+    }
     public String getTypeName() {
         return typeName;
     }

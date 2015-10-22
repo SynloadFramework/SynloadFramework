@@ -34,13 +34,13 @@ class ExecuteWrite implements Runnable{
     public void run() {
         while(this.isKeepRunning()){
             if(this.queue.size()>0){
-                if(this.queue.size()>4){
-                    int senders = (int) Math.ceil(this.queue.size()/4);
+                if(this.queue.size()>10){
+                    int senders = (int) Math.ceil(this.queue.size()/10);
                     Log.info("Created "+senders+" data connections to the file bridge", ExecuteWrite.class);
                     for(int g=0;g<senders;g++){
                         try {
                             Client tempFileBridge = Client.createConnection(client.getAddress(), client.getPort(), true, client.getKey());
-                            for(int x=0;x<3;x++){
+                            for(int x=0;x<10;x++){
                                 if(this.queue.size()>0){
                                     Object item = this.queue.get(0);
                                     this.queue.remove(0);

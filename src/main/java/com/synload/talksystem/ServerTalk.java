@@ -35,7 +35,7 @@ public class ServerTalk implements Runnable {
             ServerSocket server = new ServerSocket(SynloadFramework.serverTalkPort);
             Socket socket;
             while( (socket = server.accept()) != null ){
-                (new Thread(new Client(socket))).start();
+                (new Thread(new Client( socket, SynloadFramework.serverTalkKey ))).start();
             }
         } catch (IOException e) {
             e.printStackTrace();

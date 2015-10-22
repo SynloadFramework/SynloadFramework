@@ -53,10 +53,11 @@ public class SynloadFramework {
     public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
     // HashMap<String,DashboardGroup>();
-    public static List<Object> plugins = new ArrayList<Object>();
+    public static List<ModuleClass> plugins = new ArrayList<ModuleClass>();
     public static List<String> bannedIPs = new ArrayList<String>();
     public static Connection sql = null;
     public static int totalFailures = 10;
+    public static String serverTalkKey;
     public static boolean debug = false;
     public static long maxUploadSize = 26214400;
     public static boolean handleUpload = false;
@@ -78,19 +79,23 @@ public class SynloadFramework {
     public static boolean serverTalkEnable = false;
     public static int serverTalkPort = 8081;
     public static Level loglevel = null;
-    public static String path = "modules/";
+    public static String modulePath = "modules/";
+    public static String configPath = "configs/";
+    public static String dbPath = "databases/";
 
     public static void main(String[] args) {
         Log.info( "Starting Synload Development Framework Server", SynloadFramework.class );
         try {
-            if ((new File("config.ini")).exists()) {
+            if ((new File("./config.ini")).exists()) {
                 prop.load(new FileInputStream("config.ini"));
                 port = Integer.valueOf(prop.getProperty("port"));
                 handleUpload = Boolean.valueOf(prop
                         .getProperty("enableUploads"));
                 siteDefaults = Boolean
                         .valueOf(prop.getProperty("siteDefaults"));
-                path = prop.getProperty("modulePath");
+                modulePath = prop.getProperty("modulePath", modulePath);
+                dbPath = prop.getProperty("dbPath", dbPath);
+                configPath = prop.getProperty("configPath", configPath);
                 sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
                 graphDBPath = prop.getProperty("graphDBPath");
@@ -100,6 +105,7 @@ public class SynloadFramework {
                 uploadPath = prop.getProperty("uploadPath");
                 maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
                 serverTalkEnable = Boolean.valueOf(prop.getProperty("serverTalkEnable"));
+                serverTalkKey = prop.getProperty("serverTalkKey");
                 serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
                 graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
             } else {
@@ -108,14 +114,22 @@ public class SynloadFramework {
                 IOUtils.copy(is, os);
                 os.close();
                 is.close();
-                is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/bbcodes.xml");
-                os = new FileOutputStream(new File("./bbcodes.xml"));
+                System.exit(0);
+            }
+            if(!new File("./log4j.properties").exists()){
+                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/log4j.properties");
+                FileOutputStream os = new FileOutputStream(new File("./log4j.properties"));
                 IOUtils.copy(is, os);
                 os.close();
                 is.close();
-                System.exit(0);
             }
-            
+            if(!new File("./bbcodes.xml").exists()){
+                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/bbcodes.xml");
+                FileOutputStream os = new FileOutputStream(new File("./bbcodes.xml"));
+                IOUtils.copy(is, os);
+                os.close();
+                is.close();
+            }
             Log.info("CONF", SynloadFramework.class);
             sql = DriverManager.getConnection(prop.getProperty("jdbc"),
                     prop.getProperty("dbuser"), prop.getProperty("dbpass"));
@@ -127,14 +141,13 @@ public class SynloadFramework {
             SynloadFramework.buildDefaultHTTP();
             SynloadFramework.buildJavascript();
 
-            File folder = new File(path);
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
+            createFolder(modulePath);
+            createFolder(configPath);
+            createFolder(dbPath);
 
             Log.info("Modules loading", SynloadFramework.class);
 
-            ModuleLoader.load(path);
+            ModuleLoader.load(modulePath);
 
             Log.info("Modules loaded", SynloadFramework.class);
             
@@ -196,6 +209,12 @@ public class SynloadFramework {
             if (SynloadFramework.debug) {
                 e.printStackTrace();
             }
+        }
+    }
+    public static void createFolder(String folderPath){
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            folder.mkdir();
         }
     }
 
@@ -295,11 +314,18 @@ public class SynloadFramework {
         SynloadFramework.htmlFiles = htmlFiles;
     }
 
-    public static List<Object> getPlugins() {
+    public static List<ModuleClass> getPlugins() {
         return plugins;
     }
-
-    public static void setPlugins(List<Object> plugins) {
+    public static ModuleClass getPlugin(String plugin) {
+        for(Object plug : SynloadFramework.plugins){
+            if(plug.getClass().getName().equalsIgnoreCase(plugin)){
+                return (ModuleClass) plug;
+            }
+        }
+        return null;
+    }
+    public static void setPlugins(List<ModuleClass> plugins) {
         SynloadFramework.plugins = plugins;
     }
 

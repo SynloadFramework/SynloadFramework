@@ -11,9 +11,8 @@ public class FileParts extends ConnectionDocument{
     public int partNumber = 0;
     public int totalParts = 0;
     public FileParts(byte[] part, String name, UUID chain, int partNumber, int totalParts){
+        super("filePart", chain);
         this.part = part;
-        this.setChain(chain);
-        this.setTypeName("filePart");
         this.setTotalParts(totalParts);
         this.setPartNumber(partNumber);
         this.name = name;
