@@ -69,6 +69,7 @@ public class SynloadFramework {
     public static String graphDBConfig = "";
     public static GraphDatabaseService graphDB = null;
     public static Server server = null;
+    public static boolean dbEnabled = false;
     public static boolean encryptEnabled;
     public static Properties prop = new Properties();
     public static List<WSHandler> clients = new ArrayList<WSHandler>();
@@ -102,6 +103,7 @@ public class SynloadFramework {
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
                 debug = Boolean.valueOf(prop.getProperty("debug"));
+                dbEnabled = Boolean.valueOf(prop.getProperty("dbenabled"));
                 uploadPath = prop.getProperty("uploadPath");
                 maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
                 serverTalkEnable = Boolean.valueOf(prop.getProperty("serverTalkEnable"));
@@ -131,12 +133,15 @@ public class SynloadFramework {
                 is.close();
             }
             Log.info("CONF", SynloadFramework.class);
-            sql = DriverManager.getConnection(prop.getProperty("jdbc"),
-                    prop.getProperty("dbuser"), prop.getProperty("dbpass"));
-
-            if(sql.isClosed()){
-                Log.error("MySQL failed to connect!",SynloadFramework.class);
-                return;
+            if(!dbEnabled){
+                sql=null;
+            }else{
+                sql = DriverManager.getConnection(prop.getProperty("jdbc"),
+                        prop.getProperty("dbuser"), prop.getProperty("dbpass"));
+                if(sql.isClosed()){
+                    Log.error("MySQL failed to connect!",SynloadFramework.class);
+                    //return;
+                }
             }
             SynloadFramework.buildDefaultHTTP();
             SynloadFramework.buildJavascript();
@@ -145,6 +150,8 @@ public class SynloadFramework {
             createFolder(configPath);
             createFolder(dbPath);
 
+            ServerTalk.defaultTypes();
+            
             Log.info("Modules loading", SynloadFramework.class);
 
             ModuleLoader.load(modulePath);

@@ -24,17 +24,19 @@ class ExecuteWrite implements Runnable{
     public DataOutputStream dOut;
     private Client client;
     private boolean keepRunning=true;
+    private boolean connectError = false;
     private boolean closeAfterSend = false;
     public List<Object> queue = new ArrayList<Object>(); 
     public ExecuteWrite(DataOutputStream dOut, Client client, boolean closeAfterSend){
         this.setClient(client);
         this.setdOut(dOut);
+        this.closeAfterSend = closeAfterSend;
     }
     @Override
     public void run() {
         while(this.isKeepRunning()){
             if(this.queue.size()>0){
-                if(this.queue.size()>10){
+                if(this.queue.size()>10 && connectError==false){
                     int senders = (int) Math.ceil(this.queue.size()/10);
                     Log.info("Created "+senders+" data connections to the file bridge", ExecuteWrite.class);
                     for(int g=0;g<senders;g++){
@@ -49,7 +51,9 @@ class ExecuteWrite implements Runnable{
                                 }
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
+                            connectError=true;
+                            Log.debug("Connection error, sending on same client connection", this.getClass());
                         }
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
@@ -62,6 +66,9 @@ class ExecuteWrite implements Runnable{
                         }
                     }
                 }else{
+                    if(connectError){
+                        connectError=false; 
+                    }
                     Object data = this.queue.get(0);
                     this.queue.remove(0);
                     ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
@@ -72,18 +79,9 @@ class ExecuteWrite implements Runnable{
                         IOUtils.closeQuietly(out);
                         IOUtils.closeQuietly(arrayOut);
                         byte[] bytes = arrayOut.toByteArray();
-                        try {
-                            bytes = Client.encrypt(client.key, bytes).getBytes();
-                            dOut.writeInt(bytes.length);
-                            dOut.write(bytes);
-                        } catch (InvalidKeyException | NoSuchAlgorithmException
-                                | InvalidKeySpecException
-                                | InvalidParameterSpecException
-                                | IllegalBlockSizeException
-                                | BadPaddingException
-                                | NoSuchPaddingException e) {
-                            e.printStackTrace();
-                        }
+                        //bytes = Client.encrypt(client.key, bytes).getBytes();
+                        dOut.writeInt(bytes.length);
+                        dOut.write(bytes);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -92,7 +90,7 @@ class ExecuteWrite implements Runnable{
                         try {
                             
                             this.getClient().close();
-                            Thread.currentThread().stop();
+                            Thread.currentThread().interrupt();
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }

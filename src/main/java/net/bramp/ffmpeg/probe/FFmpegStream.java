@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Map;
 
+@SuppressWarnings("serial")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public class FFmpegStream {
+public class FFmpegStream implements Serializable {
 	
 	public enum CodecType {
 		VIDEO,

@@ -1,8 +1,9 @@
 package net.bramp.ffmpeg.probe;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class FFmpegFormat {
+public class FFmpegFormat implements Serializable {
 	public String filename;
 	public int nb_streams;
 	public String format_name;

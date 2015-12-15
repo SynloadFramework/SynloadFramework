@@ -19,6 +19,9 @@ import java.util.Random;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.synload.framework.Log;
 import com.synload.framework.modules.ModuleLoader;
@@ -53,11 +56,12 @@ public class Client implements Runnable {
     }
     private Socket socket;
     private ExecuteWrite ew;
-    private DataOutputStream dOut = null;
+    private ExecuteRead er;
     private DataInputStream dIn = null;
     public void close() throws IOException{
+        ServerTalk.getConnected().remove(this);
         socket.close();
-        Thread.currentThread().stop();
+        Thread.currentThread().interrupt();
     }
 
     public boolean isKeepRunning() {
@@ -123,15 +127,7 @@ public class Client implements Runnable {
     public void setEw(ExecuteWrite ew) {
         this.ew = ew;
     }
-
-    public DataOutputStream getdOut() {
-        return dOut;
-    }
-
-    public void setdOut(DataOutputStream dOut) {
-        this.dOut = dOut;
-    }
-
+    
     public DataInputStream getdIn() {
         return dIn;
     }
@@ -144,11 +140,11 @@ public class Client implements Runnable {
         this.socket = socket;
         this.setKey(key);
         try {
-            
-            dOut = new DataOutputStream(socket.getOutputStream());
-            ew = new ExecuteWrite(dOut, this, this.isCloseAfterSend());
+            ew = new ExecuteWrite(new DataOutputStream(socket.getOutputStream()), this, this.isCloseAfterSend());
             new Thread(ew).start();
-            dIn = new DataInputStream(socket.getInputStream());
+            
+            er = new ExecuteRead(new DataInputStream(socket.getInputStream()), this);
+            new Thread(er).start();
             authenticated=false;
         } catch (IOException e) {
             e.printStackTrace();
@@ -193,82 +189,10 @@ public class Client implements Runnable {
         AesUtil aesUtil = new AesUtil(128, 1000);
         return aesUtil.decryptByte(salt, iv, key, data);
     }
-    @SuppressWarnings("resource")
-    public Object read(int length) throws IOException{
-        byte[] message = new byte[length];
-        dIn.readFully(message, 0, message.length);
-        
-        byte []  m=null;
-        String [] data = (new String(message,"UTF-8")).split(":");
-        
-        try {
-            m = decrypt(
-                data[0],
-                data[1],
-                data[2],
-                this.key
-            );
-        } catch (InvalidAlgorithmParameterException
-                | Base64DecodingException | 
-                InvalidKeyException | NoSuchAlgorithmException | 
-                InvalidKeySpecException | InvalidParameterSpecException | 
-                IllegalBlockSizeException | BadPaddingException | 
-                NoSuchPaddingException e) {
-            e.printStackTrace();
-        }
-        ByteArrayInputStream bas = new ByteArrayInputStream(m);
-        ConnectDocumentLoader in = new ConnectDocumentLoader(new ModuleLoader(Thread.currentThread().getContextClassLoader()), bas);
-        try {
-            Object obj = in.readObject();
-            return obj;
-        } catch (ClassNotFoundException e) {
-            write(new ClassNotFoundMessage());
-        }
-        return null;
-    }
+
     @Override
     public void run() {
         
-        try {
-            while(this.isKeepRunning()){
-                if(dIn.available()>0){
-                    int length = dIn.readInt();
-                    if(length>0){
-                        Object data = read(length);
-                        if(ConnectionDocument.class.isInstance(data)){
-                            if(UnrecognizedMessage.class.isInstance(data)){
-                                Log.error("Unrecognized Connection Type", Client.class);
-                            }else if(ClassNotFoundMessage.class.isInstance(data)){
-                                Log.error("Unrecognized Connection Type", Client.class);
-                            }else{
-                                ConnectionType type = null;
-                                ConnectionDocument doc = (ConnectionDocument) data;
-                                List<ConnectionType> types = new ArrayList<ConnectionType>(ServerTalk.types);
-                                for(ConnectionType t : types){
-                                    if(t.getName().equals(doc.getTypeName())){
-                                           type = t;
-                                    }
-                                }
-                                if(type!=null){
-                                    //if(this.authenticated){
-                                        type.execute(this, (ConnectionDocument) data);
-                                    //}else{
-                                        
-                                    //}
-                                }else{
-                                    write(new UnrecognizedMessage());
-                                }
-                            }
-                        }
-                    }
-                }
-                Thread.sleep(1L);
-            }
-            this.socket.close();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        Thread.currentThread().interrupt();
-        return;
     }
+    
 }

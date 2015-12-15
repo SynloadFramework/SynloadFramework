@@ -1,11 +1,9 @@
 package com.synload.talksystem.filetransfer;
 
 import java.util.UUID;
-
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
 import com.synload.framework.modules.annotations.Event.Type;
-import com.synload.framework.ws.WSHandler;
 import com.synload.talksystem.Client;
 
 public class FileReceiveEvent extends EventClass  {

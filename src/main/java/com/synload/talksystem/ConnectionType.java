@@ -29,4 +29,16 @@ public class ConnectionType implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+    public Class<?> getClazz() {
+        return clazz;
+    }
+    public void setClazz(Class<?> clazz) {
+        this.clazz = clazz;
+    }
+    public Method getFunc() {
+        return func;
+    }
+    public void setFunc(Method func) {
+        this.func = func;
+    }
 }

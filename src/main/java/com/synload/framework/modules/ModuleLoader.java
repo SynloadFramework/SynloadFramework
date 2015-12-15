@@ -41,7 +41,7 @@ public class ModuleLoader extends ClassLoader {
         if (c == null) {
             try {
                 c = Class.forName(clazzName);
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
