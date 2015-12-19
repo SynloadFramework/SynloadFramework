@@ -24,9 +24,9 @@ class ExecuteWrite implements Runnable{
     public DataOutputStream dOut;
     private Client client;
     private boolean keepRunning=true;
+    private boolean readData = false;
     private boolean connectError = false;
-    private boolean closeAfterSend = false;
-    public List<Object> queue = new ArrayList<Object>(); 
+    private boolean closeAfterSend = false; 
     public ExecuteWrite(DataOutputStream dOut, Client client, boolean closeAfterSend){
         this.setClient(client);
         this.setdOut(dOut);
@@ -34,20 +34,20 @@ class ExecuteWrite implements Runnable{
     }
     @Override
     public void run() {
-        while(this.isKeepRunning()){
-            if(this.queue.size()>0){
-                if(this.queue.size()>10 && connectError==false){
-                    int senders = (int) Math.ceil(this.queue.size()/10);
-                    Log.info("Created "+senders+" data connections to the file bridge", ExecuteWrite.class);
+        Log.debug("New Execute Write "+Thread.currentThread().getName(), this.getClass());
+        while(this.isKeepRunning() && !this.getClient().getSocket().isOutputShutdown()){
+            if(this.getClient().queue.size()>0){
+                if(this.getClient().queue.size()>10 && connectError==false){
+                    int senders = (int) Math.ceil(this.getClient().queue.size()/10);
+                    //Log.info("Created "+senders+" data connections to the file bridge", ExecuteWrite.class);
                     for(int g=0;g<senders;g++){
                         try {
                             Client tempFileBridge = Client.createConnection(client.getAddress(), client.getPort(), true, client.getKey());
                             for(int x=0;x<10;x++){
-                                if(this.queue.size()>0){
-                                    Object item = this.queue.get(0);
-                                    this.queue.remove(0);
-                                    tempFileBridge.getEw().queue.add(item);
-                                    
+                                if(this.getClient().queue.size()>0){
+                                    Object item = this.getClient().queue.get(0);
+                                    this.getClient().queue.remove(0);
+                                    tempFileBridge.queue.add(item);
                                 }
                             }
                         } catch (IOException e) {
@@ -57,20 +57,19 @@ class ExecuteWrite implements Runnable{
                         }
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
-                        this.setKeepRunning(false);
+                        //this.setKeepRunning(false);
                         try {
                             this.getClient().close();
-                            Thread.currentThread().stop();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 }else{
                     if(connectError){
                         connectError=false; 
                     }
-                    Object data = this.queue.get(0);
-                    this.queue.remove(0);
+                    Object data = this.getClient().queue.get(0);
+                    this.getClient().queue.remove(0);
                     ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
                     ObjectOutputStream out;
                     try {
@@ -79,20 +78,28 @@ class ExecuteWrite implements Runnable{
                         IOUtils.closeQuietly(out);
                         IOUtils.closeQuietly(arrayOut);
                         byte[] bytes = arrayOut.toByteArray();
-                        //bytes = Client.encrypt(client.key, bytes).getBytes();
+                        /*try {
+                            bytes = Client.encrypt(client.key, bytes).getBytes();
+                        } catch (InvalidKeyException | NoSuchAlgorithmException
+                                | InvalidKeySpecException
+                                | InvalidParameterSpecException
+                                | IllegalBlockSizeException
+                                | BadPaddingException
+                                | NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        }*/
                         dOut.writeInt(bytes.length);
+                        Log.debug("wrote "+bytes.length+" bytes", this.getClass());
                         dOut.write(bytes);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
-                        this.setKeepRunning(false);
+                        //this.setKeepRunning(false);
                         try {
-                            
                             this.getClient().close();
-                            Thread.currentThread().interrupt();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -104,7 +111,12 @@ class ExecuteWrite implements Runnable{
                 }
             }
         }
-        Thread.currentThread().interrupt();
+        try {
+            this.getClient().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.debug("Error could not close thread", this.getClass());
         return;
     }
     public boolean isCloseAfterSend() {
@@ -132,10 +144,10 @@ class ExecuteWrite implements Runnable{
         this.client = client;
     }
     public List<Object> getQueue() {
-        return queue;
+        return getClient().queue;
     }
     public void setQueue(List<Object> queue) {
-        this.queue = queue;
+        this.getClient().queue = queue;
     }
     
 }

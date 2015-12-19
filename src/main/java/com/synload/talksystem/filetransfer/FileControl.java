@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.mysql.jdbc.log.Log;
 import com.synload.eventsystem.EventPublisher;
+import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.talksystem.Client;
 import com.synload.talksystem.ConnectionDocument;
@@ -38,6 +38,7 @@ public class FileControl {
             FileControl.partProgress.put(ft.getChain(), new ArrayList<Integer>());
         }
         FileControl.partProgress.get(ft.getChain()).add(ft.getPartNumber());
+        Log.debug("recieved part "+FileControl.partProgress.get(ft.getChain()).size()+"/"+(ft.getTotalParts()+1), this.getClass());
         if(FileControl.partProgress.get(ft.getChain()).size()==(ft.getTotalParts()+1)){
             FileReceiveEvent ev = new FileReceiveEvent( c, ft.getName(), tmpName, SynloadFramework.uploadPath+tmpName, ft.getChain() );
             EventPublisher.raiseEvent(ev, true, "");
@@ -55,14 +56,12 @@ public class FileControl {
         long fileLength = f.length();
         int filePart = 0;
         int totalParts = (int) Math.ceil(fileLength/chunkSizes);
-        System.out.println(totalParts);
         while(byteRead<fileLength){
-            int readSize;
-            readSize = (fileLength-(byteRead+chunkSizes)<0)?((int) fileLength%chunkSizes):chunkSizes;
-            System.out.println(readSize);
+            int readSize = (fileLength-(byteRead+chunkSizes)<0)?((int) fileLength%chunkSizes):chunkSizes;
             buffer = new byte[readSize];
             file.read(buffer);
             byteRead+=readSize;
+            Log.debug("sent part "+filePart+"/"+totalParts, this.getClass());
             c.write(new FileParts( buffer, f.getName(), chain, filePart, totalParts));
             filePart++;
         }

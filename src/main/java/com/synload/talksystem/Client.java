@@ -15,6 +15,7 @@ import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -34,7 +35,10 @@ public class Client implements Runnable {
     private boolean authenticated;
     public String key;
     private int port;
+    private Thread writer = null;
+    private Thread reader = null;
     private boolean keepRunning=true;
+    public List<Object> queue = new ArrayList<Object>();
     private boolean closeAfterSend = false;
     /**
      * @param address
@@ -58,10 +62,15 @@ public class Client implements Runnable {
     private ExecuteWrite ew;
     private ExecuteRead er;
     private DataInputStream dIn = null;
+    private DataOutputStream dOut = null;
+    private boolean incoming=false;
     public void close() throws IOException{
-        ServerTalk.getConnected().remove(this);
-        socket.close();
-        Thread.currentThread().interrupt();
+        //ServerTalk.getConnected().remove(this);
+        Log.debug("CLOSED client "+Thread.currentThread().getName(), this.getClass());
+        //reader.interrupt();
+        //writer.interrupt();
+        //socket.close();
+        //Thread.currentThread().interrupt();
     }
 
     public boolean isKeepRunning() {
@@ -132,6 +141,38 @@ public class Client implements Runnable {
         return dIn;
     }
 
+    public Thread getWriter() {
+        return writer;
+    }
+
+    public void setWriter(Thread writer) {
+        this.writer = writer;
+    }
+
+    public Thread getReader() {
+        return reader;
+    }
+
+    public void setReader(Thread reader) {
+        this.reader = reader;
+    }
+
+    public ExecuteRead getEr() {
+        return er;
+    }
+
+    public void setEr(ExecuteRead er) {
+        this.er = er;
+    }
+
+    public DataOutputStream getdOut() {
+        return dOut;
+    }
+
+    public void setdOut(DataOutputStream dOut) {
+        this.dOut = dOut;
+    }
+
     public void setdIn(DataInputStream dIn) {
         this.dIn = dIn;
     }
@@ -139,19 +180,20 @@ public class Client implements Runnable {
     public Client(Socket socket, String key){
         this.socket = socket;
         this.setKey(key);
-        try {
-            ew = new ExecuteWrite(new DataOutputStream(socket.getOutputStream()), this, this.isCloseAfterSend());
-            new Thread(ew).start();
-            
-            er = new ExecuteRead(new DataInputStream(socket.getInputStream()), this);
-            new Thread(er).start();
-            authenticated=false;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        authenticated=false;
+    }
+    public Client(Socket socket, String key, boolean incoming){
+        this.socket = socket;
+        this.setKey(key);
+        authenticated=false;
+        this.incoming = incoming;
+    }
+    public void reading(){
+        Log.debug("Socket "+Thread.currentThread().getName()+" saved as a ", this.getClass());
+        ServerTalk.getConnected().add(this);
     }
     public void write(Object data) throws IOException{
-        ew.queue.add(data);
+        queue.add(data);
     }
     /*
      * COPIED CODE FROM
@@ -192,7 +234,30 @@ public class Client implements Runnable {
 
     @Override
     public void run() {
-        
+        try {
+            
+            ew = new ExecuteWrite(new DataOutputStream(socket.getOutputStream()), this, this.isCloseAfterSend());
+            writer = new Thread(ew);
+            writer.start();
+            
+            er = new ExecuteRead(new DataInputStream(socket.getInputStream()), this, Thread.currentThread().getContextClassLoader());
+            reader = new Thread(er);
+            reader.start();
+            
+            if(!this.closeAfterSend && !incoming) {
+                Log.debug("A new main communication socket created! "+Thread.currentThread().getName(), this.getClass());
+                queue.add(new ConnectionTypeDocument("communicationSocket", UUID.randomUUID()));
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        while(true){
+            try {
+                Thread.sleep(1L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
     
 }
