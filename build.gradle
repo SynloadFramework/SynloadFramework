@@ -2,22 +2,10 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
 
-sourceCompatibility = 7
+sourceCompatibility = 1.7
 version = '1.0'
 
-defaultTasks = ['clean', 'test']
-
-mainClassName = "com.synload.framework.SynloadFramework"
-applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
-
-jar {
-    manifest {
-       attributes 'Implementation-Title': 'Gradle Quickstart',
-                   'Implementation-Version': version,
-                   'Main-Class': 'com.synload.framework.SynloadFramework',
-                   'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-    }
-}
+mainClassName = 'com.synload.framework.SynloadFramework'
 
 repositories {
     mavenCentral()
