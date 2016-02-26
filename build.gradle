@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-sourceCompatibility = 1.5
+sourceCompatibility = 7
 version = '1.0'
 jar {
     manifest {
@@ -46,14 +46,15 @@ dependencies {
     
 }
 
-test {
-    systemProperties 'property': 'value'
-}
-
 uploadArchives {
     repositories {
        flatDir {
            dirs 'repos'
        }
     }
+}
+
+task(runConsole, dependsOn: 'classes', type: JavaExec) {
+    main = 'com.synload.framework.SynloadFramework' 
+    classpath = sourceSets.main.runtimeClasspath
 }
