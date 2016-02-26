@@ -1,10 +1,14 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'application'
 
 sourceCompatibility = 7
 version = '1.0'
 
 defaultTasks = ['clean', 'test']
+
+mainClassName = "com.synload.framework.SynloadFramework"
+applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
 jar {
     manifest {
