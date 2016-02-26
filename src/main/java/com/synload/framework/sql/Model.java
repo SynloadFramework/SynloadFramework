@@ -434,8 +434,9 @@ public class Model {
                                     this._save(f.getName(),
                                             _convert(f.getType(), item.getValue()));
                                 }
-                            } catch (IllegalArgumentException
-                                    | IllegalAccessException | SQLException e) {
+                            } catch (IllegalArgumentException e) {
+                            } catch (IllegalAccessException e) {
+                            } catch ( SQLException e) {
                                 e.printStackTrace();
                             }
                         }

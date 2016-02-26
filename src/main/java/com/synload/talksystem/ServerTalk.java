@@ -64,7 +64,8 @@ public class ServerTalk implements Runnable {
                     ConnectionDocument.class
                 )
             );
-        } catch (NoSuchMethodException | SecurityException e) {
+        } catch ( SecurityException e) {
+        } catch (NoSuchMethodException  e) {
             e.printStackTrace();
         }
         types.add(commandType);
