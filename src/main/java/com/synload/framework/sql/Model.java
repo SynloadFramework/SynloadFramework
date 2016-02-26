@@ -75,11 +75,10 @@ public class Model {
 
     public static String _tableName(String name) {
         String nm = name.toLowerCase();
-        switch (nm.substring(nm.length() - 1)) {
-            case "y":
-                return nm.substring(0, nm.length() - 1) + "ies";
-            default:
-                return nm + "s";
+        if((nm.substring(nm.length() - 1)).equals("y")){
+        	return nm.substring(0, nm.length() - 1) + "ies";
+        }else{
+            return nm + "s";
         }
 
     }
