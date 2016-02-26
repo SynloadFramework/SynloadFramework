@@ -114,7 +114,9 @@ public class ExecuteRead implements Runnable{
                 }
                 Thread.sleep(1L);
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+        	e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return;

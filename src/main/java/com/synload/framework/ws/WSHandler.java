@@ -286,14 +286,16 @@ public class WSHandler {
             Request request = null;
             if (encrypt) {
                 String[] s = message.split(":");
-                try {
-					request = mapper.readValue(decrypt(s[0], s[1], s[2]),
-					        Request.class);
-				} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException
-						| InvalidParameterSpecException | IllegalBlockSizeException | BadPaddingException
-						| NoSuchPaddingException | InvalidAlgorithmParameterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				try {
+					request = mapper.readValue(decrypt(s[0], s[1], s[2]), Request.class);
+				} catch (InvalidKeyException e) {
+				} catch (NoSuchAlgorithmException e) {
+				} catch (InvalidKeySpecException e) {
+				} catch (InvalidParameterSpecException e) {
+				} catch (IllegalBlockSizeException e) {
+				} catch (BadPaddingException e) {
+				} catch (NoSuchPaddingException e) {
+				} catch (InvalidAlgorithmParameterException e) {
 				}
             } else {
                 request = mapper.readValue(message, Request.class);

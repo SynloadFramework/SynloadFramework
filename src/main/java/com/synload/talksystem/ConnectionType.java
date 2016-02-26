@@ -17,11 +17,16 @@ public class ConnectionType implements Serializable {
     }
     public void execute(Client client, ConnectionDocument doc){
         try {
-            func.invoke(clazz.newInstance(), client, doc);
-        } catch (IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | InstantiationException e) {
-            e.printStackTrace();
-        }
+			func.invoke(clazz.newInstance(), client, doc);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		}
     }
     public String getName() {
         return name;

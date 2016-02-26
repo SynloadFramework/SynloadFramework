@@ -39,16 +39,18 @@ public class ServerTalk implements Runnable {
         fileTransfer.setName("syn-fp");
         fileTransfer.setClazz(FileControl.class);
         try {
-            fileTransfer.setFunc(
-                FileControl.class.getMethod(
-                    "receiveFile",
-                    Client.class,
-                    ConnectionDocument.class
-                )
-            );
-        } catch (NoSuchMethodException | SecurityException e1) {
-            e1.printStackTrace();
-        }
+			fileTransfer.setFunc(
+			    FileControl.class.getMethod(
+			        "receiveFile",
+			        Client.class,
+			        ConnectionDocument.class
+			    )
+			);
+		} catch (NoSuchMethodException e1) {
+			e1.printStackTrace();
+		} catch (SecurityException e1) {
+			e1.printStackTrace();
+		}
         types.add(fileTransfer);
         
         ConnectionType commandType = new ConnectionType();
@@ -72,16 +74,18 @@ public class ServerTalk implements Runnable {
         infoType.setName("syn-info");
         infoType.setClazz(InformationControl.class);
         try {
-            infoType.setFunc(
-                InformationControl.class.getMethod(
-                    "infoReceived",
-                    Client.class,
-                    ConnectionDocument.class
-                )
-            );
-        } catch (NoSuchMethodException | SecurityException e) {
-            e.printStackTrace();
-        }
+			infoType.setFunc(
+			    InformationControl.class.getMethod(
+			        "infoReceived",
+			        Client.class,
+			        ConnectionDocument.class
+			    )
+			);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		}
         types.add(infoType);
     }
     public static List<Client> getConnected() {

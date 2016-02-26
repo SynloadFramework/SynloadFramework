@@ -292,13 +292,24 @@ public class Model {
         qs.ret = new String[] { "COUNT(`" + key + "`) as c" };
         Object obj = null;
         try {
-            obj = qs.count();
-        } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | NoSuchMethodException
-                | SecurityException | ClassNotFoundException
-                | InvocationTargetException | SQLException e) {
-            e.printStackTrace();
-        }
+			obj = qs.count();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
         if (obj == null) {
             Log.error("s", c);
             return false;
@@ -408,9 +419,10 @@ public class Model {
 
     public void _merge(Map<String, String> items) {
         for (Entry<String, String> item : items.entrySet()) {
-            try {
-                Field f = this.getClass().getField(item.getKey());
-                if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
+            Field f;
+			try {
+				f = this.getClass().getField(item.getKey());
+				if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
                     if (f != null) {
                         ColumnData cd = new ColumnData(f);
                         if (!cd.isAutoIncrement()) {
@@ -429,9 +441,11 @@ public class Model {
                         }
                     }
                 }
-            } catch (NoSuchFieldException | SecurityException e) {
-                e.printStackTrace();
-            }
+			} catch (NoSuchFieldException e1) {
+				e1.printStackTrace();
+			} catch (SecurityException e1) {
+				e1.printStackTrace();
+			}
         }
     }
 

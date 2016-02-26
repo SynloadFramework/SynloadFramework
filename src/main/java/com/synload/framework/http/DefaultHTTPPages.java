@@ -96,7 +96,19 @@ public class DefaultHTTPPages {
             ObjectWriter ow = new ObjectMapper().writer()
                     .withDefaultPrettyPrinter();
             response.getWriter().println(ow.writeValueAsString(entry));
-        } catch (NullPointerException | ServletException e) {
+        } catch (ServletException e) {
+        	 if (SynloadFramework.debug) {
+                 e.printStackTrace();
+             }
+             response.getWriter().println("{\"e\":\"Authentication failed!\"}");
+             try {
+                 for (Part part : request.getParts()) {
+                     part.delete();
+                 }
+             } catch (ServletException e1) {
+                 e1.printStackTrace();
+             }
+        } catch (NullPointerException e) {
             if (SynloadFramework.debug) {
                 e.printStackTrace();
             }

@@ -50,11 +50,14 @@ public class Authentication {
                         email, "flags", flags.toString(), "admin", admin,
                         "created_date", longTime);
                 try {
-                    u._insert();
-                } catch (IllegalArgumentException | IllegalAccessException
-                        | SQLException e) {
-                    e.printStackTrace();
-                }
+					u._insert();
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
             } catch (NoSuchAlgorithmException e1) {
                 e1.printStackTrace();
             }
