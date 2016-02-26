@@ -33,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.CloseEvent;
 import com.synload.eventsystem.events.ConnectEvent;
@@ -254,7 +253,7 @@ public class WSHandler {
             throws NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidKeyException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException, Base64DecodingException,
+            InvalidAlgorithmParameterException,
             IOException {
         
         String passphrase = encryptKey;
@@ -288,17 +287,14 @@ public class WSHandler {
             if (encrypt) {
                 String[] s = message.split(":");
                 try {
-                    request = mapper.readValue(decrypt(s[0], s[1], s[2]),
-                            Request.class);
-                } catch (InvalidKeyException | NoSuchAlgorithmException
-                        | InvalidKeySpecException
-                        | InvalidParameterSpecException
-                        | IllegalBlockSizeException | BadPaddingException
-                        | NoSuchPaddingException
-                        | InvalidAlgorithmParameterException
-                        | Base64DecodingException e) {
-                    e.printStackTrace();
-                }
+					request = mapper.readValue(decrypt(s[0], s[1], s[2]),
+					        Request.class);
+				} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException
+						| InvalidParameterSpecException | IllegalBlockSizeException | BadPaddingException
+						| NoSuchPaddingException | InvalidAlgorithmParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             } else {
                 request = mapper.readValue(message, Request.class);
             }

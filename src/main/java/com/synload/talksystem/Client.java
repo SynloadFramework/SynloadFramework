@@ -23,7 +23,6 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import com.synload.framework.Log;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.framework.ws.AesUtil;
@@ -226,7 +225,7 @@ public class Client implements Runnable {
             throws NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidParameterSpecException, IllegalBlockSizeException,
             BadPaddingException, InvalidKeyException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException, Base64DecodingException,
+            InvalidAlgorithmParameterException,
             IOException {
         AesUtil aesUtil = new AesUtil(128, 1000);
         return aesUtil.decryptByte(salt, iv, key, data);

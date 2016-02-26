@@ -10,5 +10,5 @@ public class ClassNotFoundMessage extends ConnectionDocument {
     public ClassNotFoundMessage() {
         super("Unknown", UUID.randomUUID());
     }
-
+    
 }

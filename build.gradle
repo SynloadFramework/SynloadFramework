@@ -1,0 +1,59 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.5
+version = '1.0'
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'http://ci.synload.com/plugin/repository/everything/'
+    }
+}
+
+dependencies {
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+    compile 'org.objenesis:objenesis:2.2'
+    compile 'javax.servlet:javax.servlet-api:4.0.0-b01'
+    compile 'org.eclipse.jetty:jetty-server:9.3.7.v20160115'
+    compile 'commons-io:commons-io:2.4'
+    compile 'commons-logging:commons-logging:1.2'
+    compile 'org.eclipse.jetty.websocket:websocket-server:9.3.7.v20160115'
+    compile 'org.eclipse.jetty.spdy:spdy-http-server:9.3.0.M1'
+    compile 'com.fasterxml:jackson-module-json-org:0.9.1'
+    compile 'com.fasterxml:jackson-xml-databind:0.6.2'
+    compile 'log4j:log4j:1.2.17'
+    compile 'org.neo4j:neo4j-io:3.0.0-M04'
+    compile 'org.neo4j:server-api:3.0.0-M04'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.7.1'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.1-1'
+    compile 'commons-codec:commons-codec:1.10'
+    compile 'commons-net:commons-net:3.4'
+    compile 'org.gatein.captcha:simplecaptcha:1.1.1-GA-Patch02-SNAPSHOT'
+    compile 'com.opencsv:opencsv:3.7'
+    compile 'com.google.guava:guava:19.0'
+    compile 'org.slf4j:slf4j-api:1.7.16'
+    compile 'com.google.code.gson:gson:2.6.1'
+    compile 'cglib:cglib-full:2.0.2'
+    
+    
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}

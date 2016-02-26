@@ -76,7 +76,6 @@ public abstract class ProxyClassLoader implements Comparable<ProxyClassLoader> {
         this.enabled = enabled;
     }
 
-    @Override
     public int compareTo(ProxyClassLoader o) {
         return order - o.getOrder();
     }

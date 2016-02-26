@@ -46,7 +46,6 @@ public class JclContextLoaderListener implements ServletContextListener {
      * 
      * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
      */
-    @Override
     public void contextDestroyed(ServletContextEvent sce) {
         contextLoader.unloadContext();
     }
@@ -56,7 +55,6 @@ public class JclContextLoaderListener implements ServletContextListener {
      * 
      * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
      */
-    @Override
     public void contextInitialized(ServletContextEvent sce) {
         String jclConfig = sce.getServletContext()
                 .getInitParameter(JCL_CONTEXT);

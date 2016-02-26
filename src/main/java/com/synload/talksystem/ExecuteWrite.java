@@ -17,7 +17,6 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.io.IOUtils;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import com.synload.framework.Log;
 
 class ExecuteWrite implements Runnable{

@@ -38,7 +38,7 @@ import org.objenesis.ObjenesisStd;
 class ProxyFactory {
   private static final Objenesis OBJENESIS = new ObjenesisStd();
   private static final NamingPolicy NAMING_POLICY = new DefaultNamingPolicy() {
-    @Override
+
     protected String getTag() {
       return "ByModelMapper";
     }
