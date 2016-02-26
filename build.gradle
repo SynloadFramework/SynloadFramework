@@ -1,6 +1,5 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'java-library-distribution'
 
 sourceCompatibility = 7
 version = '1.0'
