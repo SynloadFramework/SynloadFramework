@@ -1,8 +1,12 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'application'
 
 sourceCompatibility = 7
 version = '1.0'
+
+defaultTasks = ['clean', 'test']
+
 jar {
     manifest {
         attributes 'Implementation-Title': 'Gradle Quickstart',
@@ -16,6 +20,10 @@ repositories {
         url 'http://ci.synload.com/plugin/repository/everything/'
     }
 }
+
+mainClassName = "com.synload.framework.SynloadFramework"
+
+applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
 dependencies {
     compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
@@ -52,9 +60,4 @@ uploadArchives {
            dirs 'repos'
        }
     }
-}
-
-task(runConsole, dependsOn: 'classes', type: JavaExec) {
-    main = 'com.synload.framework.SynloadFramework' 
-    classpath = sourceSets.main.runtimeClasspath
 }
