@@ -111,7 +111,7 @@ public class SynloadFramework {
                 serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
                 graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
             } else {
-                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/config.ini");
+                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("config.ini");
                 FileOutputStream os = new FileOutputStream(new File("./config.ini"));
                 IOUtils.copy(is, os);
                 os.close();
@@ -119,14 +119,14 @@ public class SynloadFramework {
                 System.exit(0);
             }
             if(!new File("./log4j.properties").exists()){
-                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/log4j.properties");
+                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("log4j.properties");
                 FileOutputStream os = new FileOutputStream(new File("./log4j.properties"));
                 IOUtils.copy(is, os);
                 os.close();
                 is.close();
             }
             if(!new File("./bbcodes.xml").exists()){
-                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("resources/bbcodes.xml");
+                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("bbcodes.xml");
                 FileOutputStream os = new FileOutputStream(new File("./bbcodes.xml"));
                 IOUtils.copy(is, os);
                 os.close();
