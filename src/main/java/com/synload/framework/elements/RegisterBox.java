@@ -1,15 +1,21 @@
 package com.synload.framework.elements;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
+import com.synload.framework.modules.ModuleLoader;
 
 public class RegisterBox extends Response {
     public RegisterBox(List<String> templateCache) {
         this.setTemplateId("rb1");
         if (!templateCache.contains(this.getTemplateId())) {
-            this.setTemplate(this.getTemplate("./elements/register/box.html"));
+            try {
+				this.setTemplate(this.getTemplate(new String(ModuleLoader.resources.get("synloadframework").get("register.html"),"UTF-8")));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
         }
         this.setAction("alone");
         this.setPageId("registerBox");

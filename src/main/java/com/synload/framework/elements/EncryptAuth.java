@@ -11,11 +11,12 @@ import org.apache.commons.net.util.Base64;
 import nl.captcha.Captcha;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
+import com.synload.framework.modules.ModuleLoader;
 
 public class EncryptAuth extends Response {
     public EncryptAuth(Captcha c) throws IOException {
         this.setTemplateId("encKey");
-        this.setTemplate(this.getTemplate("./elements/encrypt.html"));
+        this.setTemplate(this.getTemplate(new String(ModuleLoader.resources.get("synloadframework").get("encrypt.html"),"UTF-8")));
         this.setAction("alone");
         this.setPageId("encryptBox");
         this.setParent("#body");

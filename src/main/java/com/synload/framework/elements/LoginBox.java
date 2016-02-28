@@ -1,16 +1,22 @@
 package com.synload.framework.elements;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
+import com.synload.framework.modules.ModuleLoader;
 
 public class LoginBox extends Response {
     public LoginBox(List<String> templateCache) {
         this.setTemplateId("lb1");
         if (!templateCache.contains(this.getTemplateId())) {
-            this.setTemplate(this.getTemplate("./elements/login/box.html"));
+            try {
+				this.setTemplate(this.getTemplate(new String(ModuleLoader.resources.get("synloadframework").get("login.html"),"UTF-8")));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
         }
         this.setAction("alone");
         this.setPageId("loginBox");

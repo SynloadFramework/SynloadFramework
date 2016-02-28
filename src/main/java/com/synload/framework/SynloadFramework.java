@@ -177,8 +177,7 @@ public class SynloadFramework {
                 Log.info("Neo4J disabled, skipping!", SynloadFramework.class);
             }
             
-            for (Entry<String, ModuleClass> mod : ModuleRegistry
-                    .getLoadedModules().entrySet()) {
+            for (Entry<String, ModuleClass> mod : ModuleRegistry.getLoadedModules().entrySet()) {
                 Log.info("Module ["+mod.getKey()+"] Initializing", SynloadFramework.class);
                 mod.getValue().initialize();
             }
@@ -191,13 +190,10 @@ public class SynloadFramework {
             }
             
             Log.info("Setting up http/websocket server", SynloadFramework.class);
-            LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(
-                    150);
-            ExecutorThreadPool pool = new ExecutorThreadPool(50, 200, 10,
-                    TimeUnit.MILLISECONDS, queue);
+            LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(150);
+            ExecutorThreadPool pool = new ExecutorThreadPool(50, 200, 10,TimeUnit.MILLISECONDS, queue);
             server = new Server(pool);
-            HTTPSPDYServerConnector connector = new HTTPSPDYServerConnector(
-                    server);
+            HTTPSPDYServerConnector connector = new HTTPSPDYServerConnector(server);
             connector.setPort(port);
             Connector[] g = new Connector[] { connector };
             server.setConnectors(g);
@@ -206,8 +202,7 @@ public class SynloadFramework {
             handlerCollection.addHandler(new WebsocketHandler());
             server.setHandler(handlerCollection);
 
-            Log.info("Loaded all aspects running on port " + port,
-                    SynloadFramework.class);
+            Log.info("Loaded all aspects running on port " + port, SynloadFramework.class);
 
             server.start();
             server.join();

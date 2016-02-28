@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.WebEvent;
+import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.ModuleLoader;
 
 public class HTTPRouting {
     public static HashMap<String, HTTPResponse> routes = new HashMap<String, HTTPResponse>();
@@ -277,23 +279,62 @@ public class HTTPRouting {
         }
 
     }
-
-    public static void page(String target, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    
+    public static void sendResource(String filename, byte[] resource, HttpServletResponse response){
+    	String mime = "text/html;charset=utf-8";
+        String ext = filename.split("(?sim)\\.")[filename.split("(?sim)\\.").length - 1];
+        if (ext.equalsIgnoreCase("js")) {
+            mime = "application/javascript";
+            response.setCharacterEncoding("UTF-8");
+        } else if (ext.equalsIgnoreCase("css")) {
+            mime = "text/css";
+            response.setCharacterEncoding("UTF-8");
+        } else if (ext.equalsIgnoreCase("webm")) {
+            mime = "video/webm";
+        } else if (ext.equalsIgnoreCase("mp4")) {
+            mime = "video/mp4";
+        } else if (ext.equalsIgnoreCase("jpg") || ext.equalsIgnoreCase("jpeg")) {
+            mime = "image/jpeg";
+        } else if (ext.equalsIgnoreCase("png")) {
+            mime = "image/png";
+        } else if (ext.equalsIgnoreCase("gif")) {
+            mime = "image/gif";
+        } else if (ext.equalsIgnoreCase("ico")) {
+            mime = "image/x-icon";
+        }
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader("Accept-Ranges", "bytes");
+        response.setContentType(mime);
+        response.setContentLengthLong(resource.length);
+        try {
+			response.getOutputStream().write(resource);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    /*
+     * Handle HTTP requests, called whenever an http request is received 
+     */
+    public static void page(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String[] URI = target.split("/");
-        // System.out.println("[WB][I] Request recieved!");
+        if(URI.length>1){
+        	if (URI[1].equalsIgnoreCase("ws")) {
+                return;
+            }
+        	if(ModuleLoader.resources.containsKey(URI[1])){
+        		if(ModuleLoader.resources.get(URI[1]).containsKey(target.replace("/"+URI[1]+"/", ""))){
+        			sendResource(target.replace("/"+URI[1], ""),ModuleLoader.resources.get(URI[1]).get(target.replace("/"+URI[1]+"/", "")), response);
+        		}
+        		return;
+        	}
+        }
         for (String path : HTTPRouting.routes.keySet()) {
             if (target.matches(path)) {
                 try {
                     HTTPResponse p = HTTPRouting.routes.get(path);
-                    // System.out.println("[WB][I] Route found sending to method!");
-                    p.getListener()
-                            .getMethod(p.getMethod(), String.class,
-                                    Request.class, HttpServletRequest.class,
-                                    HttpServletResponse.class, String[].class)
-                            .invoke(p.getListener().newInstance(), target,
-                                    baseRequest, request, response, URI);
+                    p.getListener().getMethod(p.getMethod(), String.class, Request.class, HttpServletRequest.class, HttpServletResponse.class, String[].class)
+                    	.invoke(p.getListener().newInstance(), target, baseRequest, request, response, URI);
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
@@ -307,7 +348,7 @@ public class HTTPRouting {
                 return;
             }
         }
-        // System.out.println("[WB][I] Route not found checking for files!!");
+        
         boolean file = false;
         if (URI.length == 3) {
             try {

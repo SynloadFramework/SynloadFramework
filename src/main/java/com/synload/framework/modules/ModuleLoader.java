@@ -5,11 +5,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
@@ -30,6 +33,7 @@ import com.synload.framework.ws.DefaultWSPages;
 import dnl.utils.text.table.TextTable;
 
 public class ModuleLoader extends ClassLoader {
+	public static Hashtable<String, Hashtable<String,byte[]>> resources = new Hashtable<String, Hashtable<String,byte[]>>();
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
 
     public ModuleLoader(ClassLoader parent) {
@@ -74,72 +78,31 @@ public class ModuleLoader extends ClassLoader {
         }
         List<String> classes = new ArrayList<String>();
         File[] listOfFiles = folder.listFiles();
+        Class<?> loadedClass;
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
                 fileName = listOfFiles[i].getName();
                 if (fileName.endsWith(".jar")) {
-                    try {
-                        URLClassLoader cl = new URLClassLoader(
-                                new URL[] { new File(path + fileName).toURI()
-                                        .toURL() });
-                        List<String> classList = getClasses(path + fileName);
-                        for (String clazz : classList) {
-                            String clazzFile = clazz.replaceAll("(?i)\\.", "/")
-                                    + ".class";
-                            Log.debug("Loading class data for " + clazz
-                                    + "[R:{" + clazzFile + "}]",
-                                    ModuleLoader.class);
-                            InputStream is = cl.getResourceAsStream(clazzFile);
-                            if (is == null) {
-                                Log.error("Resource Error for "
-                                        + clazz + "[R:{" + clazzFile + "}]",
-                                        ModuleLoader.class);
-                            }
-                            byte[] clazzBytes = IOUtils.toByteArray(is);
-                            is.close();
-                            ModuleLoader ml = new ModuleLoader(Thread
-                                    .currentThread().getContextClassLoader());
-                            ml.loadClass(clazz, clazzBytes);
-                            classes.add(clazz);
-                        }
-                        cl.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                	loadModuleFiles(classes, sql, modules, events, path, fileName, true, true);
                 }
             }
         }
-        for (String clazz : classes) {
-            Class<?> loadedClass;
-            try {
-                loadedClass = (new ModuleLoader(Thread.currentThread()
-                        .getContextClassLoader())).loadClass(clazz);
-                // loadedClass = Class.forName();
-                ModuleClass module = null;
-                Object[] obj = register(loadedClass, Handler.MODULE,
-                        TYPE.CLASS, null);
-                if (obj != null) {
-                    module = (ModuleClass) obj[0];
-                    modules.add((Object[]) obj[1]);
-                }
-                Object[] obsql = registerSQL(loadedClass, module);
-                if (obsql != null) {
-                    sql.add(obsql);
-                }
-                events.addAll((List<Object[]>) register(loadedClass,
-                        Handler.EVENT, TYPE.METHOD, module)[0]);
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
+        
+        /*
+         * SynloadFramework defaults!
+         */
+        try {
+        	String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
+			loadModuleFiles(classes, sql, modules, events, "lib/", SynJar[SynJar.length-1], true, false);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+        
         /*
          * Hardcoded defaults!
          */
         try {
-            events.addAll((List<Object[]>) register(DefaultWSPages.class,
-                    Handler.EVENT, TYPE.METHOD, null)[0]);
+            events.addAll((List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -155,24 +118,100 @@ public class ModuleLoader extends ClassLoader {
         }
         /*
          * Defaults setting end
+         * 
+         * Display tables of data
+         * 
          */
+        display( sql, modules, events );
+        
+    }
+    /*
+     * load module jars files
+     * 
+     */
+    public static void loadModuleFiles(List<String> classes, List<Object[]> sql, List<Object[]> modules, List<Object[]> events, String path, String fileName, boolean loadResources, boolean loadClasses){
+    	Class<?> loadedClass;
+    	Log.info("Loaded file: "+path+fileName, ModuleLoader.class);
+    	try {
+            URLClassLoader cl = new URLClassLoader(new URL[] { new File(path+fileName).toURI().toURL() });
+            
+            Properties moduleSettings = new Properties();
+            InputStream is = cl.getResourceAsStream("module.ini");
+            String moduleName = "";
+            if (is != null) {
+            	moduleSettings.load(is);
+            	moduleName = moduleSettings.getProperty("module");
+            	Log.info("Module Name: "+moduleName, ModuleLoader.class);
+            	is.close();
+            }
+            if(moduleName.equals("ws")){
+            	Log.error("Error module name is reserved 'ws'", ModuleLoader.class);
+            	System.exit(-1);
+            }
+            if(!resources.containsKey(moduleName)){
+    			resources.put(moduleName, new Hashtable<String,byte[]>() );
+    		}
+            HashMap<String,List<String>> resourcesList = getClasses(path + fileName);
+            if(resourcesList.containsKey("classes") && loadClasses==true){
+                for (String clazz : resourcesList.get("classes")) {
+                    String clazzFile = clazz.replaceAll("(?i)\\.", "/") + ".class";
+                    Log.debug("Loading class data for " + clazz + "[R:{" + clazzFile + "}]", ModuleLoader.class);
+                    is = cl.getResourceAsStream(clazzFile);
+                    if (is == null) {
+                        Log.error("Resource Error for " + clazz + "[R:{" + clazzFile + "}]", ModuleLoader.class);
+                    }
+                    byte[] clazzBytes = IOUtils.toByteArray(is);
+                    is.close();
+                    ModuleLoader ml = new ModuleLoader(Thread.currentThread().getContextClassLoader());
+                    ml.loadClass(clazz, clazzBytes); // load class bytes
+                    classes.add(clazz);
+                    loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz); // load class
+                    ModuleClass module = null;
+                    Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
+                    if (obj != null) {
+                        module = (ModuleClass) obj[0];
+                        modules.add((Object[]) obj[1]);
+                    }
+                    Object[] obsql = registerSQL(loadedClass, module); 
+                    if (obsql != null) {
+                        sql.add(obsql);
+                    }
+                    events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+                }
+            }
+            if(resourcesList.containsKey("resources") && loadResources==true){
+            	for(String resource : resourcesList.get("resources")){
+            		is = cl.getResourceAsStream(resource);
+            		if (is == null) {
+            			Log.error("Resource Error for " + resource + "[R:{" + resource + "}]", ModuleLoader.class);
+            		}
+            		byte[] resourceBytes = IOUtils.toByteArray(is);
+            		resources.get(moduleName).put(resource.replace("www/", ""), resourceBytes);
+            		is.close();
+            	}
+            }
+            cl.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+    }
 
-        System.out.println("\nModules Loaded");
-        TextTable tt = new TextTable(new String[] { "Class", "Name", "Author",
-                "Version" }, modules.toArray(new Object[modules.size()][]));
+    public static void display( List<Object[]> sql, List<Object[]> modules, List<Object[]> events ){
+    	System.out.println("\nModules Loaded");
+        TextTable tt = new TextTable(new String[] { "Class", "Name", "Author", "Version" }, modules.toArray(new Object[modules.size()][]));
         tt.printTable();
         System.out.println("\nEvents Loaded");
-        tt = new TextTable(new String[] { "Class", "Module", "Method Name",
-                "Type", "Description", "Trigger" },
-                events.toArray(new Object[events.size()][]));
+        tt = new TextTable(new String[] { "Class", "Module", "Method Name", "Type", "Description", "Trigger" }, events.toArray(new Object[events.size()][]));
         tt.printTable();
         System.out.println("\nSQL Tables Loaded");
-        tt = new TextTable(new String[] { "Class", "Name", "Description",
-                "Version" }, sql.toArray(new Object[sql.size()][]));
+        tt = new TextTable(new String[] { "Class", "Name", "Description", "Version" }, sql.toArray(new Object[sql.size()][]));
         tt.printTable();
         System.out.print("\n");
     }
-
     public static <T> Object[] registerSQL(Class<T> c, ModuleClass module) {
         if (c.isAnnotationPresent(SQLTable.class)) {
             SQLTable tbl = c.getAnnotation(SQLTable.class);
@@ -265,25 +304,32 @@ public class ModuleLoader extends ClassLoader {
     }
 
     @SuppressWarnings("resource")
-    public static List<String> getClasses(String file) throws IOException {
+    public static HashMap<String,List<String>> getClasses(String file) throws IOException {
+    	
+    	HashMap<String,List<String>> returnedData = new HashMap<String,List<String>>();
         List<String> classNames = new ArrayList<String>();
+        List<String> resources = new ArrayList<String>();
+        
         ZipInputStream zip = new ZipInputStream(new FileInputStream(file));
-        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip
-                .getNextEntry())
+        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
             if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
-                // This ZipEntry represents a class. Now, what class does it
-                // represent?
                 StringBuilder className = new StringBuilder();
                 for (String part : entry.getName().split("/")) {
-                    if (className.length() != 0)
+                    if (className.length() != 0){
                         className.append(".");
+                    }
                     className.append(part);
-                    if (part.endsWith(".class"))
-                        className.setLength(className.length()
-                                - ".class".length());
+                    if (part.endsWith(".class")){
+                        className.setLength(className.length()- ".class".length());
+                    }
                 }
                 classNames.add(className.toString());
+            }else if(entry.getName().contains("www/")){
+            	resources.add(entry.getName());
             }
-        return classNames;
+        }
+        returnedData.put("classes", classNames);
+        returnedData.put("resources", resources);
+        return returnedData;
     }
 }

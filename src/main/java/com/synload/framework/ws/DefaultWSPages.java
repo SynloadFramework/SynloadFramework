@@ -27,37 +27,12 @@ import com.synload.framework.users.User;
 
 public class DefaultWSPages {
 
-    @Event(name = "", description = "", trigger = { "get", "full" }, type = Type.WEBSOCKET)
+    /*@Event(name = "", description = "", trigger = { "get", "full" }, type = Type.WEBSOCKET)
     public void getFullPage(RequestEvent event) throws JsonProcessingException,
             IOException {
         event.getSession().send(
                 SynloadFramework.ow.writeValueAsString(new FullPage(event
                         .getRequest().getTemplateCache())));
-    }
-
-    @Event(name = "", description = "", trigger = { "get", "encrypt_confirm" }, type = Type.WEBSOCKET)
-    public void getEncryptAuth(RequestEvent event)
-            throws JsonProcessingException, IOException {
-        if (event.getSession().encrypt) {
-            EventPublisher.raiseEvent(new EncryptEvent(event.getSession()),
-                    null);
-        }
-    }
-
-    @Event(name = "", description = "", trigger = {}, type = Type.WEBSOCKET)
-    public void getEncryptAuth(EncryptEvent event)
-            throws JsonProcessingException, IOException {
-        if (event.getSession().encrypt) {
-            if (SynloadFramework.isSiteDefaults()) {
-                event.getSession().send(new JavascriptIncludes());
-            }
-        }
-    }
-
-    @Event(name = "", description = "", trigger = { "get", "ping" }, type = Type.WEBSOCKET)
-    public void getPing(RequestEvent event) throws JsonProcessingException,
-            IOException {
-        return;
     }
 
     @Event(name = "", description = "", trigger = { "get", "wrapper" }, type = Type.WEBSOCKET)
@@ -85,7 +60,33 @@ public class DefaultWSPages {
                 SynloadFramework.ow.writeValueAsString(UserSettingsForm
                         .get(event.getSession())));
     }
+     */
+	
+	@Event(name = "Encryption confirmation", description = "checks to see if data is correct", trigger = { "get", "encrypt_confirm" }, type = Type.WEBSOCKET)
+    public void getEncryptAuth(RequestEvent event)
+            throws JsonProcessingException, IOException {
+        if (event.getSession().encrypt) {
+            EventPublisher.raiseEvent(new EncryptEvent(event.getSession()),
+                    null);
+        }
+    }
 
+    @Event(name = "Send encryption page", description = "when encryption=true sends ws page", trigger = {}, type = Type.WEBSOCKET)
+    public void getEncryptAuth(EncryptEvent event)
+            throws JsonProcessingException, IOException {
+        if (event.getSession().encrypt) {
+            if (SynloadFramework.isSiteDefaults()) {
+                event.getSession().send(new JavascriptIncludes());
+            }
+        }
+    }
+	
+	@Event(name = "", description = "", trigger = { "get", "ping" }, type = Type.WEBSOCKET)
+    public void getPing(RequestEvent event) throws JsonProcessingException,
+            IOException {
+        return;
+    }
+	
     @Event(name = "", description = "", trigger = { "get", "login" }, type = Type.WEBSOCKET)
     public void getLoginBox(RequestEvent event) throws JsonProcessingException,
             IOException {
