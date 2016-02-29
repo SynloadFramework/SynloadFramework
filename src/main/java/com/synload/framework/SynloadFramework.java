@@ -48,7 +48,7 @@ import com.synload.talksystem.ServerTalk;
 public class SynloadFramework {
     public SynloadFramework() {
     }
-
+    public static String version="1.3";
     public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
     public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
@@ -245,12 +245,10 @@ public class SynloadFramework {
 
     public static void buildDefaultHTTP() {
 
-        SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class,
-                "getIndex");
+        SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
         if (handleUpload) {
             Log.info("Upload handler enabled!", SynloadFramework.class);
-            SynloadFramework.registerHTTPPage("/system/uploads",
-                    DefaultHTTPPages.class, "handleUploads");
+            SynloadFramework.registerHTTPPage("/system/uploads", DefaultHTTPPages.class, "handleUploads");
         }
     }
 
@@ -274,8 +272,7 @@ public class SynloadFramework {
     public static void registerHTTPPage(String page, Class<?> listenerClass,
             String method) {
         try {
-            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass,
-                    method))) {
+            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass, method))) {
                 // System.out.println("[WB] Registered path <"+page+">");
             } else {
                 // System.out.println("[WB][E] Failed to add <"+page+"> path");

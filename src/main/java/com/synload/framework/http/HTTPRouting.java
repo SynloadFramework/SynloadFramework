@@ -317,12 +317,11 @@ public class HTTPRouting {
      * Handle HTTP requests, called whenever an http request is received 
      */
     public static void page(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String[] URI = target.split("/");
+        String[] URI = target.split("/",-1);
         if(URI.length>1){
         	if (URI[1].equalsIgnoreCase("ws")) {
                 return;
-            }
-        	if(ModuleLoader.resources.containsKey(URI[1])){
+            }else if(ModuleLoader.resources.containsKey(URI[1])){
         		if(ModuleLoader.resources.get(URI[1]).containsKey(target.replace("/"+URI[1]+"/", ""))){
         			sendResource(target.replace("/"+URI[1], ""),ModuleLoader.resources.get(URI[1]).get(target.replace("/"+URI[1]+"/", "")), response);
         		}

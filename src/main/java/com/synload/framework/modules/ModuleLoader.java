@@ -8,7 +8,10 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -33,9 +36,16 @@ import com.synload.framework.ws.DefaultWSPages;
 import dnl.utils.text.table.TextTable;
 
 public class ModuleLoader extends ClassLoader {
+	public static Thread checkNewJar=null;
 	public static Hashtable<String, Hashtable<String,byte[]>> resources = new Hashtable<String, Hashtable<String,byte[]>>();
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
-
+    public static HashMap<String, byte[]> loadedModules = new HashMap<String, byte[]>();
+    
+    public static HashMap<String, ArrayList<String>> jarClasses = new HashMap<String, ArrayList<String>>();
+    public static HashMap<String, ArrayList<Object[]>> jarEvents = new HashMap<String, ArrayList<Object[]>>();
+    public static HashMap<String, ArrayList<Object[]>> jarModule = new HashMap<String, ArrayList<Object[]>>();
+    
+    public static List<String> modules = new ArrayList<String>();
     public ModuleLoader(ClassLoader parent) {
         super(parent);
     }
@@ -56,8 +66,7 @@ public class ModuleLoader extends ClassLoader {
         try {
             Class.forName(clazzName);
         } catch (ClassNotFoundException e) {
-            Class<?> c = defineClass(clazzName, clazzBytes, 0,
-                    clazzBytes.length);
+            Class<?> c = defineClass(clazzName, clazzBytes, 0, clazzBytes.length);
             cache.put(clazzName, c);
         }
     }
@@ -69,13 +78,17 @@ public class ModuleLoader extends ClassLoader {
     @SuppressWarnings("unchecked")
     public static void load(String path) {
         String fileName;
-        List<Object[]> sql = new ArrayList<Object[]>();
-        List<Object[]> modules = new ArrayList<Object[]>();
-        List<Object[]> events = new ArrayList<Object[]>();
+        if(checkNewJar==null){
+			checkNewJar = new Thread(new CheckNewJar(path));
+			checkNewJar.start();
+		}
         File folder = new File(path);
         if (!folder.exists()) {
             folder.mkdir();
         }
+        List<Object[]> sql = new ArrayList<Object[]>();
+        List<Object[]> modules = new ArrayList<Object[]>();
+        List<Object[]> events = new ArrayList<Object[]>();
         List<String> classes = new ArrayList<String>();
         File[] listOfFiles = folder.listFiles();
         Class<?> loadedClass;
@@ -83,6 +96,23 @@ public class ModuleLoader extends ClassLoader {
             if (listOfFiles[i].isFile()) {
                 fileName = listOfFiles[i].getName();
                 if (fileName.endsWith(".jar")) {
+                	InputStream hashIS = null;
+                    try {
+                    	hashIS = new FileInputStream(new File(path+fileName));
+        				loadedModules.put(fileName, SHA1(IOUtils.toByteArray(hashIS)));
+        			} catch (NoSuchAlgorithmException e) {
+        				e.printStackTrace();
+        			} catch (IOException e) {
+						e.printStackTrace();
+					}finally{
+						if(hashIS!=null){
+							try {
+								hashIS.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
                 	loadModuleFiles(classes, sql, modules, events, path, fileName, true, true);
                 }
             }
@@ -102,7 +132,7 @@ public class ModuleLoader extends ClassLoader {
          * Hardcoded defaults!
          */
         try {
-            events.addAll((List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
+            events.addAll((List<Object[]>) register("synloadframework.jar", DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -125,6 +155,27 @@ public class ModuleLoader extends ClassLoader {
         display( sql, modules, events );
         
     }
+    
+    public static byte[] SHA1(byte[] convertme) throws NoSuchAlgorithmException{
+        return MessageDigest.getInstance("SHA-256").digest(convertme);
+    }
+    
+    public static void unload(String fileName){
+    	List<Object[]> jarM = jarModule.get(fileName);
+    	for(Object[] jmod : jarM){
+    		ModuleRegistry.getLoadedModules().remove(jmod[0]);
+    		SynloadFramework.plugins.remove(jmod[1]);
+    	}
+    	List<Object[]> jarE = jarEvents.get(fileName);
+    	for(Object[] jE : jarE){
+    		HandlerRegistry.unregister((Class<?>)jE[0], (EventTrigger)jE[1]);
+    	}
+    	List<String> jarC = jarClasses.get(fileName);
+    	for(String jC : jarC){
+    		cache.remove(jC);
+    	}
+    }
+    
     /*
      * load module jars files
      * 
@@ -135,12 +186,17 @@ public class ModuleLoader extends ClassLoader {
     	try {
             URLClassLoader cl = new URLClassLoader(new URL[] { new File(path+fileName).toURI().toURL() });
             
+            ModuleLoader.jarClasses.put(fileName, new ArrayList<String>());
+            ModuleLoader.jarEvents.put(fileName, new ArrayList<Object[]>());
+            ModuleLoader.jarModule.put(fileName, new ArrayList<Object[]>());
+            
             Properties moduleSettings = new Properties();
             InputStream is = cl.getResourceAsStream("module.ini");
             String moduleName = "";
             if (is != null) {
             	moduleSettings.load(is);
             	moduleName = moduleSettings.getProperty("module");
+            	ModuleLoader.modules.add(moduleName);
             	Log.info("Module Name: "+moduleName, ModuleLoader.class);
             	is.close();
             }
@@ -165,9 +221,10 @@ public class ModuleLoader extends ClassLoader {
                     ModuleLoader ml = new ModuleLoader(Thread.currentThread().getContextClassLoader());
                     ml.loadClass(clazz, clazzBytes); // load class bytes
                     classes.add(clazz);
+                    jarClasses.get(fileName).add(clazz);
                     loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz); // load class
                     ModuleClass module = null;
-                    Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
+                    Object[] obj = register(fileName, loadedClass, Handler.MODULE, TYPE.CLASS, null);
                     if (obj != null) {
                         module = (ModuleClass) obj[0];
                         modules.add((Object[]) obj[1]);
@@ -176,7 +233,7 @@ public class ModuleLoader extends ClassLoader {
                     if (obsql != null) {
                         sql.add(obsql);
                     }
-                    events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+                    events.addAll((List<Object[]>) register(fileName, loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
                 }
             }
             if(resourcesList.containsKey("resources") && loadResources==true){
@@ -225,33 +282,32 @@ public class ModuleLoader extends ClassLoader {
         }
         return null;
     }
+    
 
     /*
      * Checks for Addons, Methods in each class
      */
-
     @SuppressWarnings("unchecked")
-    public static <T> Object[] register(Class<T> c, Handler annotationClass,
-            TYPE type, ModuleClass module) throws InstantiationException,
-            IllegalAccessException {
+    public static <T> Object[] register(String fileName, Class<T> c, Handler annotationClass, TYPE type, ModuleClass module) throws InstantiationException, IllegalAccessException {
         if (TYPE.CLASS == type) {
             if (c.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                 /*
                  * Loaded a module, declare it as such and register it!
                  */
                 Object[] obj = new Object[4];
-                Module moduleAnnotation = (Module) c
-                        .getAnnotation(Handler.MODULE.getAnnotationClass());
+                Module moduleAnnotation = (Module) c.getAnnotation(Handler.MODULE.getAnnotationClass());
                 ModuleClass mod = (ModuleClass) c.newInstance();
                 
                 SynloadFramework.plugins.add(mod);
                 
-                ModuleRegistry.getLoadedModules().put(moduleAnnotation.name(),
-                        mod);
+                ModuleRegistry.getLoadedModules().put(moduleAnnotation.name(), mod);
                 obj[0] = c.getName();
                 obj[1] = moduleAnnotation.name();
                 obj[2] = moduleAnnotation.author();
                 obj[3] = moduleAnnotation.version();
+                if(ModuleLoader.jarModule.containsKey(fileName)){
+                	jarModule.get(fileName).add(new Object[]{ moduleAnnotation.name(), mod });
+                }
                 // mod.initialize();
                 return new Object[] { mod, obj };
             }
@@ -261,8 +317,7 @@ public class ModuleLoader extends ClassLoader {
                 if (m.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                     EventTrigger et = new EventTrigger();
 
-                    Event eventAnnotation = (Event) m
-                            .getAnnotation(Handler.EVENT.getAnnotationClass());
+                    Event eventAnnotation = (Event) m.getAnnotation(Handler.EVENT.getAnnotationClass());
                     if (eventAnnotation.enabled()) {
                         et.setHostClass(c);
                         et.setMethod(m);
@@ -273,10 +328,7 @@ public class ModuleLoader extends ClassLoader {
 
                         Object[] obj_tmp = new Object[6];
                         if (module != null) {
-                            Module modul = (Module) module
-                                    .getClass()
-                                    .getAnnotation(
-                                            Handler.MODULE.getAnnotationClass());
+                            Module modul = (Module) module.getClass().getAnnotation(Handler.MODULE.getAnnotationClass());
                             obj_tmp[1] = modul.name();
                         } else {
                             obj_tmp[1] = "";
@@ -286,15 +338,16 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[3] = eventAnnotation.type();
                         obj_tmp[4] = eventAnnotation.description();
                         try {
-                            obj_tmp[5] = SynloadFramework.ow
-                                    .writeValueAsString(eventAnnotation
-                                            .trigger());
+                            obj_tmp[5] = SynloadFramework.ow.writeValueAsString(eventAnnotation.trigger());
                         } catch (JsonProcessingException e1) {
                             e1.printStackTrace();
                         }
                         obj.add(obj_tmp);
-                        HandlerRegistry.register(
-                                annotationClass.getAnnotationClass(), et);
+                        HandlerRegistry.register(annotationClass.getAnnotationClass(), et);
+                        Log.info(fileName, ModuleLoader.class);
+                        if(ModuleLoader.jarEvents.containsKey(fileName)){
+                        	ModuleLoader.jarEvents.get(fileName).add(new Object[]{annotationClass.getAnnotationClass(), et});
+                        }
                     }
                 }
             }

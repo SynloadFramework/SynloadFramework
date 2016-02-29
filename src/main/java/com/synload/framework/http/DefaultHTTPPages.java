@@ -21,26 +21,25 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.FileUploadEvent;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.ModuleLoader;
 
 public class DefaultHTTPPages {
     public void getIndex(String target, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response,
             String[] URI) throws IOException {
-        HTTPRouting.openFile("pages/index.html", response, baseRequest);
+        HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), response);
     }
 
     public void handleUploads(String target, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response,
             String[] URI) throws IOException {
-        request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT,
-                HTTPHandler.MULTI_PART_CONFIG);
+        request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, HTTPHandler.MULTI_PART_CONFIG);
         response.setContentType("text/html;charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
         if (!baseRequest.getParameterMap().containsKey("key")) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().println(
-                    "{\"e\":\"no reference key provided\"}");
+            response.getWriter().println("{\"e\":\"no reference key provided\"}");
             return;
         }
         if (!baseRequest.getParameterMap().containsKey("user")) {
@@ -55,17 +54,14 @@ public class DefaultHTTPPages {
                 if (part.getSubmittedFileName() != null) {
                     if (part.getSize() > 0) {
                         if (SynloadFramework.maxUploadSize <= part.getSize()) {
-                            response.getWriter().println(
-                                    "{\"e\":\"File size too large!\"}");
+                            response.getWriter().println("{\"e\":\"File size too large!\"}");
                             part.delete();
                             break;
                         }
-                        String tempFile = SynloadFramework.randomString(32)
-                                + ".file";
+                        String tempFile = SynloadFramework.randomString(32)+ ".file";
                         try {
                             InputStream is = part.getInputStream();
-                            OutputStream out = new FileOutputStream(
-                                    SynloadFramework.uploadPath + tempFile);
+                            OutputStream out = new FileOutputStream(SynloadFramework.uploadPath + tempFile);
                             int bytesRead;
                             byte[] buffer = new byte[8 * 1024];
                             while ((bytesRead = is.read(buffer)) != -1) {
@@ -79,22 +75,14 @@ public class DefaultHTTPPages {
                                 e.printStackTrace();
                             }
                         }
-                        String user = StringUtils.join(baseRequest
-                                .getParameterMap().get("user"));
-                        UploadedFile uf = new UploadedFile(URLDecoder.decode(
-                                part.getSubmittedFileName(), "UTF-8"),
-                                SynloadFramework.uploadPath, tempFile, user,
-                                part.getSize());
-                        EventPublisher.raiseEvent(
-                                new FileUploadEvent(uf, StringUtils
-                                        .join(baseRequest.getParameterMap()
-                                                .get("key"))), true, null);
+                        String user = StringUtils.join(baseRequest.getParameterMap().get("user"));
+                        UploadedFile uf = new UploadedFile(URLDecoder.decode(part.getSubmittedFileName(), "UTF-8"), SynloadFramework.uploadPath, tempFile, user, part.getSize());
+                        EventPublisher.raiseEvent(new FileUploadEvent(uf, StringUtils.join(baseRequest.getParameterMap().get("key"))), true, null);
                         entry.add(uf.getName());
                     }
                 }
             }
-            ObjectWriter ow = new ObjectMapper().writer()
-                    .withDefaultPrettyPrinter();
+            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             response.getWriter().println(ow.writeValueAsString(entry));
         } catch (ServletException e) {
         	 if (SynloadFramework.debug) {

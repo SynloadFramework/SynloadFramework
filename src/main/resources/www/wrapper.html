@@ -1,0 +1,32 @@
+
+<div class="container-fluid">
+        <div id="page-wrapper" style="margin-left:0px;margin-top:10px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;min-height:10px;padding-bottom:20px;height:auto;">
+         <div class="row">
+          <div class="col-lg-12">
+              <div class="panel-body content" page="wrapper">
+              </div>
+          </div>
+         </div>
+        </div>
+	<div style="margin-left:0px;margin-top:20px;background:#fff;box-shadow: 0px 2px 5px #5a5a5a;min-height:10px;padding:10px;margin-bottom:20px;text-align:center;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:#000;">
+		<b><a href="//synload.com" target="_blank">Synload Development</a> &copy; 2016 <%=title %></b><br/>Running <a href="//github.com/firestar/synloadframework" target="_blank">Synload Framework v.<%=version %></a> with <%=modules %>
+	</div>
+</div>
+<script>
+$(function() {
+    //$('#side-menu').metisMenu();
+    $(window).bind("load resize", function() {
+        if ($(this).width() < 768) {
+            $('div.sidebar-collapse').addClass('collapse')
+        } else {
+            $('div.sidebar-collapse').removeClass('collapse')
+        }
+    })
+    $(".navibar").mouseleave(function(){
+        page.hideMenu();
+    })
+    $(".navbar-brand").mouseenter(function(){
+        page.showMenu();
+    });
+});
+</script>

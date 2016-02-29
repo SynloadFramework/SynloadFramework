@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
 apply plugin: 'application'
 
 sourceCompatibility = 1.5
@@ -53,7 +54,7 @@ dependencies {
 uploadArchives {
     repositories {
        flatDir {
-           dirs 'repos'
+           dirs 'build/repos'
        }
     }
 }

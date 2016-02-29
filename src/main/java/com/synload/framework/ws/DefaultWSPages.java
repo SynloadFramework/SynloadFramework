@@ -27,22 +27,7 @@ import com.synload.framework.users.User;
 
 public class DefaultWSPages {
 
-    /*@Event(name = "", description = "", trigger = { "get", "full" }, type = Type.WEBSOCKET)
-    public void getFullPage(RequestEvent event) throws JsonProcessingException,
-            IOException {
-        event.getSession().send(
-                SynloadFramework.ow.writeValueAsString(new FullPage(event
-                        .getRequest().getTemplateCache())));
-    }
-
-    @Event(name = "", description = "", trigger = { "get", "wrapper" }, type = Type.WEBSOCKET)
-    public void getWrapper(RequestEvent event) throws JsonProcessingException,
-            IOException {
-        event.getSession().session.getRemote().sendString(
-                SynloadFramework.ow.writeValueAsString(new Wrapper(event
-                        .getRequest().getTemplateCache())));
-    }
-
+    /*
     @Event(name = "", description = "", trigger = { "get", "userSettings" }, type = Type.WEBSOCKET, flags = { "r" })
     public void getUserSettingsForm(RequestEvent event)
             throws JsonProcessingException, IOException {
@@ -61,6 +46,22 @@ public class DefaultWSPages {
                         .get(event.getSession())));
     }
      */
+	
+	@Event(name = "Full body wrapper", description = "part of html page creation", trigger = { "get", "full" }, type = Type.WEBSOCKET)
+    public void getFullPage(RequestEvent event) throws JsonProcessingException,
+            IOException {
+        event.getSession().send(
+                SynloadFramework.ow.writeValueAsString(new FullPage(event
+                        .getRequest().getTemplateCache())));
+    }
+
+    @Event(name = "Wrapper", description = "part of html page creation", trigger = { "get", "wrapper" }, type = Type.WEBSOCKET)
+    public void getWrapper(RequestEvent event) throws JsonProcessingException,
+            IOException {
+        event.getSession().session.getRemote().sendString(
+                SynloadFramework.ow.writeValueAsString(new Wrapper(event
+                        .getRequest().getTemplateCache())));
+    }
 	
 	@Event(name = "Encryption confirmation", description = "checks to see if data is correct", trigger = { "get", "encrypt_confirm" }, type = Type.WEBSOCKET)
     public void getEncryptAuth(RequestEvent event)
@@ -81,61 +82,21 @@ public class DefaultWSPages {
         }
     }
 	
-	@Event(name = "", description = "", trigger = { "get", "ping" }, type = Type.WEBSOCKET)
+	@Event(name = "Ping", description = "Keep alive requests", trigger = { "get", "ping" }, type = Type.WEBSOCKET)
     public void getPing(RequestEvent event) throws JsonProcessingException,
             IOException {
         return;
     }
 	
-    @Event(name = "", description = "", trigger = { "get", "login" }, type = Type.WEBSOCKET)
-    public void getLoginBox(RequestEvent event) throws JsonProcessingException,
-            IOException {
-        event.getSession().send(
-                SynloadFramework.ow.writeValueAsString(new LoginBox(event
-                        .getRequest().getTemplateCache())));
-    }
-
-    @Event(name = "", description = "", trigger = { "get", "register" }, type = Type.WEBSOCKET)
+    @Event(name = "User Register", description = "handle user registrations", trigger = { "get", "register" }, type = Type.WEBSOCKET)
     public void getRegisterBox(RequestEvent event)
             throws JsonProcessingException, IOException {
         event.getSession().send(
                 SynloadFramework.ow.writeValueAsString(new RegisterBox(event
                         .getRequest().getTemplateCache())));
     }
-
-    @Event(name = "", description = "", trigger = { "get", "sessionlogin" }, type = Type.WEBSOCKET)
-    public void getSessionLogin(RequestEvent event)
-            throws JsonProcessingException, IOException {
-        User authedUser = Authentication.session(event.getSession(), String.valueOf(event
-                .getSession().session.getUpgradeRequest()
-                .getHeader("X-Real-IP")),
-                event.getRequest().getData().get("sessionid"));
-        if (authedUser != null) {
-            event.getSession().setUser(authedUser);
-            Success authResponse = new Success("session");
-            Map<String, String> userData = new HashMap<String, String>();
-            userData.put("id",
-                    String.valueOf(event.getSession().getUser().getId()));
-            userData.put("session",
-                    event.getRequest().getData().get("sessionid"));
-            if (authedUser.getFlags() != null) {
-                userData.put(
-                        "flags",
-                        SynloadFramework.ow.writeValueAsString(event
-                                .getSession().getUser().getFlags()));
-            }
-            userData.put("name", event.getSession().getUser().getUsername());
-            authResponse.setData(userData);
-            event.getSession().send(
-                    SynloadFramework.ow.writeValueAsString(authResponse));
-        } else {
-            event.getSession().send(
-                    SynloadFramework.ow
-                            .writeValueAsString(new Failed("session")));
-        }
-    }
-
-    @Event(name = "", description = "", trigger = { "get", "logout" }, type = Type.WEBSOCKET)
+    
+    @Event(name = "Logout", description = "handle a user logout request", trigger = { "get", "logout" }, type = Type.WEBSOCKET)
     public void getLogout(RequestEvent event) throws JsonProcessingException,
             IOException {
         if (event.getSession().getUser() != null) {
@@ -156,7 +117,15 @@ public class DefaultWSPages {
         }
     }
 
-    @Event(name = "", description = "", trigger = { "action", "login" }, type = Type.WEBSOCKET)
+    @Event(name = "user login", description = "handle user logins", trigger = { "get", "login" }, type = Type.WEBSOCKET)
+    public void getLoginBox(RequestEvent event) throws JsonProcessingException,
+            IOException {
+        event.getSession().send(
+                SynloadFramework.ow.writeValueAsString(new LoginBox(event
+                        .getRequest().getTemplateCache())));
+    }
+    
+    @Event(name = "Login", description = "another login handler", trigger = { "action", "login" }, type = Type.WEBSOCKET)
     public void getLogin(RequestEvent event) throws JsonProcessingException,
             IOException {
         User authedUser = Authentication.login(event.getSession(), event.getRequest().getData()
@@ -190,8 +159,40 @@ public class DefaultWSPages {
                             "login")));
         }
     }
+    
+    @Event(name = "Session Login", description = "handle already logged in users", trigger = { "get", "sessionlogin" }, type = Type.WEBSOCKET)
+    public void getSessionLogin(RequestEvent event)
+            throws JsonProcessingException, IOException {
+        User authedUser = Authentication.session(event.getSession(), String.valueOf(event
+                .getSession().session.getUpgradeRequest()
+                .getHeader("X-Real-IP")),
+                event.getRequest().getData().get("sessionid"));
+        if (authedUser != null) {
+            event.getSession().setUser(authedUser);
+            Success authResponse = new Success("session");
+            Map<String, String> userData = new HashMap<String, String>();
+            userData.put("id",
+                    String.valueOf(event.getSession().getUser().getId()));
+            userData.put("session",
+                    event.getRequest().getData().get("sessionid"));
+            if (authedUser.getFlags() != null) {
+                userData.put(
+                        "flags",
+                        SynloadFramework.ow.writeValueAsString(event
+                                .getSession().getUser().getFlags()));
+            }
+            userData.put("name", event.getSession().getUser().getUsername());
+            authResponse.setData(userData);
+            event.getSession().send(
+                    SynloadFramework.ow.writeValueAsString(authResponse));
+        } else {
+            event.getSession().send(
+                    SynloadFramework.ow
+                            .writeValueAsString(new Failed("session")));
+        }
+    }
 
-    @Event(name = "", description = "", trigger = { "action", "register" }, type = Type.WEBSOCKET)
+    @Event(name = "Register", description = "", trigger = { "action", "register" }, type = Type.WEBSOCKET)
     public void getRegister(RequestEvent event) throws JsonProcessingException,
             IOException {
         List<String> flags = new ArrayList<String>();

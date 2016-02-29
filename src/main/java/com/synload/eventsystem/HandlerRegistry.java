@@ -23,6 +23,14 @@ public class HandlerRegistry {
             triggers.put(handler, eventTrigger);
         }
     }
+    
+    public static void unregister(Class handler, EventTrigger trigger) {
+        if (triggers.containsKey(handler)) {
+            if (triggers.get(handler).contains(trigger)) {
+                triggers.get(handler).remove(trigger);
+            }
+        }
+    }
 
     @SuppressWarnings("rawtypes")
     public static Map<Class, List<EventTrigger>> getHandlers() {

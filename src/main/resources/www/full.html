@@ -1,0 +1,25 @@
+<nav class="menu-top-nav">
+        <div class="menu-top-header">
+            <a class="menu-top-header-brand" href="javascript:system.loadDefault();template.showLoad();">Default Site</a>
+        </div>
+	<div class="menu-top-list">
+		<ul class="menu-top-list-ul">
+			<li><a href="javascript:system.loadDefault();template.showLoad();">Home</a></li>
+			<li id="loginId"><a href="javascript:user.showLogin();template.showLoad();">Login</a></li>
+			<li id="logoutId" style="display:none;"><a href="javascript:user.logout();template.showLoad();">Logout</a></li>
+		</ul>
+	</div>
+	
+</nav>
+    <div id="content">
+	
+    </div>
+<script>
+$(function(){
+	if(user.name!=""){
+		$("#logoutId a").html("Logout "+user.name);
+		$("#loginId").fadeOut();
+		$("#logoutId").fadeIn();
+	}
+});
+</script>
