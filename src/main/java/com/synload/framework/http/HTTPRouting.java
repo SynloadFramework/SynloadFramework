@@ -284,6 +284,9 @@ public class HTTPRouting {
     }
     
     public static void sendResource(String filename, byte[] resource, HttpServletResponse response){
+    	if(filename==null || resource==null || response==null){
+    		return;
+    	}
     	String mime = "text/html;charset=utf-8";
         String ext = filename.split("(?sim)\\.")[filename.split("(?sim)\\.").length - 1];
         if (ext.equalsIgnoreCase("js")) {
