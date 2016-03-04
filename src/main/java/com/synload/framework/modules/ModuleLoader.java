@@ -40,7 +40,7 @@ public class ModuleLoader extends ClassLoader {
 	public static Thread checkNewJar=null;
 	public static Hashtable<String, Hashtable<String,byte[]>> resources = new Hashtable<String, Hashtable<String,byte[]>>();
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
-    public static HashMap<String, byte[]> loadedModules = new HashMap<String, byte[]>();
+    public static HashMap<String, String> loadedModules = new HashMap<String, String>();
     
     public static HashMap<String, ArrayList<String>> jarClasses = new HashMap<String, ArrayList<String>>();
     public static HashMap<String, ArrayList<Object[]>> jarEvents = new HashMap<String, ArrayList<Object[]>>();
@@ -178,8 +178,13 @@ public class ModuleLoader extends ClassLoader {
         
     }
     
-    public static byte[] SHA256(byte[] convertme) throws NoSuchAlgorithmException{
-        return MessageDigest.getInstance("SHA-256").digest(convertme);
+    public static String SHA256(byte[] convertme) throws NoSuchAlgorithmException{
+    	byte[] mdbytes = MessageDigest.getInstance("SHA-2").digest(convertme);
+    	StringBuffer hexString = new StringBuffer();
+    	for (int i=0;i<mdbytes.length;i++) {
+    	  hexString.append(Integer.toHexString(0xFF & mdbytes[i]));
+    	}
+        return hexString.toString();
     }
     
     public static void unload(String fileName){
