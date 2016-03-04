@@ -27,6 +27,9 @@ public class HTTPRouting {
     }
 
     public static boolean addRoutes(String path, HTTPResponse response) {
+    	if(response==null || path.equals("")){
+    		return false;
+    	}
         if (HTTPRouting.routes.containsKey(path)) {
             return false;
         } else {
@@ -316,16 +319,16 @@ public class HTTPRouting {
     /*
      * Handle HTTP requests, called whenever an http request is received 
      */
-    public static void page(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public static boolean page(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String[] URI = target.split("/",-1);
         if(URI.length>1){
         	if (URI[1].equalsIgnoreCase("ws")) {
-                return;
+                return false;
             }else if(ModuleLoader.resources.containsKey(URI[1])){
         		if(ModuleLoader.resources.get(URI[1]).containsKey(target.replace("/"+URI[1]+"/", ""))){
         			sendResource(target.replace("/"+URI[1], ""),ModuleLoader.resources.get(URI[1]).get(target.replace("/"+URI[1]+"/", "")), response);
         		}
-        		return;
+        		return true;
         	}
         }
         for (String path : HTTPRouting.routes.keySet()) {
@@ -334,17 +337,18 @@ public class HTTPRouting {
                     HTTPResponse p = HTTPRouting.routes.get(path);
                     p.getListener().getMethod(p.getMethod(), String.class, Request.class, HttpServletRequest.class, HttpServletResponse.class, String[].class)
                     	.invoke(p.getListener().newInstance(), target, baseRequest, request, response, URI);
+                    return true;
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
                     }
+                    return true;
                 }
-                return;
             }
         }
         if (URI.length == 2) {
             if (URI[1].equalsIgnoreCase("ws")) {
-                return;
+            	return false;
             }
         }
         
@@ -366,11 +370,12 @@ public class HTTPRouting {
                 System.out.println("[WB][I] Sending file data <" + URI[1]
                         + "><" + URI[2] + ">!");
                 openFile(URI[1] + "/" + URI[2], response, baseRequest);
-                return;
+                return true;
             }
         }
         // System.out.println("[WB][I] File not found for route sending to modules!");
         EventPublisher.raiseEvent(new WebEvent(target, baseRequest, request,
                 response, URI), target);
+		return false;
     }
 }
