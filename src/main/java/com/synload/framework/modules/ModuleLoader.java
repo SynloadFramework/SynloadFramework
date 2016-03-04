@@ -179,7 +179,7 @@ public class ModuleLoader extends ClassLoader {
     }
     
     public static String SHA256(byte[] convertme) throws NoSuchAlgorithmException{
-    	byte[] mdbytes = MessageDigest.getInstance("SHA-2").digest(convertme);
+    	byte[] mdbytes = MessageDigest.getInstance("SHA-256").digest(convertme);
     	StringBuffer hexString = new StringBuffer();
     	for (int i=0;i<mdbytes.length;i++) {
     	  hexString.append(Integer.toHexString(0xFF & mdbytes[i]));
