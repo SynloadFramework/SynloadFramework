@@ -101,7 +101,7 @@ public class ModuleLoader extends ClassLoader {
                 	InputStream hashIS = null;
                     try {
                     	hashIS = new FileInputStream(new File(path+fileName));
-        				loadedModules.put(fileName, SHA1(IOUtils.toByteArray(hashIS)));
+        				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
         			} catch (NoSuchAlgorithmException e) {
         				e.printStackTrace();
         			} catch (IOException e) {
@@ -178,7 +178,7 @@ public class ModuleLoader extends ClassLoader {
         
     }
     
-    public static byte[] SHA1(byte[] convertme) throws NoSuchAlgorithmException{
+    public static byte[] SHA256(byte[] convertme) throws NoSuchAlgorithmException{
         return MessageDigest.getInstance("SHA-256").digest(convertme);
     }
     

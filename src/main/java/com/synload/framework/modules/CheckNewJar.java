@@ -45,7 +45,7 @@ public class CheckNewJar implements Runnable{
 	            			InputStream hashIS = null;
 		                    try {
 		                    	hashIS = new FileInputStream(new File(path+fileName));
-	                    		ModuleLoader.loadedModules.put(fileName, ModuleLoader.SHA1(IOUtils.toByteArray(hashIS)));
+	                    		ModuleLoader.loadedModules.put(fileName, ModuleLoader.SHA256(IOUtils.toByteArray(hashIS)));
 		        			} catch (NoSuchAlgorithmException e) {
 		        				e.printStackTrace();
 		        			} catch (IOException e) {
@@ -64,12 +64,13 @@ public class CheckNewJar implements Runnable{
 	            			anythingNew=true;
 		            		InputStream hashIS = null;
 		                    try {
+		                    	Log.info(path+fileName, CheckNewJar.class);
 		                    	hashIS = new FileInputStream(new File(path+fileName));
-		                    	if(ModuleLoader.loadedModules.get(fileName) != ModuleLoader.SHA1(IOUtils.toByteArray(hashIS))){
+		                    	if(ModuleLoader.loadedModules.get(fileName) != ModuleLoader.SHA256(IOUtils.toByteArray(hashIS))){
+		                    		Log.info("Found change to "+fileName, CheckNewJar.class);
 		                    		// RELOAD MODULE
 		                    		ModuleLoader.unload(fileName);
 		                    		ModuleLoader.loadModuleFiles(toLoadList, classes, sql, modules, events, path, fileName, true, true);
-		                    		Log.info("Found change to "+fileName, CheckNewJar.class);
 		                    	}
 		        			} catch (NoSuchAlgorithmException e) {
 		        				e.printStackTrace();
