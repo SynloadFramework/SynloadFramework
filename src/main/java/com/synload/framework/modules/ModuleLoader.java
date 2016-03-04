@@ -15,6 +15,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -90,6 +91,7 @@ public class ModuleLoader extends ClassLoader {
         List<Object[]> modules = new ArrayList<Object[]>();
         List<Object[]> events = new ArrayList<Object[]>();
         List<String> classes = new ArrayList<String>();
+        HashMap<String,String> toLoadList = new HashMap<String,String>();
         File[] listOfFiles = folder.listFiles();
         Class<?> loadedClass;
         for (int i = 0; i < listOfFiles.length; i++) {
@@ -113,7 +115,7 @@ public class ModuleLoader extends ClassLoader {
 							}
 						}
 					}
-                	loadModuleFiles(classes, sql, modules, events, path, fileName, true, true);
+                	loadModuleFiles(toLoadList, classes, sql, modules, events, path, fileName, true, true);
                 }
             }
         }
@@ -123,11 +125,31 @@ public class ModuleLoader extends ClassLoader {
          */
         try {
         	String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
-			loadModuleFiles(classes, sql, modules, events, "lib/", SynJar[SynJar.length-1], true, false);
+			loadModuleFiles(toLoadList, classes, sql, modules, events, "lib/", SynJar[SynJar.length-1], true, false);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-        
+        for(Entry<String, String> clazz : toLoadList.entrySet()){
+			try {
+				loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz.getKey()); // load class
+	            ModuleClass module = null;
+	            Object[] obj = register(clazz.getValue(), loadedClass, Handler.MODULE, TYPE.CLASS, null);
+				if (obj != null) {
+	                module = (ModuleClass) obj[0];
+	                modules.add((Object[]) obj[1]);
+	            }
+	            Object[] obsql = registerSQL(loadedClass, module); 
+	            if (obsql != null) {
+	                sql.add(obsql);
+	            }
+	            events.addAll((List<Object[]>) register(clazz.getValue(), loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+            
+        }
         /*
          * Hardcoded defaults!
          */
@@ -180,7 +202,7 @@ public class ModuleLoader extends ClassLoader {
      * load module jars files
      * 
      */
-    public static void loadModuleFiles(List<String> classes, List<Object[]> sql, List<Object[]> modules, List<Object[]> events, String path, String fileName, boolean loadResources, boolean loadClasses){
+    public static void loadModuleFiles(HashMap<String,String> toLoadList, List<String> classes, List<Object[]> sql, List<Object[]> modules, List<Object[]> events, String path, String fileName, boolean loadResources, boolean loadClasses){
     	Class<?> loadedClass;
     	Log.info("Loaded file: "+path+fileName, ModuleLoader.class);
     	try {
@@ -222,18 +244,7 @@ public class ModuleLoader extends ClassLoader {
                     ml.loadClass(clazz, clazzBytes); // load class bytes
                     classes.add(clazz);
                     jarClasses.get(fileName).add(clazz);
-                    loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz); // load class
-                    ModuleClass module = null;
-                    Object[] obj = register(fileName, loadedClass, Handler.MODULE, TYPE.CLASS, null);
-                    if (obj != null) {
-                        module = (ModuleClass) obj[0];
-                        modules.add((Object[]) obj[1]);
-                    }
-                    Object[] obsql = registerSQL(loadedClass, module); 
-                    if (obsql != null) {
-                        sql.add(obsql);
-                    }
-                    events.addAll((List<Object[]>) register(fileName, loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+                    toLoadList.put(clazz, fileName);
                 }
             }
             if(resourcesList.containsKey("resources") && loadResources==true){
@@ -250,11 +261,7 @@ public class ModuleLoader extends ClassLoader {
             cl.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
+        }
     }
 
     public static void display( List<Object[]> sql, List<Object[]> modules, List<Object[]> events ){
