@@ -61,13 +61,13 @@ public class CheckNewJar implements Runnable{
 							}
 	            			anythingNew=true;
 	            		}else{
-	            			anythingNew=true;
 		            		InputStream hashIS = null;
 		                    try {
 		                    	hashIS = new FileInputStream(new File(path+fileName));
 		                    	String hash = ModuleLoader.SHA256(IOUtils.toByteArray(hashIS));
 		                    	Log.info(ModuleLoader.loadedModules.get(fileName)+"="+hash, CheckNewJar.class);
 		                    	if(!ModuleLoader.loadedModules.get(fileName).equals(hash)){
+		                    		anythingNew=true;
 		                    		Log.info("Found change to "+fileName, CheckNewJar.class);
 		                    		// RELOAD MODULE
 		                    		ModuleLoader.unload(fileName);
