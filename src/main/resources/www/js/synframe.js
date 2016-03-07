@@ -1,6 +1,7 @@
 (function( $ ) {
-	$.fn.syf = function(address,path){
-		_sf.connect(address,path);
+	$.fn.syf = function(address,path,func){
+		_sf.connect(address,path,func);
+		_sf.onConnect = func;
 	}
 }( jQuery ));
 
@@ -19,6 +20,7 @@ var _sf = {
 	onPage: "",
 	onPage_request: "",
 	wsAddress: "",
+	onConnect: null,
 	wsPath: "",
 	javascriptLoaded: false,
 	onCallbacks: new Array(),
@@ -78,6 +80,7 @@ var _sf = {
 				"class":"Request"
 			}
 			_sf.send(data);
+			_sf.onConnect();
 		},30000);
 	},
 	confirmEncrypt: function(elem){
@@ -396,7 +399,7 @@ window.onhashchange = function(){
 		}
 	}
 }
-function connect(domain){
+function connect(domain,func){
 	$("._sf_connect_hideme").hide();
-	$("body").syf(domain,"/ws/");
+	$("body").syf(domain,"/ws/",func);
 }
