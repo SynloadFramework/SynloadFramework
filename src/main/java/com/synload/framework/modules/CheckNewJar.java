@@ -41,7 +41,7 @@ public class CheckNewJar implements Runnable{
 	            		if(!ModuleLoader.loadedModules.containsKey(fileName)){
 	            			// LOAD NEW MODULE
 	            			Log.info("Found new module, loading "+fileName, CheckNewJar.class);
-	            			ModuleLoader.loadModuleFiles(toLoadList, classes, sql, modules, events, path, fileName, true, true);
+	            			ModuleLoader.loadModuleFiles(path, fileName, true, true);
 	            			InputStream hashIS = null;
 		                    try {
 		                    	hashIS = new FileInputStream(new File(path+fileName));
@@ -70,7 +70,7 @@ public class CheckNewJar implements Runnable{
 		                    		Log.info("Found change to "+fileName, CheckNewJar.class);
 		                    		// RELOAD MODULE
 		                    		ModuleLoader.unload(fileName);
-		                    		ModuleLoader.loadModuleFiles(toLoadList, classes, sql, modules, events, path, fileName, true, true);
+		                    		ModuleLoader.loadModuleFiles(path, fileName, true, true);
 		                    	}
 		        			} catch (NoSuchAlgorithmException e) {
 		        				e.printStackTrace();
@@ -94,7 +94,7 @@ public class CheckNewJar implements Runnable{
 					try {
 						Class<?> loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz.getKey()); // load class
 			            ModuleClass module = null;
-			            Object[] obj = ModuleLoader.register(clazz.getValue(), loadedClass, Handler.MODULE, TYPE.CLASS, null);
+			            Object[] obj = ModuleLoader.register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
 						if (obj != null) {
 			                module = (ModuleClass) obj[0];
 			                modules.add((Object[]) obj[1]);
@@ -103,7 +103,7 @@ public class CheckNewJar implements Runnable{
 			            if (obsql != null) {
 			                sql.add(obsql);
 			            }
-			            events.addAll((List<Object[]>) ModuleLoader.register(clazz.getValue(), loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+			            events.addAll((List<Object[]>) ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
 					} catch (InstantiationException e) {
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {

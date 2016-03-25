@@ -2,6 +2,7 @@ package com.synload.framework.modules;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -42,9 +43,8 @@ public class ModuleLoader extends ClassLoader {
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
     public static HashMap<String, String> loadedModules = new HashMap<String, String>();
     
-    public static HashMap<String, ArrayList<String>> jarClasses = new HashMap<String, ArrayList<String>>();
-    public static HashMap<String, ArrayList<Object[]>> jarEvents = new HashMap<String, ArrayList<Object[]>>();
-    public static HashMap<String, ArrayList<Object[]>> jarModule = new HashMap<String, ArrayList<Object[]>>();
+    public static HashMap<String, ModuleData> jar = new HashMap<String, ModuleData>();
+    
     
     public static List<String> modules = new ArrayList<String>();
     public ModuleLoader(ClassLoader parent) {
@@ -102,7 +102,7 @@ public class ModuleLoader extends ClassLoader {
                     try {
                     	hashIS = new FileInputStream(new File(path+fileName));
         				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
-        			} catch (NoSuchAlgorithmException e) {
+        			} catch (NoSuchAlgorithmException e) { 
         				e.printStackTrace();
         			} catch (IOException e) {
 						e.printStackTrace();
@@ -115,7 +115,7 @@ public class ModuleLoader extends ClassLoader {
 							}
 						}
 					}
-                	loadModuleFiles(toLoadList, classes, sql, modules, events, path, fileName, true, true);
+                	loadModuleFiles( path, fileName, true, true);
                 }
             }
         }
@@ -125,36 +125,38 @@ public class ModuleLoader extends ClassLoader {
          */
         try {
         	String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
-			loadModuleFiles(toLoadList, classes, sql, modules, events, "lib/", SynJar[SynJar.length-1], true, false);
+			loadModuleFiles("lib/", SynJar[SynJar.length-1], true, false);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-        for(Entry<String, String> clazz : toLoadList.entrySet()){
-			try {
-				loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz.getKey()); // load class
-	            ModuleClass module = null;
-	            Object[] obj = register(clazz.getValue(), loadedClass, Handler.MODULE, TYPE.CLASS, null);
-				if (obj != null) {
-	                module = (ModuleClass) obj[0];
-	                modules.add((Object[]) obj[1]);
-	            }
-	            Object[] obsql = registerSQL(loadedClass, module); 
-	            if (obsql != null) {
-	                sql.add(obsql);
-	            }
-	            events.addAll((List<Object[]>) register(clazz.getValue(), loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-            
+        
+        for(Entry<String, ModuleData> clazz : jar.entrySet()){
+        	for(String clazzPath : clazz.getValue().getClasses()){
+				try {
+					loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazzPath); // load class
+		            ModuleClass module = null;
+		            Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
+					if (obj != null) {
+		                module = (ModuleClass) obj[0];
+		                modules.add((Object[]) obj[1]);
+		            }
+		            Object[] obsql = registerSQL(loadedClass, module); 
+		            if (obsql != null) {
+		                sql.add(obsql);
+		            }
+		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+				} catch (InstantiationException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+        	}
         }
         /*
          * Hardcoded defaults!
          */
         try {
-            events.addAll((List<Object[]>) register("synloadframework.jar", DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
+            events.addAll((List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -188,82 +190,28 @@ public class ModuleLoader extends ClassLoader {
     }
     
     public static void unload(String fileName){
-    	List<Object[]> jarM = jarModule.get(fileName);
-    	for(Object[] jmod : jarM){
-    		ModuleRegistry.getLoadedModules().remove(jmod[0]);
-    		SynloadFramework.plugins.remove(jmod[1]);
-    	}
+    	/*ModuleData jarM = jar.get(fileName);
+		ModuleRegistry.getLoadedModules().remove(jarM.getName());
+		SynloadFramework.plugins.remove(jmod[1]);
     	List<Object[]> jarE = jarEvents.get(fileName);
     	for(Object[] jE : jarE){
     		HandlerRegistry.unregister((Class<?>)jE[0], (EventTrigger)jE[1]);
     	}
-    	List<String> jarC = jarClasses.get(fileName);
+    	List<String> jarC = jar.get(fileName).getResources();
     	for(String jC : jarC){
     		cache.remove(jC);
-    	}
+    	}*/
     }
     
     /*
      * load module jars files
      * 
      */
-    public static void loadModuleFiles(HashMap<String,String> toLoadList, List<String> classes, List<Object[]> sql, List<Object[]> modules, List<Object[]> events, String path, String fileName, boolean loadResources, boolean loadClasses){
-    	Class<?> loadedClass;
+    public static void loadModuleFiles(String path, String fileName, boolean loadResources, boolean loadClasses){
     	Log.info("Loaded file: "+path+fileName, ModuleLoader.class);
     	try {
-            URLClassLoader cl = new URLClassLoader(new URL[] { new File(path+fileName).toURI().toURL() });
-            
-            ModuleLoader.jarClasses.put(fileName, new ArrayList<String>());
-            ModuleLoader.jarEvents.put(fileName, new ArrayList<Object[]>());
-            ModuleLoader.jarModule.put(fileName, new ArrayList<Object[]>());
-            
-            Properties moduleSettings = new Properties();
-            InputStream is = cl.getResourceAsStream("module.ini");
-            String moduleName = "";
-            if (is != null) {
-            	moduleSettings.load(is);
-            	moduleName = moduleSettings.getProperty("module");
-            	ModuleLoader.modules.add(moduleName);
-            	Log.info("Module Name: "+moduleName, ModuleLoader.class);
-            	is.close();
-            }
-            if(moduleName.equals("ws")){
-            	Log.error("Error module name is reserved 'ws'", ModuleLoader.class);
-            	System.exit(-1);
-            }
-            if(!resources.containsKey(moduleName)){
-    			resources.put(moduleName, new Hashtable<String,byte[]>() );
-    		}
-            HashMap<String,List<String>> resourcesList = getClasses(path + fileName);
-            if(resourcesList.containsKey("classes") && loadClasses==true){
-                for (String clazz : resourcesList.get("classes")) {
-                    String clazzFile = clazz.replaceAll("(?i)\\.", "/") + ".class";
-                    Log.debug("Loading class data for " + clazz + "[R:{" + clazzFile + "}]", ModuleLoader.class);
-                    is = cl.getResourceAsStream(clazzFile);
-                    if (is == null) {
-                        Log.error("Resource Error for " + clazz + "[R:{" + clazzFile + "}]", ModuleLoader.class);
-                    }
-                    byte[] clazzBytes = IOUtils.toByteArray(is);
-                    is.close();
-                    ModuleLoader ml = new ModuleLoader(Thread.currentThread().getContextClassLoader());
-                    ml.loadClass(clazz, clazzBytes); // load class bytes
-                    classes.add(clazz);
-                    jarClasses.get(fileName).add(clazz);
-                    toLoadList.put(clazz, fileName);
-                }
-            }
-            if(resourcesList.containsKey("resources") && loadResources==true){
-            	for(String resource : resourcesList.get("resources")){
-            		is = cl.getResourceAsStream(resource);
-            		if (is == null) {
-            			Log.error("Resource Error for " + resource + "[R:{" + resource + "}]", ModuleLoader.class);
-            		}
-            		byte[] resourceBytes = IOUtils.toByteArray(is);
-            		resources.get(moduleName).put(resource.replace("www/", ""), resourceBytes);
-            		is.close();
-            	}
-            }
-            cl.close();
+            ModuleData moduleData = getJarData(path + fileName);
+            ModuleLoader.jar.put(path + fileName, moduleData);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -300,7 +248,7 @@ public class ModuleLoader extends ClassLoader {
      * Checks for Addons, Methods in each class
      */
     @SuppressWarnings("unchecked")
-    public static <T> Object[] register(String fileName, Class<T> c, Handler annotationClass, TYPE type, ModuleClass module) throws InstantiationException, IllegalAccessException {
+    public static <T> Object[] register(Class<T> c, Handler annotationClass, TYPE type, ModuleClass module) throws InstantiationException, IllegalAccessException {
         if (TYPE.CLASS == type) {
             if (c.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                 /*
@@ -317,9 +265,6 @@ public class ModuleLoader extends ClassLoader {
                 obj[1] = moduleAnnotation.name();
                 obj[2] = moduleAnnotation.author();
                 obj[3] = moduleAnnotation.version();
-                if(ModuleLoader.jarModule.containsKey(fileName)){
-                	jarModule.get(fileName).add(new Object[]{ moduleAnnotation.name(), mod });
-                }
                 // mod.initialize();
                 return new Object[] { mod, obj };
             }
@@ -356,10 +301,6 @@ public class ModuleLoader extends ClassLoader {
                         }
                         obj.add(obj_tmp);
                         HandlerRegistry.register(annotationClass.getAnnotationClass(), et);
-                        Log.info(fileName, ModuleLoader.class);
-                        if(ModuleLoader.jarEvents.containsKey(fileName)){
-                        	ModuleLoader.jarEvents.get(fileName).add(new Object[]{annotationClass.getAnnotationClass(), et});
-                        }
                     }
                 }
             }
@@ -368,33 +309,70 @@ public class ModuleLoader extends ClassLoader {
         return null;
     }
 
+    public static boolean addClassByteArray(String zip, String filename, String moduleName, String className, byte[] buffer){
+    	ModuleLoader ml = new ModuleLoader(Thread.currentThread().getContextClassLoader());
+        ml.loadClass(className, buffer);
+    	return false;
+    }
+    
+    public static boolean addResourceByteArray(String zip, String file, String moduleName, byte[] buffer){
+    	resources.get(moduleName).put(file.replace("www/", ""), buffer);
+    	return false;
+    }
+    
     @SuppressWarnings("resource")
-    public static HashMap<String,List<String>> getClasses(String file) throws IOException {
-    	
-    	HashMap<String,List<String>> returnedData = new HashMap<String,List<String>>();
-        List<String> classNames = new ArrayList<String>();
-        List<String> resources = new ArrayList<String>();
-        
+    public static ModuleData getJarData(String file) throws IOException{
+    	ModuleData mData = new ModuleData();
         ZipInputStream zip = new ZipInputStream(new FileInputStream(file));
+        Properties moduleSettings = new Properties();
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
-            if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
-                StringBuilder className = new StringBuilder();
-                for (String part : entry.getName().split("/")) {
-                    if (className.length() != 0){
-                        className.append(".");
-                    }
-                    className.append(part);
-                    if (part.endsWith(".class")){
-                        className.setLength(className.length()- ".class".length());
-                    }
-                }
-                classNames.add(className.toString());
-            }else if(entry.getName().contains("www/")){
-            	resources.add(entry.getName());
-            }
+        	if(entry.getName().contains("module.ini")){
+        		byte[] buffer = new byte[2048];
+            	IOUtils.readFully(zip, buffer);
+            	InputStream is = IOUtils.toInputStream(new String(buffer));
+            	moduleSettings.load(is);
+            	is.close();
+        	}
         }
-        returnedData.put("classes", classNames);
-        returnedData.put("resources", resources);
-        return returnedData;
+        zip.close();
+        
+        String moduleName = moduleSettings.getProperty("module");
+        mData.setName(moduleName);
+        mData.setFile(file);
+        if(moduleName.equals("ws")){
+        	Log.error("Error module name is reserved 'ws'", ModuleLoader.class);
+        	System.exit(-1);
+        }
+        zip = new ZipInputStream(new FileInputStream(file));
+		try {
+	        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
+	            if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
+	            	byte[] buffer = new byte[2048];
+	            	IOUtils.readFully(zip, buffer);
+	            	StringBuilder className = new StringBuilder();
+	                for (String part : entry.getName().split("/")) {
+	                    if (className.length() != 0){
+	                        className.append(".");
+	                    }
+	                    className.append(part);
+	                    if (part.endsWith(".class")){
+	                        className.setLength(className.length()- ".class".length());
+	                    }
+	                }
+	            	addClassByteArray(file, entry.getName(), moduleName, className.toString(), buffer);
+	            	mData.getClasses().add(className.toString());
+	            }else if(entry.getName().contains("www/")){
+	            	byte[] buffer = new byte[2048];
+	            	IOUtils.readFully(zip, buffer);
+	            	addResourceByteArray(file, entry.getName(), moduleName, buffer);
+	            	mData.getResources().add(entry.getName());
+	            }
+	        }
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}finally{
+			zip.close();
+		}
+        return mData;
     }
 }
