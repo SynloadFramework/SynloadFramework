@@ -362,7 +362,7 @@ public class ModuleLoader extends ClassLoader {
 	                }
 	            	addClassByteArray(file, entry.getName(), moduleName, className.toString(), buffer);
 	            	mData.getClasses().add(className.toString());
-	            }else if(entry.getName().contains("www/")){
+	            }else if(entry.getName().contains("www/") && !entry.isDirectory()){
 	            	byte[] buffer = new byte[(int)entry.getSize()];
 	            	IOUtils.readFully(zip, buffer);
 	            	addResourceByteArray(file, entry.getName(), moduleName, buffer);
