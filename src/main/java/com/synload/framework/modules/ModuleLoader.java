@@ -235,7 +235,7 @@ public class ModuleLoader extends ClassLoader {
     public static <T> Object[] registerSQL(Class<T> c, String moduleName) {
         if (c.isAnnotationPresent(SQLTable.class)) {
             SQLTable tbl = c.getAnnotation(SQLTable.class);
-            Object[] obj = new Object[4];
+            Object[] obj = new Object[5];
             obj[0] = c.getName();
             obj[1] = moduleName;
             obj[2] = tbl.name();
