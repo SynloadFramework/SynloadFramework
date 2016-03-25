@@ -24,6 +24,11 @@ public class CheckNewJar implements Runnable{
 	@Override
 	public void run() {
 		while(true){
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			List<Object[]> sql = new ArrayList<Object[]>();
 	        List<Object[]> modules = new ArrayList<Object[]>();
 	        List<Object[]> events = new ArrayList<Object[]>();
@@ -115,11 +120,6 @@ public class CheckNewJar implements Runnable{
 					}
 		        }
 				ModuleLoader.display( sql, modules, events );
-			}
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 		}
 	}
