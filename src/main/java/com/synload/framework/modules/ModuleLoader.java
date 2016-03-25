@@ -347,7 +347,7 @@ public class ModuleLoader extends ClassLoader {
 		try {
 	        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
 	            if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
-	            	byte[] buffer = new byte[2048];
+	            	byte[] buffer = new byte[(int)entry.getSize()];
 	            	IOUtils.readFully(zip, buffer);
 	            	StringBuilder className = new StringBuilder();
 	                for (String part : entry.getName().split("/")) {
@@ -362,7 +362,7 @@ public class ModuleLoader extends ClassLoader {
 	            	addClassByteArray(file, entry.getName(), moduleName, className.toString(), buffer);
 	            	mData.getClasses().add(className.toString());
 	            }else if(entry.getName().contains("www/")){
-	            	byte[] buffer = new byte[2048];
+	            	byte[] buffer = new byte[(int)entry.getSize()];
 	            	IOUtils.readFully(zip, buffer);
 	            	addResourceByteArray(file, entry.getName(), moduleName, buffer);
 	            	mData.getResources().add(entry.getName());
