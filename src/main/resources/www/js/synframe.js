@@ -1,6 +1,6 @@
 (function( $ ) {
 	$.fn.syf = function(address,path,func){
-		_sf.connect(address,path,func);
+		_sf.connect(address,path);
 		_sf.onConnect = func;
 	}
 }( jQuery ));
@@ -73,6 +73,7 @@ var _sf = {
 		}
 	},
 	connected: function(){
+		_sf.onConnect();
 		setInterval(function(){
 			var data = {
 				"request":"get",
@@ -80,8 +81,7 @@ var _sf = {
 				"class":"Request"
 			}
 			_sf.send(data);
-			_sf.onConnect();
-		},30000);
+		},10000);
 	},
 	confirmEncrypt: function(elem){
 		if(!_sf.ecsnt){
