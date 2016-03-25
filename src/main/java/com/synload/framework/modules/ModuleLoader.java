@@ -344,6 +344,7 @@ public class ModuleLoader extends ClassLoader {
         	Log.error("Error module name is reserved 'ws'", ModuleLoader.class);
         	System.exit(-1);
         }
+        resources.put(moduleName, new Hashtable<String,byte[]>());
         zip = new ZipInputStream(new FileInputStream(file));
 		try {
 	        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
