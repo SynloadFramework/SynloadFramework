@@ -135,16 +135,16 @@ public class ModuleLoader extends ClassLoader {
 				try {
 					loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazzPath); // load class
 		            ModuleClass module = null;
-		            Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
+		            Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null, clazz.getValue().getName());
 					if (obj != null) {
 		                module = (ModuleClass) obj[0];
 		                modules.add((Object[]) obj[1]);
 		            }
-		            Object[] obsql = registerSQL(loadedClass, module); 
+		            Object[] obsql = registerSQL(loadedClass, clazz.getValue().getName()); 
 		            if (obsql != null) {
 		                sql.add(obsql);
 		            }
-		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
+		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue().getName())[0]);
 				} catch (InstantiationException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
@@ -156,7 +156,7 @@ public class ModuleLoader extends ClassLoader {
          * Hardcoded defaults!
          */
         try {
-            events.addAll((List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null)[0]);
+            events.addAll((List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null, "SynloadFramework")[0]);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -189,7 +189,7 @@ public class ModuleLoader extends ClassLoader {
         return hexString.toString();
     }
     
-    public static void unload(String fileName){
+    public static void unload(ModuleData module){
     	/*ModuleData jarM = jar.get(fileName);
 		ModuleRegistry.getLoadedModules().remove(jarM.getName());
 		SynloadFramework.plugins.remove(jmod[1]);
@@ -201,20 +201,23 @@ public class ModuleLoader extends ClassLoader {
     	for(String jC : jarC){
     		cache.remove(jC);
     	}*/
+    	
     }
     
     /*
      * load module jars files
      * 
      */
-    public static void loadModuleFiles(String path, String fileName, boolean loadResources, boolean loadClasses){
+    public static ModuleData loadModuleFiles(String path, String fileName, boolean loadResources, boolean loadClasses){
     	Log.info("Loaded file: "+path+fileName, ModuleLoader.class);
     	try {
             ModuleData moduleData = getJarData(path + fileName);
             ModuleLoader.jar.put(path + fileName, moduleData);
+            return moduleData;
         } catch (IOException e) {
             e.printStackTrace();
         }
+    	return null;
     }
 
     public static void display( List<Object[]> sql, List<Object[]> modules, List<Object[]> events ){
@@ -225,18 +228,19 @@ public class ModuleLoader extends ClassLoader {
         tt = new TextTable(new String[] { "Class", "Module", "Method Name", "Type", "Description", "Trigger" }, events.toArray(new Object[events.size()][]));
         tt.printTable();
         System.out.println("\nSQL Tables Loaded");
-        tt = new TextTable(new String[] { "Class", "Name", "Description", "Version" }, sql.toArray(new Object[sql.size()][]));
+        tt = new TextTable(new String[] { "Class", "Module", "Name", "Description", "Version" }, sql.toArray(new Object[sql.size()][]));
         tt.printTable();
         System.out.print("\n");
     }
-    public static <T> Object[] registerSQL(Class<T> c, ModuleClass module) {
+    public static <T> Object[] registerSQL(Class<T> c, String moduleName) {
         if (c.isAnnotationPresent(SQLTable.class)) {
             SQLTable tbl = c.getAnnotation(SQLTable.class);
             Object[] obj = new Object[4];
             obj[0] = c.getName();
-            obj[1] = tbl.name();
-            obj[2] = tbl.description();
-            obj[3] = tbl.version();
+            obj[1] = moduleName;
+            obj[2] = tbl.name();
+            obj[3] = tbl.description();
+            obj[4] = tbl.version();
             SQLRegistry.register(c);
             return obj;
         }
@@ -248,7 +252,7 @@ public class ModuleLoader extends ClassLoader {
      * Checks for Addons, Methods in each class
      */
     @SuppressWarnings("unchecked")
-    public static <T> Object[] register(Class<T> c, Handler annotationClass, TYPE type, ModuleClass module) throws InstantiationException, IllegalAccessException {
+    public static <T> Object[] register(Class<T> c, Handler annotationClass, TYPE type, ModuleClass module, String moduleName) throws InstantiationException, IllegalAccessException {
         if (TYPE.CLASS == type) {
             if (c.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                 /*
@@ -284,12 +288,7 @@ public class ModuleLoader extends ClassLoader {
                         et.setEventType(eventAnnotation.type());
 
                         Object[] obj_tmp = new Object[6];
-                        if (module != null) {
-                            Module modul = (Module) module.getClass().getAnnotation(Handler.MODULE.getAnnotationClass());
-                            obj_tmp[1] = modul.name();
-                        } else {
-                            obj_tmp[1] = "";
-                        }
+                        obj_tmp[1] = moduleName;
                         obj_tmp[0] = c.getName();
                         obj_tmp[2] = m.getName();
                         obj_tmp[3] = eventAnnotation.type();
@@ -316,7 +315,7 @@ public class ModuleLoader extends ClassLoader {
     }
     
     public static boolean addResourceByteArray(String zip, String file, String moduleName, byte[] buffer){
-    	Log.info(file, ModuleLoader.class);
+    	//Log.info(file, ModuleLoader.class);
     	resources.get(moduleName).put(file.replace("www/", ""), buffer);
     	return false;
     }

@@ -29,7 +29,7 @@ public class CheckNewJar implements Runnable{
 	        List<Object[]> events = new ArrayList<Object[]>();
 	        List<String> classes = new ArrayList<String>();
 	        
-	        HashMap<String,String> toLoadList = new HashMap<String,String>();
+	        List<ModuleData> toLoadList = new ArrayList<ModuleData>();
 	        
 			File folder = new File(path);
 			boolean anythingNew=false;
@@ -41,11 +41,12 @@ public class CheckNewJar implements Runnable{
 	            		if(!ModuleLoader.loadedModules.containsKey(fileName)){
 	            			// LOAD NEW MODULE
 	            			Log.info("Found new module, loading "+fileName, CheckNewJar.class);
-	            			ModuleLoader.loadModuleFiles(path, fileName, true, true);
+	            			ModuleData md = ModuleLoader.loadModuleFiles(path, fileName, true, true);
 	            			InputStream hashIS = null;
 		                    try {
 		                    	hashIS = new FileInputStream(new File(path+fileName));
-	                    		ModuleLoader.loadedModules.put(fileName, ModuleLoader.SHA256(IOUtils.toByteArray(hashIS)));
+		                    	toLoadList.add(md);
+		                    	ModuleLoader.loadedModules.put(fileName, ModuleLoader.SHA256(IOUtils.toByteArray(hashIS)));
 		        			} catch (NoSuchAlgorithmException e) {
 		        				e.printStackTrace();
 		        			} catch (IOException e) {
@@ -69,8 +70,8 @@ public class CheckNewJar implements Runnable{
 		                    		anythingNew=true;
 		                    		Log.info("Found change to "+fileName, CheckNewJar.class);
 		                    		// RELOAD MODULE
-		                    		ModuleLoader.unload(fileName);
-		                    		ModuleLoader.loadModuleFiles(path, fileName, true, true);
+		                    		ModuleData md = ModuleLoader.loadModuleFiles(path, fileName, true, true);
+		                    		toLoadList.add(md);
 		                    	}
 		        			} catch (NoSuchAlgorithmException e) {
 		        				e.printStackTrace();
@@ -90,26 +91,28 @@ public class CheckNewJar implements Runnable{
 	            }
 			}
 			if(anythingNew){
-				for(Entry<String, String> clazz : toLoadList.entrySet()){
-					try {
-						Class<?> loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz.getKey()); // load class
-			            ModuleClass module = null;
-			            Object[] obj = ModuleLoader.register(loadedClass, Handler.MODULE, TYPE.CLASS, null);
-						if (obj != null) {
-			                module = (ModuleClass) obj[0];
-			                modules.add((Object[]) obj[1]);
-			            }
-			            Object[] obsql = ModuleLoader.registerSQL(loadedClass, module); 
-			            if (obsql != null) {
-			                sql.add(obsql);
-			            }
-			            events.addAll((List<Object[]>) ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module)[0]);
-					} catch (InstantiationException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+				for(ModuleData modData : toLoadList){
+					ModuleLoader.unload(modData);
+					for(String clazz: modData.getClasses()){
+						try {
+							Class<?> loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz); // load class
+				            ModuleClass module = null;
+				            Object[] obj = ModuleLoader.register(loadedClass, Handler.MODULE, TYPE.CLASS, null, modData.getName());
+							if (obj != null) {
+				                module = (ModuleClass) obj[0];
+				                modules.add((Object[]) obj[1]);
+				            }
+				            Object[] obsql = ModuleLoader.registerSQL(loadedClass, modData.getName()); 
+				            if (obsql != null) {
+				                sql.add(obsql);
+				            }
+				            events.addAll((List<Object[]>) ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module, modData.getName())[0]);
+						} catch (InstantiationException e) {
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							e.printStackTrace();
+						}
 					}
-		            
 		        }
 				ModuleLoader.display( sql, modules, events );
 			}
