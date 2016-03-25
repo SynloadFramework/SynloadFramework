@@ -327,7 +327,7 @@ public class ModuleLoader extends ClassLoader {
         Properties moduleSettings = new Properties();
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
         	if(entry.getName().contains("module.ini")){
-        		byte[] buffer = new byte[2048];
+        		byte[] buffer = new byte[(int)entry.getSize()];
             	IOUtils.readFully(zip, buffer);
             	InputStream is = IOUtils.toInputStream(new String(buffer));
             	moduleSettings.load(is);
