@@ -155,7 +155,7 @@ public class ModuleLoader extends ClassLoader {
         /*
          * Hardcoded defaults!
          */
-        try {
+        /*try {
             events.addAll((List<Object[]>) register(DefaultWSPages.class, Handler.EVENT, TYPE.METHOD, null, "SynloadFramework")[0]);
         } catch (InstantiationException e) {
             e.printStackTrace();
@@ -169,7 +169,7 @@ public class ModuleLoader extends ClassLoader {
         obsql = registerSQL(Session.class, null);
         if (obsql != null) {
             sql.add(obsql);
-        }
+        }*/
         /*
          * Defaults setting end
          * 
@@ -190,6 +190,7 @@ public class ModuleLoader extends ClassLoader {
     }
     
     public static void unload(ModuleData module){
+    	
     	/*ModuleData jarM = jar.get(fileName);
 		ModuleRegistry.getLoadedModules().remove(jarM.getName());
 		SynloadFramework.plugins.remove(jmod[1]);
