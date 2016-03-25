@@ -316,6 +316,7 @@ public class ModuleLoader extends ClassLoader {
     }
     
     public static boolean addResourceByteArray(String zip, String file, String moduleName, byte[] buffer){
+    	Log.info(file, ModuleLoader.class);
     	resources.get(moduleName).put(file.replace("www/", ""), buffer);
     	return false;
     }
