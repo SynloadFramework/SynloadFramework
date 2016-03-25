@@ -106,7 +106,8 @@ var _sf = {
 		_sf.socket =  new WebSocket('ws://'+address+path);
 		_sf.socket.onopen = function() {
 			//_sf.alert("Connected to server!",{ header: 'Server Connection' });
-			//_sf.loadDefault();
+			_sf.loadDefault();
+			_sf.connected();
 		};
 		_sf.socket.onclose = function() {
 			//_sf.alert("connection lost to server!",{ header: 'Server Connection' });
@@ -136,7 +137,7 @@ var _sf = {
 			}
 		};
 	},
-        requestData: function(e, func){
+    requestData: function(e, func){
 		var key = Math.random().toString(36).substring(7);
 		e.trigger = key;
 		_sf.triggers[key] = func;
