@@ -272,7 +272,8 @@ var _sf = {
 		}
 	},
 	templateRender: function(template,tmpldata){
-		return ;
+		var _template = _.template(template);
+		return _template(tmpldata);
 	},
 	compile: function(tmpldata){
 		if(_sf.cache.indexOf(tmpldata.templateId) > -1){
@@ -387,10 +388,6 @@ var _sf = {
 			}
 		}
 	],
-}
-_sf.templateRender = function(template,tmpldata){
-	var _template = _.template(template);
-	return _template(tmpldata);
 }
 window.onhashchange = function(){
 	if(window.location.hash.split("/").length==3){
