@@ -137,7 +137,7 @@ var _sf = {
 			}
 		};
 	},
-    requestData: function(e, func){
+	requestData: function(e, func){
 		var key = Math.random().toString(36).substring(7);
 		e.trigger = key;
 		_sf.triggers[key] = func;
@@ -269,9 +269,15 @@ var _sf = {
 				$(parent).prepend(html);
 				_sf.build();
 			break;
+			default:
+				$(parent).html(html);
+				_sf.build();
+			break;
 		}
 	},
 	templateRender: function(template,tmpldata){
+		console.log(template);
+		console.log(tmpldata);
 		var _template = _.template(template);
 		return _template(tmpldata);
 	},
