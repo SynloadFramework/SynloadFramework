@@ -15,7 +15,6 @@ public class PrefixCondition implements Condition {
 		this.prefix = checkNotNull(prefix);
 	}
 
-	@Override
 	public boolean applies(MappingContext context) {
 		String path = org.modelmapper.internal.util.Strings.join(context.getMapping().getDestinationProperties());
 		return path.startsWith(prefix);

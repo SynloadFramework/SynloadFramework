@@ -24,7 +24,6 @@ public class PrefixStrippingNameTransformer implements NameTransformer {
 		this.prefix = checkNotNull(prefix);
 	}
 
-	@Override
 	public String transform(String name, NameableType nameableType) {
 		System.out.print(name);
 

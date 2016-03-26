@@ -173,7 +173,7 @@ public class SQLRegistry {
                     if (ts.getComment().equals(String.valueOf(sqltable.version()))) {
                         obj[3] = "up to date!";
                     } else {
-                        obj[3] += "not up to date!";
+                        obj[3] = obj[3] + "not up to date!";
                         List<TableInfo> tis = TableInfo.getTableInfo(table);
                         List<TableInfo> foundTables = new ArrayList<TableInfo>(tis);
                         if (tis.size() == 0 || foundTables.size() == 0) {
@@ -191,7 +191,7 @@ public class SQLRegistry {
                                         foundTables.remove(ti);
                                         if (cd.isNullV() != ti.getNull()
                                                 .equalsIgnoreCase("YES")) {
-                                            obj[3] += ", \"" + ti.getField()
+                                            obj[3] = obj[3] + ", \"" + ti.getField()
                                                     + "\" null changed";
                                             try {
                                                 updateTable(table, f);
@@ -200,7 +200,7 @@ public class SQLRegistry {
                                             }
                                         } else if (cd.getCollation().equalsIgnoreCase(
                                                 ti.getCollation())) {
-                                            obj[3] += ", \"" + ti.getField()
+                                            obj[3] = obj[3] + ", \"" + ti.getField()
                                                     + "\" collation changed";
                                             try {
                                                 updateTable(table, f);
@@ -211,7 +211,7 @@ public class SQLRegistry {
                                     }
                                 }
                                 if (notFound) {
-                                    obj[3] += ", added column \"" + f.getName() + "\"";
+                                    obj[3] = obj[3] + ", added column \"" + f.getName() + "\"";
                                     try {
                                         addColumn(table, f);
                                     } catch (SQLException e) {
@@ -222,7 +222,7 @@ public class SQLRegistry {
                         }
                         for (TableInfo col : foundTables) {
                             if (!col.getField().equalsIgnoreCase("")) {
-                                obj[3] += ", removed column \"" + col.getField() + "\"";
+                                obj[3] = obj[3] + ", removed column \"" + col.getField() + "\"";
                                 try {
                                     dropColumn(table, col);
                                 } catch (SQLException e) {

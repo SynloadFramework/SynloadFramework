@@ -57,7 +57,6 @@ public class CglibProxyProvider implements ProxyProvider {
          *      java.lang.reflect.Method, java.lang.Object[],
          *      net.sf.cglib.proxy.MethodProxy)
          */
-        @Override
         public Object intercept(Object obj, Method method, Object[] args,
                 MethodProxy proxy) throws Throwable {
             Method delegateMethod = delegate.getClass().getMethod(
@@ -66,7 +65,6 @@ public class CglibProxyProvider implements ProxyProvider {
         }
     }
 
-    @Override
     @SuppressWarnings("rawtypes")
     public Object createProxy(Object object, Class superClass,
             Class[] interfaces, ClassLoader cl) {

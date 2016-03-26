@@ -18,7 +18,6 @@ public class ServerTalk implements Runnable {
         types.add(clazz);
     }
     @SuppressWarnings("resource")
-    @Override
     public void run() {
         
         try {

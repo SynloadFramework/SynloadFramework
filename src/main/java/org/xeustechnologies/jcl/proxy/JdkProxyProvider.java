@@ -51,7 +51,6 @@ public class JdkProxyProvider implements ProxyProvider {
          * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object,
          *      java.lang.reflect.Method, java.lang.Object[])
          */
-        @Override
         public Object invoke(Object proxy, Method method, Object[] args)
                 throws Throwable {
             Method delegateMethod = delegate.getClass().getMethod(
@@ -60,7 +59,6 @@ public class JdkProxyProvider implements ProxyProvider {
         }
     }
 
-    @Override
     @SuppressWarnings("rawtypes")
     public Object createProxy(Object object, Class superClass,
             Class[] interfaces, ClassLoader cl) {

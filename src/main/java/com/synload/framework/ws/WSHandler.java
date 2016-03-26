@@ -162,7 +162,6 @@ public class WSHandler {
             this.handler = handler;
         }
 
-        @Override
         public void run() {
             try {
                 WSRouting.page(this.handler, this.request);
@@ -181,7 +180,6 @@ public class WSHandler {
             this.ws = ws;
         }
 
-        @Override
         public void run() {
             while (true) {
                 try {
@@ -268,12 +266,10 @@ public class WSHandler {
             this.ws = ws;
         }
 
-        @Override
         public void writeFailed(Throwable arg0) {
             this.ws.isSending = false;
         }
 
-        @Override
         public void writeSuccess() {
             this.ws.isSending = false;
         }

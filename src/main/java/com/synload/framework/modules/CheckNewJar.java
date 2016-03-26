@@ -21,7 +21,6 @@ public class CheckNewJar implements Runnable{
 	public CheckNewJar(String path){
 		this.path = path;
 	}
-	@Override
 	public void run() {
 		while(true){
 			try {

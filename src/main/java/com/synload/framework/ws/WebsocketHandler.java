@@ -17,7 +17,6 @@ public class WebsocketHandler extends WebSocketHandler {
     }
 
     public class WSCreator implements WebSocketCreator {
-        @Override
         public Object createWebSocket(ServletUpgradeRequest request,
                 ServletUpgradeResponse response) {
             return new WSHandler();
