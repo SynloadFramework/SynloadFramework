@@ -226,10 +226,10 @@ public class SynloadFramework {
     }
 
     public static void buildJavascript() {
-        Javascript jsMarkup = new Javascript();
+        //Javascript jsMarkup = new Javascript();
         //jsUser.addCallBack("user.msg", "recieve");
-        jsMarkup.setScript("/synloadframework/js/Markup.js");
-        SynloadFramework.registerJavascriptFile(jsMarkup, "MarkupJS");
+        //jsMarkup.setScript("/synloadframework/js/Markup.js");
+        //SynloadFramework.registerJavascriptFile(jsMarkup, "MarkupJS");
         /*Javascript jsPage = new Javascript();
         jsPage.setScript("/js/page.js");
         SynloadFramework.registerJavascriptFile(jsPage, "Page Handler");
