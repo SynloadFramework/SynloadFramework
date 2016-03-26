@@ -193,7 +193,22 @@ public class Response {
     }
 
     public String getTemplate(String tmpl) {
-        return this.getFileData(tmpl);
+    	String[] p = tmpl.split("(?s)\\.");
+    	if(p[p.length].contains("htm") 
+		 || p[p.length].contains("js") 
+		 || p[p.length].contains("css") 
+		 || p[p.length].contains("ico")
+		 || p[p.length].contains("svg")
+		 || p[p.length].contains("jpg")
+		 || p[p.length].contains("png")){
+    		if((new File(tmpl)).exists()){
+    			return this.getFileData(tmpl);
+    		}else{
+    			return tmpl;
+    		}
+    	}else{
+    		return tmpl;
+    	}
     }
 
     public String getFileData(String tmpl) {
