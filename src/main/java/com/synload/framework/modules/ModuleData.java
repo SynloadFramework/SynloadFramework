@@ -3,14 +3,18 @@ package com.synload.framework.modules;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class ModuleData{
 	public String name;
+	@JsonIgnore
 	private String file;
 	public String version;
+	@JsonIgnore
 	private List<String> classes = new ArrayList<String>();
+	@JsonIgnore
 	private List<String> resources = new ArrayList<String>();
 	public ModuleData(){
 		
