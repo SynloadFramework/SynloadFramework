@@ -74,7 +74,6 @@ var _sf = {
 	},
 	connected: function(){
 		_sf.addCallback(_sf.msg,"recieve");
-		_sf.addCallback(_sf.exec,"recieve");
 		_sf.onConnect();
 		setInterval(function(){
 			var data = {
