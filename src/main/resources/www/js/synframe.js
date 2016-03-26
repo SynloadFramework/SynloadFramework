@@ -73,9 +73,8 @@ var _sf = {
 		}
 	},
 	connected: function(){
-		_sf.addCallback(template.msg,"recieve");
-		_sf.addCallback(javascript.msg,"recieve");
-		_sf.addCallback(template.ws_lost,"close");
+		_sf.addCallback(_sf.msg,"recieve");
+		_sf.addCallback(_sf.exec,"recieve");
 		_sf.onConnect();
 		setInterval(function(){
 			var data = {
