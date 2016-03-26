@@ -135,7 +135,7 @@ public class ModuleLoader extends ClassLoader {
 				try {
 					loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazzPath); // load class
 		            ModuleClass module = null;
-		            Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null, clazz.getValue().getName());
+		            Object[] obj = register(loadedClass, Handler.MODULE, TYPE.CLASS, null, clazz.getValue());
 					if (obj != null) {
 		                module = (ModuleClass) obj[0];
 		                modules.add((Object[]) obj[1]);
@@ -144,7 +144,7 @@ public class ModuleLoader extends ClassLoader {
 		            if (obsql != null) {
 		                sql.add(obsql);
 		            }
-		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue().getName())[0]);
+		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue())[0]);
 				} catch (InstantiationException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
@@ -253,7 +253,7 @@ public class ModuleLoader extends ClassLoader {
      * Checks for Addons, Methods in each class
      */
     @SuppressWarnings("unchecked")
-    public static <T> Object[] register(Class<T> c, Handler annotationClass, TYPE type, ModuleClass module, String moduleName) throws InstantiationException, IllegalAccessException {
+    public static <T> Object[] register(Class<T> c, Handler annotationClass, TYPE type, ModuleClass module, ModuleData moduleData) throws InstantiationException, IllegalAccessException {
         if (TYPE.CLASS == type) {
             if (c.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                 /*
@@ -270,6 +270,7 @@ public class ModuleLoader extends ClassLoader {
                 obj[1] = moduleAnnotation.name();
                 obj[2] = moduleAnnotation.author();
                 obj[3] = moduleAnnotation.version();
+                moduleData.setVersion(moduleAnnotation.version());
                 // mod.initialize();
                 return new Object[] { mod, obj };
             }
@@ -289,8 +290,8 @@ public class ModuleLoader extends ClassLoader {
                         et.setEventType(eventAnnotation.type());
 
                         Object[] obj_tmp = new Object[6];
-                        obj_tmp[1] = moduleName;
                         obj_tmp[0] = c.getName();
+                        obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
                         obj_tmp[3] = eventAnnotation.type();
                         obj_tmp[4] = eventAnnotation.description();

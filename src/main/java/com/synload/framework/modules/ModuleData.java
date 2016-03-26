@@ -3,11 +3,15 @@ package com.synload.framework.modules;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class ModuleData{
 	public String name;
-	public String file;
-	public List<String> classes = new ArrayList<String>();
-	public List<String> resources = new ArrayList<String>();
+	private String file;
+	public String version;
+	private List<String> classes = new ArrayList<String>();
+	private List<String> resources = new ArrayList<String>();
 	public ModuleData(){
 		
 	}
@@ -15,6 +19,12 @@ public class ModuleData{
 		this.name=name;
 		this.classes=classes;
 		this.resources=resources;
+	}
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
 	}
 	public String getName() {
 		return name;

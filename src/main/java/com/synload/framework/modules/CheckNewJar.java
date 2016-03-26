@@ -102,7 +102,7 @@ public class CheckNewJar implements Runnable{
 						try {
 							Class<?> loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazz); // load class
 				            ModuleClass module = null;
-				            Object[] obj = ModuleLoader.register(loadedClass, Handler.MODULE, TYPE.CLASS, null, modData.getName());
+				            Object[] obj = ModuleLoader.register(loadedClass, Handler.MODULE, TYPE.CLASS, null, modData);
 							if (obj != null) {
 				                module = (ModuleClass) obj[0];
 				                modules.add((Object[]) obj[1]);
@@ -111,7 +111,7 @@ public class CheckNewJar implements Runnable{
 				            if (obsql != null) {
 				                sql.add(obsql);
 				            }
-				            events.addAll((List<Object[]>) ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module, modData.getName())[0]);
+				            events.addAll((List<Object[]>) ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module, modData)[0]);
 						} catch (InstantiationException e) {
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
