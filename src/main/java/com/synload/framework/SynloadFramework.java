@@ -37,6 +37,7 @@ import com.synload.framework.js.Javascript;
 import com.synload.framework.modules.ModuleClass;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.framework.modules.ModuleRegistry;
+import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.sql.SQLRegistry;
 import com.synload.framework.ws.WSHandler;
 import com.synload.framework.ws.WSRequest;
@@ -45,7 +46,8 @@ import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
 import com.synload.talksystem.ServerTalk;
 
-public class SynloadFramework {
+@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.3")
+public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
     public static String version="1.3";
@@ -418,5 +420,12 @@ public class SynloadFramework {
     public static void setEncryptEnabled(boolean encrypt) {
         SynloadFramework.encryptEnabled = encrypt;
     }
+	@Override
+	public void initialize() {
+		Log.info("Synload Framework Loaded", SynloadFramework.class);
+	}
+	@Override
+	public void crossTalk(Object... obj) {
+	}
 
 }
