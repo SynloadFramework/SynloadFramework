@@ -206,7 +206,9 @@ public class WSHandler {
                                     ws.encrypt = true;
                                 }
                             }
-                            ws.queue.remove(c);
+                            if(ws.queue.size()>c){
+                            	ws.queue.remove(c);
+                            }
                             c++;
                         }
                     }
