@@ -226,10 +226,10 @@ public class SynloadFramework {
     }
 
     public static void buildJavascript() {
-        Javascript jsUnderscore = new Javascript();
+        Javascript jsMarkup = new Javascript();
         //jsUser.addCallBack("user.msg", "recieve");
-        jsUnderscore.setScript("/synloadframework/js/underscore-min.js");
-        SynloadFramework.registerJavascriptFile(jsUnderscore, "Underscore");
+        jsMarkup.setScript("/synloadframework/js/Markup.js");
+        SynloadFramework.registerJavascriptFile(jsMarkup, "MarkupJS");
         /*Javascript jsPage = new Javascript();
         jsPage.setScript("/js/page.js");
         SynloadFramework.registerJavascriptFile(jsPage, "Page Handler");

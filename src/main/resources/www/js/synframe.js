@@ -277,10 +277,7 @@ var _sf = {
 		}
 	},
 	templateRender: function(template,tmpldata){
-		//console.log(template);
-		//console.log(tmpldata);
-		var _template = _.template(template);
-		return _template(tmpldata);
+		return Mark.up(template,tmpldata);
 	},
 	compile: function(tmpldata){
 		if(_sf.cache.indexOf(tmpldata.templateId) > -1){
