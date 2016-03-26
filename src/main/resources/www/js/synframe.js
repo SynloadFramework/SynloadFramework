@@ -73,6 +73,9 @@ var _sf = {
 		}
 	},
 	connected: function(){
+		_sf.addCallback(template.msg,"recieve");
+		_sf.addCallback(javascript.msg,"recieve");
+		_sf.addCallback(template.ws_lost,"close");
 		_sf.onConnect();
 		setInterval(function(){
 			var data = {
@@ -276,8 +279,8 @@ var _sf = {
 		}
 	},
 	templateRender: function(template,tmpldata){
-		console.log(template);
-		console.log(tmpldata);
+		//console.log(template);
+		//console.log(tmpldata);
 		var _template = _.template(template);
 		return _template(tmpldata);
 	},
