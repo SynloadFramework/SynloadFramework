@@ -43,7 +43,7 @@ public class ModuleLoader extends ClassLoader {
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
     public static HashMap<String, String> loadedModules = new HashMap<String, String>();
     
-    public static HashMap<String, ModuleData> jar = new HashMap<String, ModuleData>();
+    public static HashMap<String, ModuleData> jarList = new HashMap<String, ModuleData>();
     
     
     public static List<String> modules = new ArrayList<String>();
@@ -130,7 +130,7 @@ public class ModuleLoader extends ClassLoader {
 			e.printStackTrace();
 		}
         
-        for(Entry<String, ModuleData> clazz : jar.entrySet()){
+        for(Entry<String, ModuleData> clazz : jarList.entrySet()){
         	for(String clazzPath : clazz.getValue().getClasses()){
 				try {
 					loadedClass = (new ModuleLoader(Thread.currentThread().getContextClassLoader())).loadClass(clazzPath); // load class
@@ -213,7 +213,7 @@ public class ModuleLoader extends ClassLoader {
     	Log.info("Loaded file: "+path+fileName, ModuleLoader.class);
     	try {
             ModuleData moduleData = getJarData(path + fileName);
-            ModuleLoader.jar.put(path + fileName, moduleData);
+            ModuleLoader.jarList.put(path + fileName, moduleData);
             return moduleData;
         } catch (IOException e) {
             e.printStackTrace();
