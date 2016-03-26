@@ -226,21 +226,16 @@ public class SynloadFramework {
     }
 
     public static void buildJavascript() {
-        Javascript jsUser = new Javascript();
-        jsUser.addCallBack("user.msg", "recieve");
-        jsUser.addCallBack("user.load", "init");
-        jsUser.addCallBack("user.event", "login");
-        jsUser.addCallBack("user.event", "logout");
-        jsUser.addCallBack("user.event", "session");
-        jsUser.addCallBack("user.event", "register");
-        jsUser.setScript("/js/user.js");
-        SynloadFramework.registerJavascriptFile(jsUser, "User Account System");
-        Javascript jsPage = new Javascript();
+        Javascript jsUnderscore = new Javascript();
+        //jsUser.addCallBack("user.msg", "recieve");
+        jsUnderscore.setScript("/synloadframework/js/underscore-min.js");
+        SynloadFramework.registerJavascriptFile(jsUnderscore, "Underscore");
+        /*Javascript jsPage = new Javascript();
         jsPage.setScript("/js/page.js");
         SynloadFramework.registerJavascriptFile(jsPage, "Page Handler");
         Javascript jsForm = new Javascript();
         jsForm.setScript("/js/form.js");
-        SynloadFramework.registerJavascriptFile(jsForm, "Form Handler");
+        SynloadFramework.registerJavascriptFile(jsForm, "Form Handler");*/
     }
 
     public static void buildDefaultHTTP() {
