@@ -2,66 +2,33 @@
 /*
     http://ats.oka.nu/
 */
-var includeJS = [
-    "packages.js",
-    "isarray.js",
-    "binary.js",
-    "elapse.js",
-    "trace.async.js",
-    
-    "BigInteger.init1.js",
-    "RSA.init1.js",
-    "SecureRandom.js",
-    "BigInteger.init2.js",
-    "RSA.init2.js",
-    
-    "nonstructured.js",
-    "BigInteger.init3.js",
-    "RSA.init3.js",
-    
-    "Cipher.js",
-    "SOAEP.js",
-    "RSAKeyFormat.js",
-    "BitPadding.js"
-];
-for(var i=0;i<17;i++){
-    var js = document.createElement("script");
-    js.type = "text/javascript";
-    js.src = "/synloadframework/js/"+includeJS[i];
-    document.body.appendChild(js);
-}
 
-$(document).ready(function(){
-    __uses( "BigInteger.init1.js" );
-    __uses( "BigInteger.init2.js" );
-    __uses( "RSA.init1.js" );
-    __uses( "RSA.init2.js" );
-    __uses( "RSA.init3.js" );
-    __uses( "RSAKeyFormat.js" );
-    
-    // import
-    var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
-    var RSA = __import( this,"titaniumcore.crypto.RSA" );
-    var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
-    
-    RSA.installKeyFormat( RSAKeyFormat );
-    rsaKey.generateAsync( 
-        1024, 
-        65537, 
-        function(c){
-            if ( c % 64 == 0 ) {
-                console.log( "processing..." + c );
-            }
-        }, 
-        function( rsa ) {
-            
-        }, 
-        function( succeeded, count, time ,startTime, finishTime ) {
-            console.log(base64x_encode(rsaKey.privateKeyBytes()));
-            console.log(base64x_encode(rsaKey.publicKeyBytes()));
-        }
-    );
-});
+var includeJS = [
+    "rsa_dec.js",
+    "aes.js",
+    "api.js",
+    "cryptico.min.js",
+    "hash.js",
+    "jsbn.js",
+    "random.js",
+    "rsa.js"
+];
+var js = new Array();
+var clientRSA;
+var clientKey;
+var serverKey;
+function loadedEncrypt(){
+    clientRSA = cryptico.generateRSAKey("", 512);
+    clientKey = cryptico.publicKeyString(clientRSA);
+    console.log(clientKey);
+}
+for(var i=0;i<7;i++){
+    $.getScript("/synloadframework/js/"+includeJS[i],function(){
+        
+    });
+}
+// import
+
 /*
     RSA END
 */
@@ -454,12 +421,21 @@ var _sf = {
 		}
 	],
 }
-(function( $ ) {
-    $.fn.syf = function(address,path,func){
-        _sf.connect(address,path);
-        _sf.onConnect = func;
-    }
-}( jQuery ));
+
+_sf.addCallback(function(ws, data){
+    loadedEncrypt();
+    console.log(data.data.spk);
+    // test data
+    
+    var decrypt = new JSEncrypt();
+    decrypt.setPrivateKey(data.data.spk);
+    var uncrypted = decrypt.decrypt(data.data.test);
+    console.log(uncrypted);
+    
+    
+    console.log(data);
+}, "ecryption_handshake");
+
 window.onhashchange = function(){
 	if(window.location.hash.split("/").length==3){
 		if(window.atob(window.location.hash.split("/")[2])!=_sf.onPage_request){
@@ -470,5 +446,6 @@ window.onhashchange = function(){
 }
 function connect(domain,func){
 	$("._sf_connect_hideme").hide();
-	$("body").syf(domain,"/ws/",func);
+	_sf.connect(domain,"/ws/");
+	_sf.onConnect = func;
 }

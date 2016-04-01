@@ -47,6 +47,7 @@ import com.synload.eventsystem.events.ConnectEvent;
 import com.synload.framework.Log;
 import com.synload.framework.OOnPage;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.elements.Connected;
 import com.synload.framework.elements.EncryptAuth;
 import com.synload.framework.elements.JavascriptIncludes;
 import com.synload.framework.handlers.Data;
@@ -99,7 +100,15 @@ public class WSHandler {
         this.user = user;
     }
 
-    @OnWebSocketConnect
+    public PKI getPki() {
+		return pki;
+	}
+
+	public void setPki(PKI pki) {
+		this.pki = pki;
+	}
+
+	@OnWebSocketConnect
     public void onWebSocketConnect(Session session) {
 
         this.session = session;
@@ -119,6 +128,7 @@ public class WSHandler {
         	
         } else {
             send(new JavascriptIncludes());
+			send(new Connected());
         }
         /*Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")
                 + " connected!", this.getClass());*/
@@ -190,7 +200,8 @@ public class WSHandler {
                             if (ws.encrypt) {
                                 ws.session.getRemote().sendString(
                                      pki.encrypt(
-                                         SynloadFramework.ow.writeValueAsString(queueIterator.next())
+                                         SynloadFramework.ow.writeValueAsString(queueIterator.next()),
+                                         pki.getClientPublicKey()
                                      ),
                                      new verifySend(ws)
                                  );
@@ -253,7 +264,7 @@ public class WSHandler {
         try {
             Request request = null;
             if (encrypt) {
-				request = mapper.readValue(pki.decrypt(message), Request.class);
+				request = mapper.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
             } else {
                 request = mapper.readValue(message, Request.class);
             }
