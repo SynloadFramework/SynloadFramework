@@ -4,14 +4,73 @@
 		_sf.onConnect = func;
 	}
 }( jQuery ));
-var js = document.createElement("script");
-js.type = "text/javascript";
-js.src = "/synloadframework/js/pki.js";
-document.body.appendChild(js);
-var js = document.createElement("script");
-js.type = "text/javascript";
-js.src = "/synloadframework/js/pkiGen.js";
-document.body.appendChild(js);
+
+/*
+    http://ats.oka.nu/
+*/
+var includeJS = [
+    "packages.js",
+    "isarray.js",
+    "binary.js",
+    "elapse.js",
+    "trace.async.js",
+    "BigInteger.init1.js",
+    "RSA.init1.js",
+    "SecureRandom.js",
+    "BigInteger.init2.js",
+    "RSA.init2.js",
+    "nonstructured.js",
+    "BigInteger.init3.js",
+    "RSA.init3.js",
+    "Cipher.js",
+    "SOAEP.js",
+    "RSAKeyFormat.js",
+    "BitPadding.js"
+];
+for(var i=0;i<17;i++){
+    var js = document.createElement("script");
+    js.type = "text/javascript";
+    js.src = "/synloadframework/js/"+includeJS[i];
+    document.body.appendChild(js);
+}
+__unit( "RSA.sample1.html" );
+__uses( "BigInteger.init1.js" );
+__uses( "BigInteger.init2.js" );
+__uses( "RSA.init1.js" );
+__uses( "RSA.init2.js" );
+__uses( "RSA.init3.js" );
+__uses( "RSAKeyFormat.js" );
+
+// import
+var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
+var RSA = __import( this,"titaniumcore.crypto.RSA" );
+var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
+
+RSA.installKeyFormat( RSAKeyFormat );
+
+
+
+$(document).ready(function(){
+    rsaKey.generateAsync( 
+        1024, 
+        65537, 
+        function(c){
+            if ( c % 64 == 0 ) {
+                console.log( "processing..." + c );
+            }
+        }, 
+        function( rsa ) {
+            
+        }, 
+        function( succeeded, count, time ,startTime, finishTime ) {
+            console.log(base64x_encode(rsaKey.privateKeyBytes()));
+            console.log(base64x_encode(rsaKey.publicKeyBytes()));
+        }
+    );
+});
+/*
+    RSA END
+*/
 
 var _sf = {
 	loading: false,
