@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -13,8 +16,12 @@ import java.util.List;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import nl.captcha.Captcha;
 import nl.captcha.backgrounds.SquigglesBackgroundProducer;
@@ -22,6 +29,7 @@ import nl.captcha.gimpy.FishEyeGimpyRenderer;
 import nl.captcha.noise.CurvedLineNoiseProducer;
 import nl.captcha.text.producer.DefaultTextProducer;
 
+import org.apache.commons.net.util.Base64;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -44,6 +52,7 @@ import com.synload.framework.elements.JavascriptIncludes;
 import com.synload.framework.handlers.Data;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
+import com.synload.framework.security.PKI;
 import com.synload.framework.users.User;
 
 @WebSocket
@@ -54,9 +63,9 @@ public class WSHandler {
     @JsonIgnore
     public List<String> queue = new ArrayList<String>();
     public User user = null;
+    private PKI pki;
     public boolean encrypt = false;
     public List<String> flags = new ArrayList<String>();
-    public String encryptKey = "";
     @JsonIgnore
     public boolean isSending = false;
     @JsonIgnore
@@ -99,32 +108,21 @@ public class WSHandler {
         sendingThreadVar.start();
         SynloadFramework.clients.add(this);
         if (SynloadFramework.isEncryptEnabled()) {
-            Captcha c = generateCaptcha();
-            try {
-                send(new EncryptAuth(c));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            encryptKey = c.getAnswer();
+        	send(new JavascriptIncludes());
+        	try {
+				pki = new PKI();
+				send(pki.generate());
+				encrypt=false;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        	
         } else {
-            if (SynloadFramework.isSiteDefaults()) {
-                send(new JavascriptIncludes());
-            }
+            send(new JavascriptIncludes());
         }
-        Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")
-                + " connected!", this.getClass());
-        // System.out.println("Connect: " +
-        // session.getRemoteAddress().getAddress());
+        /*Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")
+                + " connected!", this.getClass());*/
         EventPublisher.raiseEvent(new ConnectEvent(this), null);
-    }
-
-    public Captcha generateCaptcha() {
-        Captcha captcha = new Captcha.Builder(800, 300)
-                .addBackground(new SquigglesBackgroundProducer())
-                .addText(new DefaultTextProducer(13)).addNoise()
-                .gimp(new FishEyeGimpyRenderer()).addNoise().addNoise()
-                .addNoise(new CurvedLineNoiseProducer()).build();
-        return captcha;
     }
 
     @OnWebSocketError
@@ -191,20 +189,16 @@ public class WSHandler {
                             ws.isSending = true;
                             if (ws.encrypt) {
                                 ws.session.getRemote().sendString(
-                                     encrypt(
-                                         SynloadFramework.ow.writeValueAsString(queueIterator.next()),
-                                         getRandomHexString(64),
-                                         getRandomHexString(32)),
-                                         new verifySend(ws)
-                                     );
+                                     pki.encrypt(
+                                         SynloadFramework.ow.writeValueAsString(queueIterator.next())
+                                     ),
+                                     new verifySend(ws)
+                                 );
                             } else {
                                 ws.session.getRemote().sendString(
                                     queueIterator.next(),
                                     new verifySend(ws)
                                 );
-                                if (SynloadFramework.isEncryptEnabled()) {
-                                    ws.encrypt = true;
-                                }
                             }
                             if(ws.queue.size()>c){
                             	ws.queue.remove(c);
@@ -237,30 +231,6 @@ public class WSHandler {
         return sb.toString().substring(0, numchars);
     }
 
-    public String encrypt(String data, String salt, String iv)
-            throws UnsupportedEncodingException, NoSuchAlgorithmException,
-            InvalidKeySpecException, InvalidParameterSpecException,
-            IllegalBlockSizeException, BadPaddingException,
-            InvalidKeyException, NoSuchPaddingException {
-        String passphrase = encryptKey;
-        AesUtil aesUtil = new AesUtil(128, 1000);
-        String eData = aesUtil.encrypt(salt, iv, passphrase, data);
-        String enDat = eData + ":" + salt + ":" + iv;
-        return enDat;
-    }
-
-    public String decrypt(String data, String salt, String iv)
-            throws NoSuchAlgorithmException, InvalidKeySpecException,
-            InvalidParameterSpecException, IllegalBlockSizeException,
-            BadPaddingException, InvalidKeyException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException,
-            IOException {
-        
-        String passphrase = encryptKey;
-        AesUtil aesUtil = new AesUtil(128, 1000);
-        return aesUtil.decrypt(salt, iv, passphrase, data);
-    }
-
     public class verifySend implements WriteCallback {
         private WSHandler ws = null;
 
@@ -283,18 +253,7 @@ public class WSHandler {
         try {
             Request request = null;
             if (encrypt) {
-                String[] s = message.split(":");
-				try {
-					request = mapper.readValue(decrypt(s[0], s[1], s[2]), Request.class);
-				} catch (InvalidKeyException e) {
-				} catch (NoSuchAlgorithmException e) {
-				} catch (InvalidKeySpecException e) {
-				} catch (InvalidParameterSpecException e) {
-				} catch (IllegalBlockSizeException e) {
-				} catch (BadPaddingException e) {
-				} catch (NoSuchPaddingException e) {
-				} catch (InvalidAlgorithmParameterException e) {
-				}
+				request = mapper.readValue(pki.decrypt(message), Request.class);
             } else {
                 request = mapper.readValue(message, Request.class);
             }

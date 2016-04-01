@@ -4,6 +4,14 @@
 		_sf.onConnect = func;
 	}
 }( jQuery ));
+var js = document.createElement("script");
+js.type = "text/javascript";
+js.src = "/synloadframework/js/pki.js";
+document.body.appendChild(js);
+var js = document.createElement("script");
+js.type = "text/javascript";
+js.src = "/synloadframework/js/pkiGen.js";
+document.body.appendChild(js);
 
 var _sf = {
 	loading: false,

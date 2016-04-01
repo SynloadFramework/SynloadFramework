@@ -73,6 +73,7 @@ public class SynloadFramework extends ModuleClass {
     public static Server server = null;
     public static boolean dbEnabled = false;
     public static boolean encryptEnabled;
+    public static int encryptLevel;
     public static Properties prop = new Properties();
     public static List<WSHandler> clients = new ArrayList<WSHandler>();
     public static Map<String, List<Long>> failedAttempts = new HashMap<String, List<Long>>();
@@ -101,6 +102,7 @@ public class SynloadFramework extends ModuleClass {
                 configPath = prop.getProperty("configPath", configPath);
                 sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
+                encryptLevel = Integer.valueOf(prop.getProperty("encryptLevel"));
                 graphDBPath = prop.getProperty("graphDBPath");
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
@@ -228,11 +230,10 @@ public class SynloadFramework extends ModuleClass {
     }
 
     public static void buildJavascript() {
-        //Javascript jsMarkup = new Javascript();
-        //jsUser.addCallBack("user.msg", "recieve");
-        //jsMarkup.setScript("/synloadframework/js/Markup.js");
-        //SynloadFramework.registerJavascriptFile(jsMarkup, "MarkupJS");
-        /*Javascript jsPage = new Javascript();
+        /*Javascript jsPKI = new Javascript();
+        jsPKI.setScript("/synloadframework/js/pki.js");
+        SynloadFramework.registerJavascriptFile(jsPKI, "PKI_JS");
+        Javascript jsPage = new Javascript();
         jsPage.setScript("/js/page.js");
         SynloadFramework.registerJavascriptFile(jsPage, "Page Handler");
         Javascript jsForm = new Javascript();
@@ -426,6 +427,12 @@ public class SynloadFramework extends ModuleClass {
 	}
 	@Override
 	public void crossTalk(Object... obj) {
+	}
+	public static int getEncryptLevel() {
+		return encryptLevel;
+	}
+	public static void setEncryptLevel(int encryptLevel) {
+		SynloadFramework.encryptLevel = encryptLevel;
 	}
 
 }
