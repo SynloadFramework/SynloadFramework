@@ -1,9 +1,3 @@
-(function( $ ) {
-	$.fn.syf = function(address,path,func){
-		_sf.connect(address,path);
-		_sf.onConnect = func;
-	}
-}( jQuery ));
 
 /*
     http://ats.oka.nu/
@@ -14,14 +8,17 @@ var includeJS = [
     "binary.js",
     "elapse.js",
     "trace.async.js",
+    
     "BigInteger.init1.js",
     "RSA.init1.js",
     "SecureRandom.js",
     "BigInteger.init2.js",
     "RSA.init2.js",
+    
     "nonstructured.js",
     "BigInteger.init3.js",
     "RSA.init3.js",
+    
     "Cipher.js",
     "SOAEP.js",
     "RSAKeyFormat.js",
@@ -33,24 +30,21 @@ for(var i=0;i<17;i++){
     js.src = "/synloadframework/js/"+includeJS[i];
     document.body.appendChild(js);
 }
-__unit( "RSA.sample1.html" );
-__uses( "BigInteger.init1.js" );
-__uses( "BigInteger.init2.js" );
-__uses( "RSA.init1.js" );
-__uses( "RSA.init2.js" );
-__uses( "RSA.init3.js" );
-__uses( "RSAKeyFormat.js" );
-
-// import
-var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
-var RSA = __import( this,"titaniumcore.crypto.RSA" );
-var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
-
-RSA.installKeyFormat( RSAKeyFormat );
-
-
 
 $(document).ready(function(){
+    __uses( "BigInteger.init1.js" );
+    __uses( "BigInteger.init2.js" );
+    __uses( "RSA.init1.js" );
+    __uses( "RSA.init2.js" );
+    __uses( "RSA.init3.js" );
+    __uses( "RSAKeyFormat.js" );
+    
+    // import
+    var BigInteger = __import( this,"titaniumcore.crypto.BigInteger" );
+    var RSA = __import( this,"titaniumcore.crypto.RSA" );
+    var RSAKeyFormat = __import( packageRoot, "titaniumcore.crypto.RSAKeyFormat" );
+    
+    RSA.installKeyFormat( RSAKeyFormat );
     rsaKey.generateAsync( 
         1024, 
         65537, 
@@ -460,6 +454,12 @@ var _sf = {
 		}
 	],
 }
+(function( $ ) {
+    $.fn.syf = function(address,path,func){
+        _sf.connect(address,path);
+        _sf.onConnect = func;
+    }
+}( jQuery ));
 window.onhashchange = function(){
 	if(window.location.hash.split("/").length==3){
 		if(window.atob(window.location.hash.split("/")[2])!=_sf.onPage_request){
