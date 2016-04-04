@@ -3,21 +3,18 @@ package com.synload.framework.elements;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.net.util.Base64;
-
-import com.synload.framework.Log;
 import com.synload.framework.handlers.Response;
-import com.synload.framework.security.PKI;
+import com.synload.framework.ws.WSHandler;
+import sun.misc.BASE64Encoder;
 
 public class EncryptAuth extends Response {
-    public EncryptAuth(PKI pki) throws IOException {
-    	this.setCallEvent("ecryption_handshake");
+    public EncryptAuth(WSHandler ws) throws IOException {
+    	this.setCallEvent("encryption_handshake");
         Map<String, String> tmp = new HashMap<String, String>();
-        	String publicString = Base64.encodeBase64String(pki.getServerPublicKey().getEncoded());
+        	BASE64Encoder encoder = new BASE64Encoder();
+        	String publicString = encoder.encode(ws.getPki().getServerPublicKey().getEncoded());
+        	//System.out.println(publicString);
             tmp.put("spk", publicString);
-        	tmp.put("test", pki.encrypt("test", pki.getServerPrivateKey()));
         this.setData(tmp);
     }
 }

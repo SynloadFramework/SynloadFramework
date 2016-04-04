@@ -1,37 +1,21 @@
 
-/*
-    http://ats.oka.nu/
-*/
-
-var includeJS = [
-    "rsa_dec.js",
-    "aes.js",
-    "api.js",
-    "cryptico.min.js",
-    "hash.js",
-    "jsbn.js",
-    "random.js",
-    "rsa.js"
-];
 var js = new Array();
 var clientRSA;
 var clientKey;
 var serverKey;
+var key;
 function loadedEncrypt(){
-    clientRSA = cryptico.generateRSAKey("", 512);
-    clientKey = cryptico.publicKeyString(clientRSA);
-    console.log(clientKey);
+    crypt = new JSEncrypt({default_key_size: 1024});
+    key = crypt.getKey();
+    clientRSA=key.getPrivateKey();
+    //console.log(clientRSA);
+    clientKey=key.getPublicKey();
+    //console.log(clientKey);
 }
-for(var i=0;i<7;i++){
-    $.getScript("/synloadframework/js/"+includeJS[i],function(){
-        
-    });
-}
-// import
-
-/*
-    RSA END
-*/
+var loadedJSEncrypt = false;
+$.getScript("/synloadframework/js/JSEncrypt.js",function(){
+    loadedJSEncrypt=true;
+});
 
 var _sf = {
 	loading: false,
@@ -95,13 +79,12 @@ var _sf = {
 	send: function(e){
 		e.templateCache = _sf.cache;
 		if(_sf.encryptEnabled){
-			_sf.socket.send(_sf.encrypt(JSON.stringify(e)));
+			_sf.socket.send(_sf.encrypt(JSON.stringify(e),serverKey));
 		}else{
 			_sf.socket.send(JSON.stringify(e));
 		}
 	},
 	connected: function(){
-		_sf.addCallback(_sf.msg,"recieve");
 		_sf.onConnect();
 		setInterval(function(){
 			var data = {
@@ -112,20 +95,6 @@ var _sf = {
 			_sf.send(data);
 		},10000);
 	},
-	confirmEncrypt: function(elem){
-		if(!_sf.ecsnt){
-			_sf.ecsnt = true;
-			_sf.ekey = $(elem).val();
-			_sf.encryptEnabled = true;
-			$("#body").html("<div style=\"width:100%;height:"+($(document).innerHeight()-100)+"px;background:url('/723.GIF') center center no-repeat;\"></div>");
-			var s = {
-				"request":"get",
-				"page":"encrypt_confirm",
-				"class":"Request"
-			};
-			_sf.send(s);
-		}
-	},
 	connect: function(address,path){
 		_sf.wsAddress = address;
 		_sf.wsPath = path;
@@ -135,8 +104,9 @@ var _sf = {
 		_sf.socket =  new WebSocket('ws://'+address+path);
 		_sf.socket.onopen = function() {
 			//_sf.alert("Connected to server!",{ header: 'Server Connection' });
-			_sf.loadDefault();
-			_sf.connected();
+			//_sf.loadDefault();
+			//_sf.connected();
+			_sf.addCallback(_sf.msg,"recieve");
 		};
 		_sf.socket.onclose = function() {
 			//_sf.alert("connection lost to server!",{ header: 'Server Connection' });
@@ -152,6 +122,7 @@ var _sf = {
 		};
 		_sf.socket.onmessage = function( msg ) {
 			if(_sf.encryptEnabled){
+                //console.log(msg);
 				var data = jQuery.parseJSON(jQuery.parseJSON(_sf.decrypt(msg.data)));
 				//console.log(data);
 			}else{
@@ -193,29 +164,43 @@ var _sf = {
 			});
 		}
 	},
-	encrypt: function(data){
-		var iterationCount = 1000;
-		var keySize = 128;
-		var iv = CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
-		var salt = CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Hex);
-		var key = _sf.ekey;
-		var aesUtil = new AesUtil(keySize, iterationCount);
-		var eData = aesUtil.encrypt(salt, iv, key, data).toString(CryptoJS.enc.Base64);
-		var enDat = eData+":"+salt+":"+iv;
-		var test = _sf.decrypt(enDat);
-		if(data==test){
-			//console.log("Encryption success!");
-		}
-		return enDat;
+	encrypt: function(data, key){
+        var enc = new JSEncrypt();
+        enc.setPublicKey(key);
+        var partials = new Array();
+        var myregexp = /((.|[\r\n]){1,50})/g;
+        var match = myregexp.exec(data);
+        while (match != null) {
+            partials.push(match[1]);
+            match = myregexp.exec(data);
+        }
+	   var renc = "";
+	   for(var i=0;i<partials.length;i++){
+	       if(renc==""){
+	           renc = enc.encrypt(partials[i]);
+           }else{
+	           renc += "&"+enc.encrypt(partials[i]);
+           }
+	   }
+	   return renc;
 	},
 	decrypt: function(data){
-		var iterationCount = 1000;
-		var keySize = 128;
-		var data = data.replace("\"","").split(":");
-		var key = _sf.ekey;
-		var aesUtil = new AesUtil(keySize, iterationCount);
-		var out = aesUtil.decrypt(data[1], data[2], key, data[0]);
-		return out;
+	    var partials = data.split(/&/);
+	    var renc = "";
+	    for(var i=0;i<partials.length;i++){
+	       var unenc = atob(crypt.decrypt(partials[i]));
+	       if(unenc==null){
+	           console.log("decrypt error!");
+	           break;
+	       }else{
+               if(renc==""){
+                    renc = unenc;
+               }else{
+                    renc = renc+unenc;
+               }
+           }
+        }
+		return renc;
 	},
 	showLoad: function(){
 		_sf.loading = true;
@@ -391,7 +376,7 @@ var _sf = {
 					);
 					eval(js);
 					_sf.javascriptLoaded=true;
-					_sf.connected();
+					//_sf.connected();
 				}
 			}else{
 				_sf.callBack('init');
@@ -421,20 +406,57 @@ var _sf = {
 		}
 	],
 }
+function sendEncryptHandshake(){
+    if(loadedJSEncrypt){
+        loadedEncrypt();
+        var eKey = _sf.encrypt(
+            clientKey.replace(/-----BEGIN PUBLIC KEY-----/g, "").replace(/-----END PUBLIC KEY-----/g, ""), 
+            serverKey
+        );
+        var s = {
+            "data":{
+                "cpk":eKey
+            },
+            "request":"synfam",
+            "page":"cpk",
+            "class":"Request"
+        };
+        _sf.send(s);
+        _sf.encryptEnabled=true;
+    }else{
+        setTimeout(function(){
+            sendEncryptHandshake();
+        },400);
+    }
+}
+_sf.addCallback(function(ws, data){
+    
+    // test data
+    serverKey = data.data.spk;
+    //console.log(serverKey);
+    sendEncryptHandshake();
+    
+}, "encryption_handshake");
 
 _sf.addCallback(function(ws, data){
-    loadedEncrypt();
-    console.log(data.data.spk);
-    // test data
-    
-    var decrypt = new JSEncrypt();
-    decrypt.setPrivateKey(data.data.spk);
-    var uncrypted = decrypt.decrypt(data.data.test);
-    console.log(uncrypted);
-    
-    
-    console.log(data);
-}, "ecryption_handshake");
+    //console.log(data);
+    var d = data.data.spk;
+    serverKey = d;
+    var s = {
+        "data":{
+            "message":"HELLO"
+        },
+        "request":"synfam",
+        "page":"ack",
+        "class":"Request"
+    };
+    _sf.send(s);
+}, "encryption_handshake_two");
+_sf.addCallback(function(ws, data){
+    _sf.loadDefault();
+    _sf.connected();
+}, "conn_est");
+
 
 window.onhashchange = function(){
 	if(window.location.hash.split("/").length==3){
@@ -446,6 +468,6 @@ window.onhashchange = function(){
 }
 function connect(domain,func){
 	$("._sf_connect_hideme").hide();
-	_sf.connect(domain,"/ws/");
-	_sf.onConnect = func;
+    _sf.connect(domain,"/ws/");
+    _sf.onConnect = func;
 }

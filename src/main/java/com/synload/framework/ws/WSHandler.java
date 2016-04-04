@@ -1,42 +1,16 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-import nl.captcha.Captcha;
-import nl.captcha.backgrounds.SquigglesBackgroundProducer;
-import nl.captcha.gimpy.FishEyeGimpyRenderer;
-import nl.captcha.noise.CurvedLineNoiseProducer;
-import nl.captcha.text.producer.DefaultTextProducer;
-
-import org.apache.commons.net.util.Base64;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -119,9 +93,9 @@ public class WSHandler {
         if (SynloadFramework.isEncryptEnabled()) {
         	send(new JavascriptIncludes());
         	try {
-				pki = new PKI();
-				send(pki.generate());
-				encrypt=false;
+				this.setPki(new PKI());
+				this.encrypt=false;
+				send(new EncryptAuth(this));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -129,10 +103,10 @@ public class WSHandler {
         } else {
             send(new JavascriptIncludes());
 			send(new Connected());
+			EventPublisher.raiseEvent(new ConnectEvent(this), null);
         }
         /*Log.debug(session.getUpgradeRequest().getHeaders("X-Real-IP")
                 + " connected!", this.getClass());*/
-        EventPublisher.raiseEvent(new ConnectEvent(this), null);
     }
 
     @OnWebSocketError
@@ -201,7 +175,7 @@ public class WSHandler {
                                 ws.session.getRemote().sendString(
                                      pki.encrypt(
                                          SynloadFramework.ow.writeValueAsString(queueIterator.next()),
-                                         pki.getClientPublicKey()
+                                         ws.getPki().getClientPublicKey()
                                      ),
                                      new verifySend(ws)
                                  );
