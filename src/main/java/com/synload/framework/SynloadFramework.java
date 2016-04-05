@@ -46,7 +46,7 @@ import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
 import com.synload.talksystem.ServerTalk;
 
-@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.3")
+@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4")
 public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
