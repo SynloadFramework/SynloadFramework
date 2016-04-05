@@ -87,7 +87,9 @@ var _sf = {
 	connected: function(){
 	   $("#loadingBar .bar").animate({"width":(390*1.0)+"px"},function(){
     	   $("#loadingBar").fadeOut(100,function(){
-    	       $("body").after('<img src="/synloadframework/images/technology.png" style="background:#fff;border-radius:4px;padding:4px;position:absolute;left:10px;top:55px;z-index:10000;" />');
+    	       if(_sf.encryptEnabled){
+    	           $("body").after('<img src="/synloadframework/images/technology.png" style="background:#fff;border-radius:4px;padding:4px;position:absolute;left:10px;top:55px;z-index:10000;" />');
+    	       }
     	        $("#loadingBar").empty();
                 $("#loadingBar").remove();
         		_sf.onConnect();
