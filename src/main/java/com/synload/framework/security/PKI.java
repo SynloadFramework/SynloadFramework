@@ -5,16 +5,25 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import org.apache.commons.net.util.Base64;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.synload.eventsystem.EventPublisher;
@@ -31,6 +40,7 @@ import com.synload.framework.modules.annotations.Event.Type;
 import com.synload.framework.ws.WSHandler;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
+import sun.misc.IOUtils;
 
 public class PKI {
     private PrivateKey serverPrivateKey = null;
@@ -39,6 +49,33 @@ public class PKI {
     private PublicKey clientPublicKey = null;
     public PKI(){
     	generateKeys();
+    }
+    public void sendKeysToPubKeyServers(String publicKey) throws NoSuchAlgorithmException{
+    	MessageDigest md = MessageDigest.getInstance("SHA-512");
+    	String sha512 = new String(md.digest(publicKey.getBytes()));
+    	HttpClient httpClient = HttpClients.custom().build();
+    	for( HashMap<String, String> server : SynloadFramework.pubkeyServers ){
+	    	RequestBuilder reqBuilder = RequestBuilder.post().setUri("http://"+server.get("address")+"/auth.php");
+			reqBuilder.addParameter("key", sha512);
+			reqBuilder.addParameter("username",server.get("username"));
+			reqBuilder.addParameter("password",server.get("password"));
+			HttpUriRequest post = reqBuilder.build();
+			try {
+				CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(post);
+				HttpEntity entity = response.getEntity();
+				String content = new String(IOUtils.readFully(entity.getContent(), (int)entity.getContentLength(), false));
+				if(content.equals("OK")){
+					Log.info("Sent "+server.get("address")+" the key hash", PKI.class);
+				}else{
+					Log.error("Not Working", PKI.class);
+				}
+				response.close();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
     }
     public void generateKeys(){
     	KeyPairGenerator kpg;

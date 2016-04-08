@@ -77,6 +77,7 @@ public class SynloadFramework extends ModuleClass {
     public static Properties prop = new Properties();
     public static List<WSHandler> clients = new ArrayList<WSHandler>();
     public static Map<String, List<Long>> failedAttempts = new HashMap<String, List<Long>>();
+    public static List<HashMap<String, String>> pubkeyServers = new ArrayList<HashMap<String, String>>();
     public static List<Javascript> javascripts = new ArrayList<Javascript>();
     public static ObjectWriter ow = new ObjectMapper().writer();
     public static int port = 80;
@@ -114,6 +115,7 @@ public class SynloadFramework extends ModuleClass {
                 serverTalkKey = prop.getProperty("serverTalkKey");
                 serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
                 graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
+                pubkeyServers = parsePubKeyServers(prop.getProperty("pubkeyservers"));
             } else {
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("config.ini");
                 FileOutputStream os = new FileOutputStream(new File("./config.ini"));
@@ -434,5 +436,19 @@ public class SynloadFramework extends ModuleClass {
 	public static void setEncryptLevel(int encryptLevel) {
 		SynloadFramework.encryptLevel = encryptLevel;
 	}
-
+	private static List<HashMap<String, String>> parsePubKeyServers(String pubKeyServerList){
+		List<HashMap<String, String>> servers = new ArrayList<HashMap<String, String>>();
+		String[] pubKeyServers = pubKeyServerList.split("&");
+		for(String pubKeyServer: pubKeyServers){
+			HashMap<String, String> server = new HashMap<String, String>();
+			String[] serverData =  pubKeyServer.split(",");
+			server.put("address", serverData[0]);
+			server.put("username", serverData[1]);
+			server.put("password", serverData[2]);
+			servers.add(server);
+		}
+		return servers;
+		
+		
+	}
 }
