@@ -89,10 +89,25 @@ public class SynloadFramework extends ModuleClass {
     public static String dbPath = "databases/";
 
     public static void main(String[] args) {
+    	// PARSE ARGUMENTS USING COMMON CLI
+    	CLIParser parser = new CLIParser(args);
+    	// DONE parsing arguments
+    	// DEFAULT CONFIG FILE
+    	String defaultPath = "./";
+    	if(parser.getCmd().hasOption("p")){
+    		defaultPath = parser.getCmd().getOptionValue("p"); // user selected different app root
+    		if(!defaultPath.substring(defaultPath.length()-1).equals("/")){
+    			defaultPath=defaultPath+"/";
+    		}
+    	}
+    	String configFile = defaultPath+"config.ini";
+    	if(parser.getCmd().hasOption("c")){
+    		configFile =parser.getCmd().getOptionValue("c"); // user selected different config file
+    	}
         Log.info( "Starting Synload Development Framework Server", SynloadFramework.class );
         try {
-            if ((new File("./config.ini")).exists()) {
-                prop.load(new FileInputStream("config.ini"));
+            if ((new File(configFile)).exists()) {
+                prop.load(new FileInputStream(configFile));
                 port = Integer.valueOf(prop.getProperty("port"));
                 handleUpload = Boolean.valueOf(prop
                         .getProperty("enableUploads"));
@@ -118,22 +133,22 @@ public class SynloadFramework extends ModuleClass {
                 pubkeyServers = parsePubKeyServers(prop.getProperty("pubkeyservers"));
             } else {
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("config.ini");
-                FileOutputStream os = new FileOutputStream(new File("./config.ini"));
+                FileOutputStream os = new FileOutputStream(new File(configFile));
                 IOUtils.copy(is, os);
                 os.close();
                 is.close();
                 System.exit(0);
             }
-            if(!new File("./log4j.properties").exists()){
+            if(!new File(defaultPath+"log4j.properties").exists()){
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("log4j.properties");
-                FileOutputStream os = new FileOutputStream(new File("./log4j.properties"));
+                FileOutputStream os = new FileOutputStream(new File(defaultPath+"log4j.properties"));
                 IOUtils.copy(is, os);
                 os.close();
                 is.close();
             }
-            if(!new File("./bbcodes.xml").exists()){
+            if(!new File(defaultPath+"bbcodes.xml").exists()){
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("bbcodes.xml");
-                FileOutputStream os = new FileOutputStream(new File("./bbcodes.xml"));
+                FileOutputStream os = new FileOutputStream(new File(defaultPath+"bbcodes.xml"));
                 IOUtils.copy(is, os);
                 os.close();
                 is.close();
