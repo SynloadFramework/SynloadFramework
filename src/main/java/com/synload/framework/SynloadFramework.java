@@ -176,7 +176,7 @@ public class SynloadFramework extends ModuleClass {
                     (new File(graphDBPath)).mkdir();
                 }
                 graphDB = new GraphDatabaseFactory()
-                    .newEmbeddedDatabaseBuilder(graphDBPath)
+                    .newEmbeddedDatabaseBuilder(new File(graphDBPath))
                     .loadPropertiesFromFile( graphDBConfig )
                     .newGraphDatabase();
             }else{
@@ -244,7 +244,6 @@ public class SynloadFramework extends ModuleClass {
     }
 
     public static void buildDefaultHTTP() {
-
         SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
         if (handleUpload) {
             Log.info("Upload handler enabled!", SynloadFramework.class);
