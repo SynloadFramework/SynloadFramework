@@ -13,8 +13,8 @@ public class CLIParser {
 	public CLIParser(String[] args){
 		parser = new DefaultParser();
     	options = new Options();
-    	options.addOption("c", true, "configuration file");
-    	options.addOption("p", true, "path to program root");
+    	options.addOption("c", true, "Configuration file");
+    	options.addOption("p", true, "Path to program root");
     	try {
 			cmd = parser.parse( options, args);
 		} catch (ParseException e) {

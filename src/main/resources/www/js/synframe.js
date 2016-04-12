@@ -1,4 +1,3 @@
-
 var js = new Array();
 var clientRSA;
 var clientKey;
@@ -17,26 +16,28 @@ $.getScript("/synloadframework/js/JSEncrypt.js",function(){
     loadedJSEncrypt=true;
 });
 
-var _sf = {
-	loading: false,
-	encryptEnabled: false,
-	interval: new Array(),
-	ekey:"",
-	cache: new Array(),
-	cacheTemplate: new Array(),
-	ecsnt: false,
-	onUnload: null,
-	socket: null,
-	storedTemplates: new Array(),
-	triggers: new Array(),
-	onPage: "",
-	onPage_request: "",
-	wsAddress: "",
-	onConnect: null,
-	wsPath: "",
-	javascriptLoaded: false,
-	onCallbacks: new Array(),
-	exec: function(msg){
+class SynloadFramework{
+	constructor(){
+		this.loading = false;
+		this.encryptEnabled = false;
+		this.interval = new Array(),
+		this.ekey = "",
+		this.cache = new Array(),
+		this.cacheTemplate = new Array(),
+		this.ecsnt = false,
+		this.onUnload = null,
+		this.socket = null,
+		this.storedTemplates = new Array(),
+		this.triggers = new Array(),
+		this.onPage = "",
+		this.onPage_request = "",
+		this.wsAddress = "",
+		this.onConnect = null,
+		this.wsPath = "",
+		this.javascriptLoaded = false,
+		this.onCallbacks = new Array(),
+	}
+	exec(msg){
 		if(msg.javascript.length>0){
 			for(var i=0;i<msg.javascript.length;i++){
 				eval(Mark.up(
@@ -45,135 +46,129 @@ var _sf = {
 				));
 			}
 		}
-	},
-	loadDefault: function(){
+	}
+	loadDefault(){
 		var rSent = false;
-		$.each( _sf.defaults , function(key,val){
+		$.each( this.defaults , function(key,val){
 			if(!rSent){
 				if(val.resume){
-					if(_sf.onPage==""){
+					if(this.onPage==""){
 						if(window.location.hash.split("/").length==3){
-							_sf.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
+							this.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
 							rSent = true;
 						}
 					}
 				}else{
-					_sf.send(val.request);
+					this.send(val.request);
 					rSent = true;
 				}
 			}
 		});
-	},
-	alert: function(text,extra){
+	}
+	alert(text,extra){
 		$.jGrowl(text,extra);
-	},
-	request: function(method, page, data){
+	}
+	request(method, page, data){
 		var data = {
 			"data": data,
 			"request":method,
 			"page":page,
 			"class":"Request"
 		}
-		_sf.send(data);
-	},
-	send: function(e){
-		e.templateCache = _sf.cache;
-		if(_sf.encryptEnabled){
-			_sf.socket.send(_sf.encrypt(JSON.stringify(e),serverKey));
+		this.send(data);
+	}
+	send(e){
+		e.templateCache = this.cache;
+		if(this.encryptEnabled){
+			this.socket.send(this.encrypt(JSON.stringify(e),serverKey));
 		}else{
-			_sf.socket.send(JSON.stringify(e));
+			this.socket.send(JSON.stringify(e));
 		}
-	},
-	connected: function(){
+	}
+	connected(){
 	   $("#loadingBar .bar").animate({"width":(390*1.0)+"px"},function(){
     	   $("#loadingBar").fadeOut(100,function(){
-    	       if(_sf.encryptEnabled){
+    	       if(this.encryptEnabled){
     	           $("body").after('<img src="/synloadframework/images/technology.png" style="background:#fff;border-radius:4px;padding:4px;position:absolute;left:10px;top:55px;z-index:10000;" />');
     	       }
     	        $("#loadingBar").empty();
                 $("#loadingBar").remove();
-        		_sf.onConnect();
+        		this.onConnect();
         		setInterval(function(){
         			var data = {
         				"request":"get",
         				"page":"ping",
         				"class":"Request"
         			}
-        			_sf.send(data);
+        			this.send(data);
         		},10000);
     		});
 		});
-	},
-	connect: function(address,path){
-		_sf.wsAddress = address;
-		_sf.wsPath = path;
+	}
+	connect(address,path){ // WebSocket Object
+		this.wsAddress = address;
+		this.wsPath = path;
 		if ((typeof(WebSocket) == 'undefined') && (typeof(MozWebSocket) != 'undefined')) {
 			WebSocket = MozWebSocket;
 		}
-		_sf.socket =  new WebSocket('ws://'+address+path);
-		_sf.socket.onopen = function() {
-			//_sf.alert("Connected to server!",{ header: 'Server Connection' });
-			//_sf.loadDefault();
-			//_sf.connected();
-			_sf.addCallback(_sf.msg,"recieve");
+		this.socket =  new WebSocket('ws://'+address+path);
+		this.socket.onopen = function() {
+			this.addCall(this.msg,"recieve");
 		};
-		_sf.socket.onclose = function() {
-			//_sf.alert("connection lost to server!",{ header: 'Server Connection' });
-			_sf.callBack('close');
-			_sf.onPage="";
-			_sf.onPage_request="";
-			_sf.ecsnt = false;
-			_sf.ekey = "";
-			_sf.encryptEnabled = false;
+		this.socket.onclose = function() {
+			this.call('close');
+			this.onPage="";
+			this.onPage_request="";
+			this.ecsnt = false;
+			this.ekey = "";
+			this.encryptEnabled = false;
 			setTimeout(function(){
-				_sf.connect(_sf.wsAddress,_sf.wsPath);
+				this.connect(this.wsAddress,this.wsPath);
 			},5000);
 		};
-		_sf.socket.onmessage = function( msg ) {
-			if(_sf.encryptEnabled){
-                //console.log(msg);
-				var data = jQuery.parseJSON(jQuery.parseJSON(_sf.decrypt(msg.data)));
-				//console.log(data);
+		this.socket.onmessage = function( msg ) {
+			if(this.encryptEnabled){
+				var data = jQuery.parseJSON(jQuery.parseJSON(this.decrypt(msg.data)));
 			}else{
 				var data = jQuery.parseJSON(msg.data);
 			}
 			if(data.callEvent!=null && data.callEvent!=""){
-				_sf.callBack(data.callEvent,data);
+				this.call(data.callEvent,data);
 			}else if(data.trigger){
-				_sf.triggers[data.trigger](data);
+				this.triggers[data.trigger](data);
 			}else{
-				_sf.callBack('recieve', data);
+				this.call('recieve', data);
 			}
 		};
-	},
-	requestData: function(e, func){
+	}
+	requestData(e, func){
 		var key = Math.random().toString(36).substring(7);
 		e.trigger = key;
-		_sf.triggers[key] = func;
-		_sf.send(e);
-	},
-	addCallback: function( func, callbackName ){
-		if(!_sf.onCallbacks[callbackName]){
-			_sf.onCallbacks[callbackName] = new Array();
+		this.triggers[key] = func;
+		this.send(e);
+	}
+	addCall( func, callbackName ){
+		if(!this.onCallbacks[callbackName]){
+			this.onCallbacks[callbackName] = new Array();
 		}
-		_sf.onCallbacks[callbackName].push( func );
-	},
-	callBack: function (callbackName,data){
-		if(_sf.onCallbacks[callbackName]){
-			$.each(_sf.onCallbacks[callbackName],function(key,func){
+		this.onCallbacks[callbackName].push( func );
+	}
+	call(callbackName,data){
+		if(this.onCallbacks[callbackName]){
+			$.each(this.onCallbacks[callbackName],function(key,func){
 				try{
 					if(data){
-						func(_sf.socket, data);
+						func(this.socket, data);
 					}else{
-						func(_sf.socket);
+						func(this.socket);
 					}
 				}catch(err){
 					console.log(err);
 				}
 			});
 		}
-	},
-	encrypt: function(data, key){
+	}
+	encrypt(data, key){
         var enc = new JSEncrypt();
         enc.setPublicKey(key);
         var partials = new Array();
@@ -192,8 +187,8 @@ var _sf = {
            }
 	   }
 	   return renc;
-	},
-	decrypt: function(data){
+	}
+	decrypt(data){
 	    var partials = data.split(/&/);
 	    var renc = "";
 	    for(var i=0;i<partials.length;i++){
@@ -210,16 +205,8 @@ var _sf = {
            }
         }
 		return renc;
-	},
-	showLoad: function(){
-		_sf.loading = true;
-		//NProgress.start();
-	},
-	hideLoad: function(){
-		_sf.loading = false;
-		//NProgress.done();
-	},
-	inject: function(html,parent,method,tmpldata){
+	}
+	inject(html,parent,method,tmpldata){
 		if($(parent).html()===html){
 			return;
 		}
@@ -232,11 +219,11 @@ var _sf = {
 					$(parent).addClass('animated fadeInLeft');
 					setTimeout(function(){
 						$(parent).removeClass('animated fadeInLeft');
-						_sf.build();
+						this.build();
 						if(tmpldata.pageId!="" && tmpldata.pageId!="null" && tmpldata.pageId!=undefined){
 							//$.scrollTo(  { top:0, left:0}, 250 );
 						}
-						_sf.exec(tmpldata);
+						this.exec(tmpldata);
 					},400);
 				},200);
 			break;
@@ -248,11 +235,11 @@ var _sf = {
 					$(parent).addClass('animated fadeInLeft');
 					setTimeout(function(){
 						$(parent).removeClass('animated fadeInLeft');
-						_sf.build();
+						this.build();
 						if(tmpldata.pageId!="" && tmpldata.pageId!="null" && tmpldata.pageId!=undefined){
 							//$.scrollTo(  { top:0, left:0}, 250 );
 						}
-						_sf.exec(tmpldata);
+						this.exec(tmpldata);
 					},400);
 				},200);
 			break;
@@ -260,8 +247,8 @@ var _sf = {
 				$(parent).effect(tmpldata.transitionOut,300,function(){
 					$(parent).html(html);
 					$(parent).show(tmpldata.transitionIn,200,function(){
-						_sf.build();
-						_sf.exec(tmpldata);
+						this.build();
+						this.exec(tmpldata);
 					});
 					if(tmpldata.redirect){
 						setTimeout(function(){
@@ -270,49 +257,49 @@ var _sf = {
 								"page":tmpldata.redirect.page,
 								"class":"Request"
 							};
-							_sf.send(s);
+							this.send(s);
 						},tmpldata.sleep);
 					}else if(tmpldata.callEvent){
 						setTimeout(function(){
-							_sf.callBack(tmpldata.callEvent);
+							this.call(tmpldata.callEvent);
 						},tmpldata.sleep);
 					}	
 				});
 			break;
 			case "abot":
 				$(parent).append(html);
-				_sf.build();
+				this.build();
 			break;
 			case "cabot":
 				$(parent).html("");
 				$(parent).append(html);
-				_sf.build();
+				this.build();
 			break;
 			case "atop":
 				$(parent).prepend(html);
-				_sf.build();
+				this.build();
 			break;
 			default:
 				$(parent).html(html);
-				_sf.build();
+				this.build();
 			break;
 		}
-	},
-	templateRender: function(template,tmpldata){
+	}
+	templateRender(template,tmpldata){
 		return Mark.up(template,tmpldata);
-	},
-	compile: function(tmpldata){
-		if(_sf.cache.indexOf(tmpldata.templateId) > -1){
-			_sf.inject(
-				_sf.templateRender(_sf.cacheTemplate[tmpldata.templateId],tmpldata),
+	}
+	compile(tmpldata){
+		if(this.cache.indexOf(tmpldata.templateId) > -1){
+			this.inject(
+				this.templateRender(this.cacheTemplate[tmpldata.templateId],tmpldata),
 				tmpldata.parent,
 				tmpldata.action,
 				tmpldata
 			);
 		}else{
-			_sf.cacheTemplate[tmpldata.templateId] = tmpldata.template;
-			_sf.cache.push(tmpldata.templateId);
-			_sf.inject(
+			this.cacheTemplate[tmpldata.templateId] = tmpldata.template;
+			this.cache.push(tmpldata.templateId);
+			this.inject(
 				_sf.templateRender(tmpldata.template,tmpldata),
 				tmpldata.parent,
 				tmpldata.action,
@@ -320,42 +307,42 @@ var _sf = {
 			);
 		}
 		if(tmpldata.pageId!="" && tmpldata.pageId!="null" && tmpldata.pageId!=undefined){
-			_sf.onPage_request = JSON.stringify(tmpldata.request);
-			_sf.hideLoad();
+			this.onPage_request = JSON.stringify(tmpldata.request);
+			this.hideLoad();
 			window.location.hash = "/"+tmpldata.pageId+"/"+window.btoa(JSON.stringify(tmpldata.request));
-			_sf.onPage = tmpldata.pageId;
+			this.onPage = tmpldata.pageId;
 		}
-	},
-	requestParent: function(sock,parentPage){
+	}
+	requestParent(sock,parentPage){
 		var data = {
 			"request":"get",
 			"page":parentPage,
 			"class":"Request"
 		}
-		_sf.send(data);
-	},
-	build: function(){
-		for(var i=0;i<_sf.storedTemplates.length;i++){
-			if($(_sf.storedTemplates[i].parent).length){
-				_sf.compile(_sf.storedTemplates[i]);
-				_sf.storedTemplates.splice(i,1);
+		this.send(data);
+	}
+	build(){
+		for(var i=0;i<this.storedTemplates.length;i++){
+			if($(this.storedTemplates[i].parent).length){
+				this.compile(this.storedTemplates[i]);
+				this.storedTemplates.splice(i,1);
 			}
 		}
-	},
-	addInterval: function(interval,pageId){
-		if(!_sf.interval[pageId]){
-			_sf.interval[pageId] = new Array();
+	}
+	addInterval(interval,pageId){
+		if(!this.interval[pageId]){
+			this.interval[pageId] = new Array();
 		}
-		_sf.interval[pageId].push(interval);
-	},
-	killInterval: function(pageId){
-		if(_sf.interval[pageId]){
-			for(var i = 0; i < _sf.interval[pageId].length; i++){
-				clearInterval(_sf.interval[pageId][i]);
+		this.interval[pageId].push(interval);
+	}
+	killInterval(pageId){
+		if(this.interval[pageId]){
+			for(var i = 0; i < this.interval[pageId].length; i++){
+				clearInterval(this.interval[pageId][i]);
 			}
 		}
-	},
-	msg: function(socket,msg){
+	}
+	messageRecieved(socket,msg){
 		if(msg.pageTitle!="" && msg.pageTitle!=null){
 			document.title = msg.pageTitle;
 		}
@@ -391,7 +378,13 @@ var _sf = {
 				_sf.callBack('init');
 			}
 		}
-	},
+	}
+}
+var _sf = {
+	,
+	,
+	,
+	,
 	reload: function(){
 		if(window.location.hash.split("/").length==3){
 			if(window.atob(window.location.hash.split("/")[2])==_sf.onPage_request){
