@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 sourceCompatibility = 1.5
-version = '1.0'
+version = '1.3'
 
 mainClassName = 'com.synload.framework.SynloadFramework'
 

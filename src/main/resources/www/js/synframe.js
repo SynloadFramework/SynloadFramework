@@ -20,22 +20,37 @@ class SynloadFramework{
 	constructor(){
 		this.loading = false;
 		this.encryptEnabled = false;
-		this.interval = new Array(),
-		this.ekey = "",
-		this.cache = new Array(),
-		this.cacheTemplate = new Array(),
-		this.ecsnt = false,
-		this.onUnload = null,
-		this.socket = null,
-		this.storedTemplates = new Array(),
-		this.triggers = new Array(),
-		this.onPage = "",
-		this.onPage_request = "",
-		this.wsAddress = "",
-		this.onConnect = null,
-		this.wsPath = "",
-		this.javascriptLoaded = false,
-		this.onCallbacks = new Array(),
+		this.interval = new Array();
+		this.ekey = "";
+		this.cache = new Array();
+		this.cacheTemplate = new Array();
+		this.ecsnt = false;
+		this.onUnload = null;
+		this.socket = null;
+		this.storedTemplates = new Array();
+		this.triggers = new Array();
+		this.onPage = "";
+		this.onPage_request = "";
+		this.wsAddress = "";
+		this.onConnect = null;
+		this.wsPath = "";
+		this.javascriptLoaded = false;
+		this.onCallbacks = new Array();
+		this.defaults = [
+            {
+                "resume":true
+            },
+            {
+                "request": {
+                    "data":{
+                        "element": "body"
+                    },
+                    "request": "get",
+                    "page": "index",
+                    "class": "Request"
+                }
+            }
+        ];
 	}
 	exec(msg){
 		if(msg.javascript.length>0){
@@ -300,7 +315,7 @@ class SynloadFramework{
 			this.cacheTemplate[tmpldata.templateId] = tmpldata.template;
 			this.cache.push(tmpldata.templateId);
 			this.inject(
-				_sf.templateRender(tmpldata.template,tmpldata),
+				this.templateRender(tmpldata.template,tmpldata),
 				tmpldata.parent,
 				tmpldata.action,
 				tmpldata
@@ -348,65 +363,44 @@ class SynloadFramework{
 		}
 		if(msg.templateId!=null && msg.templateId!=""){
 			if(msg.pageId!=null && msg.pageId!=""){
-				if(_sf.onUnload!=null){
-					_sf.onUnload();
-					_sf.onUnload = null;
+				if(this.onUnload!=null){
+					this.onUnload();
+					this.onUnload = null;
 				}
-				_sf.killInterval(_sf.onPage);
+				this.killInterval(this.onPage);
 			}
 			if($(msg.parent).length){
-				_sf.compile(msg);
+				this.compile(msg);
 			}else{
 				if(msg.forceParent){
-					_sf.requestParent(socket,msg.parentTemplate);
-					_sf.storedTemplates.push(msg);
+					this.requestParent(socket,msg.parentTemplate);
+					this.storedTemplates.push(msg);
 				}
 			}
 		}
 		if(msg.javascripts){
-			if(!_sf.javascriptLoaded){
+			if(!this.javascriptLoaded){
 				if(msg.javascripts.length>0){
-					var js = _sf.templateRender(
+					var js = this.templateRender(
 						msg.js_template,
 						msg
 					);
 					eval(js);
-					_sf.javascriptLoaded=true;
-					//_sf.connected();
+					this.javascriptLoaded=true;
+					//this.connected();
 				}
 			}else{
-				_sf.callBack('init');
+				this.callBack('init');
 			}
 		}
 	}
-}
-var _sf = {
-	,
-	,
-	,
-	,
-	reload: function(){
-		if(window.location.hash.split("/").length==3){
-			if(window.atob(window.location.hash.split("/")[2])==_sf.onPage_request){
-				_sf.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
-			}
-		}
-	},
-	defaults: [
-		{
-			"resume":true
-		},
-		{
-			"request": {
-				"data":{
-					"element": "body"
-				},
-				"request": "get",
-				"page": "index",
-				"class": "Request"
-			}
-		}
-	],
+	reload(){
+        if(window.location.hash.split("/").length==3){
+            if(window.atob(window.location.hash.split("/")[2])==this.onPage_request){
+                this.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
+            }
+        }
+    }
 }
 function sendEncryptHandshake(){
     if(loadedJSEncrypt){
@@ -431,7 +425,8 @@ function sendEncryptHandshake(){
         },400);
     }
 }
-_sf.addCallback(function(ws, data){
+var _sf = new SynloadFramework();
+_sf.addCall(function(ws, data){
 
     $("body").append('<div id="loadingBar" style="border-radius:5px;-webkit-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);-moz-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);float:left;position:absolute;"><span style="width:400px;text-align:center;float:left;display:block;font-weight:bold;">ENCRYPTING CONNECTION</span><span style="display:block;width:390px;float:left;height:20px;padding:5px;margin-top:10px;margin-bottom:10px;background:#ccc;border-radius:5px;"><span class="bar" style="background:#50C441;border-radius:5px;float:left;width:0px;height:20px;"></span></span></div>');
     $("#loadingBar").css({"background":"#E6F7FC","padding":"20px","top":"40%","left":"50%","marginLeft":"-220px","width":"400px","textAlign":"center"});
@@ -445,7 +440,7 @@ _sf.addCallback(function(ws, data){
     
 }, "encryption_handshake");
 
-_sf.addCallback(function(ws, data){
+_sf.addCall(function(ws, data){
     //console.log(data);
     var d = data.data.spk;
     serverKey = d;
@@ -460,11 +455,10 @@ _sf.addCallback(function(ws, data){
     _sf.send(s);
     $("#loadingBar .bar").animate({"width":(390*.75)+"px"},100);
 }, "encryption_handshake_two");
-_sf.addCallback(function(ws, data){
+_sf.addCall(function(ws, data){
     _sf.loadDefault();
     _sf.connected();
 }, "conn_est");
-
 
 window.onhashchange = function(){
 	if(window.location.hash.split("/").length==3){
