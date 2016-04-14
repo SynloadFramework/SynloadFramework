@@ -2,8 +2,10 @@ package com.synload.framework.ws;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -28,7 +30,6 @@ import com.synload.framework.handlers.Data;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
 import com.synload.framework.security.PKI;
-import com.synload.framework.users.User;
 
 @WebSocket
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
@@ -37,7 +38,7 @@ public class WSHandler {
     public Session session = null;
     @JsonIgnore
     public List<String> queue = new ArrayList<String>();
-    public User user = null;
+    public Map<String, Object> sessionData = new HashMap<String, Object>();
     private PKI pki;
     public boolean encrypt = false;
     public List<String> flags = new ArrayList<String>();
@@ -66,15 +67,15 @@ public class WSHandler {
                 this.getClass());
     }
 
-    public User getUser() {
-        return user;
-    }
+    public Map<String, Object> getSessionData() {
+		return sessionData;
+	}
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+	public void setSessionData(Map<String, Object> sessionData) {
+		this.sessionData = sessionData;
+	}
 
-    public PKI getPki() {
+	public PKI getPki() {
 		return pki;
 	}
 
@@ -201,7 +202,15 @@ public class WSHandler {
         }
     }
 
-    /*
+    public List<String> getFlags() {
+		return flags;
+	}
+
+	public void setFlags(List<String> flags) {
+		this.flags = flags;
+	}
+
+	/*
      * COPIED CODE FROM
      * http://stackoverflow.com/questions/14622622/generating-a-
      * random-hex-string-of-length-50-in-java-me-j2me

@@ -7,12 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -31,10 +28,6 @@ import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.modules.annotations.sql.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
-import com.synload.framework.users.Session;
-import com.synload.framework.users.User;
-import com.synload.framework.ws.DefaultWSPages;
-
 import dnl.utils.text.table.TextTable;
 
 public class ModuleLoader extends ClassLoader {

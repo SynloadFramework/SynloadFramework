@@ -34,7 +34,7 @@ public class WSRouting {
         }
     }
 
-    public static void page(WSHandler user, Request request)
+    public static void page(WSHandler ws, Request request)
             throws JsonProcessingException {
         ObjectWriter ow = new ObjectMapper().writer()
                 .withDefaultPrettyPrinter();
@@ -44,9 +44,9 @@ public class WSRouting {
             // System.out.println("[WR][I] Route Found!");
             WSResponse p = routes.get(ow.writeValueAsString(pg));
             boolean flagRequirementsMet = true;
-            if (user.getUser() != null) {
+            if (p.getRequiredFlags().size()>0) {
                 for (String flag : p.getRequiredFlags()) {
-                    if (!user.getUser().getFlags().contains(flag)) {
+                    if (!ws.getFlags().contains(flag)) {
                         flagRequirementsMet = false;
                     }
                 }
@@ -61,7 +61,7 @@ public class WSRouting {
                     p.getListener()
                             .getMethod(p.getMethod(), WSHandler.class,
                                     Request.class)
-                            .invoke(p.getListener().newInstance(), user,
+                            .invoke(p.getListener().newInstance(), ws,
                                     request);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -74,7 +74,7 @@ public class WSRouting {
         } else {
             // route does not exist send out to more complex modules
             // System.out.println("[WR][W] Route does not exist!");
-            EventPublisher.raiseEvent(new RequestEvent(user, request), null);
+            EventPublisher.raiseEvent(new RequestEvent(ws, request), null);
             return;
         }
     }
