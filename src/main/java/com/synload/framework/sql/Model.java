@@ -17,16 +17,16 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
-import com.synload.framework.modules.annotations.HasMany;
-import com.synload.framework.modules.annotations.HasOne;
-import com.synload.framework.modules.annotations.NonSQL;
-import com.synload.framework.modules.annotations.SQLType;
 import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
 import com.synload.framework.modules.annotations.sql.BooleanColumn;
 import com.synload.framework.modules.annotations.sql.DoubleColumn;
 import com.synload.framework.modules.annotations.sql.FloatColumn;
+import com.synload.framework.modules.annotations.sql.HasMany;
+import com.synload.framework.modules.annotations.sql.HasOne;
 import com.synload.framework.modules.annotations.sql.LongBlobColumn;
 import com.synload.framework.modules.annotations.sql.MediumIntegerColumn;
+import com.synload.framework.modules.annotations.sql.NonSQL;
+import com.synload.framework.modules.annotations.sql.SQLType;
 import com.synload.framework.modules.annotations.sql.StringColumn;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")

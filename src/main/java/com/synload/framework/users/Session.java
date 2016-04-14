@@ -1,8 +1,8 @@
 package com.synload.framework.users;
 
-import com.synload.framework.modules.annotations.HasOne;
-import com.synload.framework.modules.annotations.SQLTable;
 import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
+import com.synload.framework.modules.annotations.sql.HasOne;
+import com.synload.framework.modules.annotations.sql.SQLTable;
 import com.synload.framework.modules.annotations.sql.StringColumn;
 
 @SQLTable(name = "Session Model", version = 1.0, description = "keeps login data")

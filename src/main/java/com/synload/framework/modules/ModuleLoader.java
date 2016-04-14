@@ -29,7 +29,7 @@ import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
-import com.synload.framework.modules.annotations.SQLTable;
+import com.synload.framework.modules.annotations.sql.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
 import com.synload.framework.users.Session;
 import com.synload.framework.users.User;

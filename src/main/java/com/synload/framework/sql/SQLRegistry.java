@@ -8,8 +8,8 @@ import java.util.List;
 
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
-import com.synload.framework.modules.annotations.NonSQL;
-import com.synload.framework.modules.annotations.SQLTable;
+import com.synload.framework.modules.annotations.sql.NonSQL;
+import com.synload.framework.modules.annotations.sql.SQLTable;
 
 import dnl.utils.text.table.TextTable;
 

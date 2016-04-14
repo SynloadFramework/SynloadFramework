@@ -1,4 +1,4 @@
-package com.synload.framework.modules.annotations;
+package com.synload.framework.modules.annotations.sql;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

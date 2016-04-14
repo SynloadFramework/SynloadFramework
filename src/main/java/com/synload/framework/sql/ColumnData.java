@@ -1,12 +1,12 @@
 package com.synload.framework.sql;
 
-import com.synload.framework.modules.annotations.SQLType;
 import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
 import com.synload.framework.modules.annotations.sql.BooleanColumn;
 import com.synload.framework.modules.annotations.sql.DoubleColumn;
 import com.synload.framework.modules.annotations.sql.FloatColumn;
 import com.synload.framework.modules.annotations.sql.LongBlobColumn;
 import com.synload.framework.modules.annotations.sql.MediumIntegerColumn;
+import com.synload.framework.modules.annotations.sql.SQLType;
 import com.synload.framework.modules.annotations.sql.StringColumn;
 
 import java.lang.reflect.Field;

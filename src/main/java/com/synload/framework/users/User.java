@@ -12,10 +12,10 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.SynloadFramework;
-import com.synload.framework.modules.annotations.SQLTable;
 import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
 import com.synload.framework.modules.annotations.sql.BooleanColumn;
 import com.synload.framework.modules.annotations.sql.LongBlobColumn;
+import com.synload.framework.modules.annotations.sql.SQLTable;
 import com.synload.framework.modules.annotations.sql.StringColumn;
 import com.synload.framework.sql.Model;
 
