@@ -274,9 +274,26 @@ public class Model {
         }
         ps.close();
     }
+    
+    public void _delete() throws IllegalArgumentException, IllegalAccessException, SQLException {
+		Field autoincrement = null;
+		for (Field f : this.getClass().getFields()) {
+		    if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
+		        ColumnData cd = new ColumnData(f);
+		        if (cd.isAutoIncrement()) {
+		            autoincrement = f;
+		            break;
+		        }
+		    }
+		}
+		PreparedStatement ps = SynloadFramework.sql.prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
+		ps.setObject(1, autoincrement.get(this));
+		ps.execute();
+		ps.close();
+	}
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static boolean _exists(String where, Class c, Object... objs) {
+    public static boolean _exists(Class c, String where, Object... objs) {
         Object key = null;
         for (Field f : c.getFields()) {
             if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
