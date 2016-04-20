@@ -336,7 +336,7 @@ public class HTTPRouting {
         }
         for (Entry<String, HTTPResponse> httpResponses : HTTPRouting.routes.entrySet()) {
         	String path = httpResponses.getKey();
-            if (target.matches(path) && baseRequest.getMethod().equalsIgnoreCase(httpResponses.getValue().getHttpMethod())) {
+            if (target.matches(path) && baseRequest!=null && baseRequest.getMethod().equalsIgnoreCase(httpResponses.getValue().getHttpMethod())) {
                 try {
                     HTTPResponse p = httpResponses.getValue();
                     p.getListener().getMethod(
