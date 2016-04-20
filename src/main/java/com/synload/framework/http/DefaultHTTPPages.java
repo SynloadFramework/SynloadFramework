@@ -22,6 +22,7 @@ import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.FileUploadEvent;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.http.annotations.Get;
+import com.synload.framework.http.annotations.MimeType;
 import com.synload.framework.http.annotations.OnlyIf;
 import com.synload.framework.http.annotations.Post;
 import com.synload.framework.http.modules.UploadedFile;
@@ -30,39 +31,34 @@ import com.synload.framework.modules.ModuleLoader;
 public class DefaultHTTPPages {
 	
 	@Get(path="/")
-    public void getIndex(String target, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response,
-            String[] URI) throws IOException {
-        HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), response);
+    public void getIndex(HttpRequest httpRequest) throws IOException {
+        HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), httpRequest.getResponse());
     }
 	
 	@OnlyIf(property="enableUploads", is=true)
 	@Post(path="/system/uploads")
-    public void handleUploads(String target, Request baseRequest,
-            HttpServletRequest request, HttpServletResponse response,
-            String[] URI) throws IOException {
-        request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, HTTPHandler.MULTI_PART_CONFIG);
-        response.setContentType("text/html;charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-        baseRequest.setHandled(true);
-        if (!baseRequest.getParameterMap().containsKey("key")) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().println("{\"e\":\"no reference key provided\"}");
+	@MimeType(type="text/html;charset=utf-8")
+    public void handleUploads(HttpRequest httpRequest) throws IOException {
+		httpRequest.getRequest().setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, HTTPHandler.MULTI_PART_CONFIG);
+		httpRequest.getBaseRequest().setHandled(true);
+        if (!httpRequest.getBaseRequest().getParameterMap().containsKey("key")) {
+        	httpRequest.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
+        	httpRequest.getResponse().getWriter().println("{\"e\":\"no reference key provided\"}");
             return;
         }
-        if (!baseRequest.getParameterMap().containsKey("user")) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().println("{\"e\":\"no user provided\"}");
+        if (!httpRequest.getBaseRequest().getParameterMap().containsKey("user")) {
+        	httpRequest.getResponse().setStatus(HttpServletResponse.SC_NOT_FOUND);
+        	httpRequest.getResponse().getWriter().println("{\"e\":\"no user provided\"}");
             return;
         }
 
         try {
             List<String> entry = new ArrayList<String>();
-            for (Part part : request.getParts()) {
+            for (Part part : httpRequest.getRequest().getParts()) {
                 if (part.getSubmittedFileName() != null) {
                     if (part.getSize() > 0) {
                         if (SynloadFramework.maxUploadSize <= part.getSize()) {
-                            response.getWriter().println("{\"e\":\"File size too large!\"}");
+                        	httpRequest.getResponse().getWriter().println("{\"e\":\"File size too large!\"}");
                             part.delete();
                             break;
                         }
@@ -83,22 +79,22 @@ public class DefaultHTTPPages {
                                 e.printStackTrace();
                             }
                         }
-                        String user = StringUtils.join(baseRequest.getParameterMap().get("user"));
+                        String user = StringUtils.join(httpRequest.getBaseRequest().getParameterMap().get("user"));
                         UploadedFile uf = new UploadedFile(URLDecoder.decode(part.getSubmittedFileName(), "UTF-8"), SynloadFramework.uploadPath, tempFile, user, part.getSize());
-                        EventPublisher.raiseEvent(new FileUploadEvent(uf, StringUtils.join(baseRequest.getParameterMap().get("key"))), true, null);
+                        EventPublisher.raiseEvent(new FileUploadEvent(uf, StringUtils.join(httpRequest.getBaseRequest().getParameterMap().get("key"))), true, null);
                         entry.add(uf.getName());
                     }
                 }
             }
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-            response.getWriter().println(ow.writeValueAsString(entry));
+            httpRequest.getResponse().getWriter().println(ow.writeValueAsString(entry));
         } catch (ServletException e) {
         	 if (SynloadFramework.debug) {
                  e.printStackTrace();
              }
-             response.getWriter().println("{\"e\":\"Authentication failed!\"}");
+        	 httpRequest.getResponse().getWriter().println("{\"e\":\"Authentication failed!\"}");
              try {
-                 for (Part part : request.getParts()) {
+                 for (Part part : httpRequest.getRequest().getParts()) {
                      part.delete();
                  }
              } catch (ServletException e1) {
@@ -108,9 +104,9 @@ public class DefaultHTTPPages {
             if (SynloadFramework.debug) {
                 e.printStackTrace();
             }
-            response.getWriter().println("{\"e\":\"Authentication failed!\"}");
+            httpRequest.getResponse().getWriter().println("{\"e\":\"Authentication failed!\"}");
             try {
-                for (Part part : request.getParts()) {
+                for (Part part : httpRequest.getRequest().getParts()) {
                     part.delete();
                 }
             } catch (ServletException e1) {

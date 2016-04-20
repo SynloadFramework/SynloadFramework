@@ -339,20 +339,16 @@ public class HTTPRouting {
             if (target.matches(path) && baseRequest!=null && baseRequest.getMethod().equalsIgnoreCase(httpResponses.getValue().getHttpMethod())) {
                 try {
                     HTTPResponse p = httpResponses.getValue();
+                    if(p.getMimetype()!=null){
+	                    response.setContentType(p.getMimetype());
+	                    response.setStatus(HttpServletResponse.SC_OK);
+                    }
                     p.getListener().getMethod(
                 		p.getMethod(), 
-                		String.class, 
-                		Request.class,
-                		HttpServletRequest.class, 
-                		HttpServletResponse.class, 
-                		String[].class
+                		HttpRequest.class
             		).invoke(
         				p.getListener().newInstance(), 
-        				target, 
-        				baseRequest, 
-        				request, 
-        				response, 
-        				URI
+        				new HttpRequest(target, baseRequest, request, response, URI)
     				);
                     return true;
                 } catch (Exception e) {

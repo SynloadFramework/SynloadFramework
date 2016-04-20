@@ -285,8 +285,11 @@ public class SynloadFramework extends ModuleClass {
 
     public static void registerHTTPPage(String page, Class<?> listenerClass,
             String method) {
-        try {
-            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass, method, "post"))) {
+    	Log.info("Use annotations!", SynloadFramework.class);
+        /*
+         * Use Annotations
+         * try {
+            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass, method, "post", "text/plain"))) {
                 // System.out.println("[WB] Registered path <"+page+">");
             } else {
                 // System.out.println("[WB][E] Failed to add <"+page+"> path");
@@ -295,7 +298,7 @@ public class SynloadFramework extends ModuleClass {
             if (SynloadFramework.debug) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 
     public static void registerElement(WSRequest page, Class<?> listenerClass,
