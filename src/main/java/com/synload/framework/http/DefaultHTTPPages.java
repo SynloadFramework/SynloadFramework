@@ -21,15 +21,23 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.FileUploadEvent;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.http.annotations.Get;
+import com.synload.framework.http.annotations.OnlyIf;
+import com.synload.framework.http.annotations.Post;
+import com.synload.framework.http.modules.UploadedFile;
 import com.synload.framework.modules.ModuleLoader;
 
 public class DefaultHTTPPages {
+	
+	@Get(path="/")
     public void getIndex(String target, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response,
             String[] URI) throws IOException {
         HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), response);
     }
-
+	
+	@OnlyIf(property="enableUploads", is=true)
+	@Post(path="/system/uploads")
     public void handleUploads(String target, Request baseRequest,
             HttpServletRequest request, HttpServletResponse response,
             String[] URI) throws IOException {

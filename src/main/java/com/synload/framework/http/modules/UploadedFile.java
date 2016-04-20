@@ -1,4 +1,4 @@
-package com.synload.framework.http;
+package com.synload.framework.http.modules;
 
 public class UploadedFile {
     public String name, path, tempName, user = "";

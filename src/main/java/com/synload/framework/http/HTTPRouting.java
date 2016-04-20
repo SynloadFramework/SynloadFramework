@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -17,6 +18,7 @@ import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.WebEvent;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.http.modules.HTTPResponse;
 import com.synload.framework.modules.ModuleLoader;
 
 public class HTTPRouting {
@@ -43,9 +45,7 @@ public class HTTPRouting {
     }
 
     @SuppressWarnings("unused")
-    public static boolean openFile(String filename,
-            HttpServletResponse response, Request baseRequest)
-            throws IOException {
+    public static boolean openFile(String filename, HttpServletResponse response, Request baseRequest) throws IOException {
         boolean properFile = true;
         String mime = "text/html;charset=utf-8";
         try {
@@ -334,12 +334,26 @@ public class HTTPRouting {
         		return true;
         	}
         }
-        for (String path : HTTPRouting.routes.keySet()) {
-            if (target.matches(path)) {
+        for (Entry<String, HTTPResponse> httpResponses : HTTPRouting.routes.entrySet()) {
+        	String path = httpResponses.getKey();
+            if (target.matches(path) && baseRequest.getMethod().equalsIgnoreCase(httpResponses.getValue().getHttpMethod())) {
                 try {
-                    HTTPResponse p = HTTPRouting.routes.get(path);
-                    p.getListener().getMethod(p.getMethod(), String.class, Request.class, HttpServletRequest.class, HttpServletResponse.class, String[].class)
-                    	.invoke(p.getListener().newInstance(), target, baseRequest, request, response, URI);
+                    HTTPResponse p = httpResponses.getValue();
+                    p.getListener().getMethod(
+                		p.getMethod(), 
+                		String.class, 
+                		Request.class,
+                		HttpServletRequest.class, 
+                		HttpServletResponse.class, 
+                		String[].class
+            		).invoke(
+        				p.getListener().newInstance(), 
+        				target, 
+        				baseRequest, 
+        				request, 
+        				response, 
+        				URI
+    				);
                     return true;
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {

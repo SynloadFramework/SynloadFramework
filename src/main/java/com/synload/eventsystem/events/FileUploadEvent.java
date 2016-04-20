@@ -2,7 +2,7 @@ package com.synload.eventsystem.events;
 
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
-import com.synload.framework.http.UploadedFile;
+import com.synload.framework.http.modules.UploadedFile;
 
 public class FileUploadEvent extends EventClass {
     public UploadedFile file;

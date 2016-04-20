@@ -24,6 +24,7 @@ import com.synload.eventsystem.Handler;
 import com.synload.eventsystem.HandlerRegistry;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.http.HTTPRegistry;
 import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.modules.annotations.sql.SQLTable;
@@ -270,6 +271,7 @@ public class ModuleLoader extends ClassLoader {
         } else if (TYPE.METHOD == type) {
             List<Object[]> obj = new ArrayList<Object[]>();
             for (Method m : c.getMethods()) {
+            	HTTPRegistry.moduleLoad(c, m); // load http requests on methods
                 if (m.isAnnotationPresent(annotationClass.getAnnotationClass())) {
                     EventTrigger et = new EventTrigger();
 

@@ -31,8 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.synload.framework.http.DefaultHTTPPages;
 import com.synload.framework.http.HTTPHandler;
-import com.synload.framework.http.HTTPResponse;
 import com.synload.framework.http.HTTPRouting;
+import com.synload.framework.http.modules.HTTPResponse;
 import com.synload.framework.js.Javascript;
 import com.synload.framework.modules.ModuleClass;
 import com.synload.framework.modules.ModuleLoader;
@@ -259,11 +259,11 @@ public class SynloadFramework extends ModuleClass {
     }
 
     public static void buildDefaultHTTP() {
-        SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
-        if (handleUpload) {
+        //SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
+        /*if (handleUpload) {
             Log.info("Upload handler enabled!", SynloadFramework.class);
             SynloadFramework.registerHTTPPage("/system/uploads", DefaultHTTPPages.class, "handleUploads");
-        }
+        }*/
     }
 
     public static void broadcast(String data) {
@@ -286,7 +286,7 @@ public class SynloadFramework extends ModuleClass {
     public static void registerHTTPPage(String page, Class<?> listenerClass,
             String method) {
         try {
-            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass, method))) {
+            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass, method, "post"))) {
                 // System.out.println("[WB] Registered path <"+page+">");
             } else {
                 // System.out.println("[WB][E] Failed to add <"+page+"> path");

@@ -13,8 +13,8 @@ import org.junit.Test;
 
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.http.DefaultHTTPPages;
-import com.synload.framework.http.HTTPResponse;
 import com.synload.framework.http.HTTPRouting;
+import com.synload.framework.http.modules.HTTPResponse;
 
 public class HTTPRoutingTests {
 
@@ -35,7 +35,7 @@ public class HTTPRoutingTests {
 	
 	@Test
 	public void canAddBlankPath() {
-		assertSame(HTTPRouting.addRoutes("", new HTTPResponse(DefaultHTTPPages.class, "getIndex")), false);
+		assertSame(HTTPRouting.addRoutes("", new HTTPResponse(DefaultHTTPPages.class, "getIndex", "get")), false);
 	}
 	
 	@Test
@@ -45,7 +45,7 @@ public class HTTPRoutingTests {
 	
 	@Test
 	public void canAddRoute() {
-		assertSame(HTTPRouting.addRoutes("/index", new HTTPResponse(DefaultHTTPPages.class, "getIndex")),true);
+		assertSame(HTTPRouting.addRoutes("/index", new HTTPResponse(DefaultHTTPPages.class, "getIndex", "get")),true);
 	}
 	
 	@Test
