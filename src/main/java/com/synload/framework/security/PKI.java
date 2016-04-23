@@ -35,9 +35,9 @@ import com.synload.framework.elements.Connected;
 import com.synload.framework.elements.EncryptAuth;
 import com.synload.framework.elements.EncryptFinal;
 import com.synload.framework.handlers.Response;
-import com.synload.framework.modules.annotations.Event;
-import com.synload.framework.modules.annotations.Event.Type;
 import com.synload.framework.ws.WSHandler;
+import com.synload.framework.ws.annotations.WSEvent;
+
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 import sun.misc.IOUtils;
@@ -92,7 +92,7 @@ public class PKI {
 		}
     }
     
-    @Event(name = "RecieveClientPublicKey", description = "Recieve Client Public Key", trigger = { "synfam", "cpk" }, type = Type.WEBSOCKET)
+    @WSEvent(name = "RecieveClientPublicKey", description = "Recieve Client Public Key", action = "cpk", enabled = true, method = "synfam")
     public void recieveClientPub(RequestEvent event) throws JsonProcessingException, IOException {
     	if(event.getRequest().getData().containsKey("cpk")){
     		Security.addProvider(new BouncyCastleProvider());
@@ -126,7 +126,7 @@ public class PKI {
     	}
     }
     
-    @Event(name = "RecieveClientPublicKey", description = "Recieve Client Public Key", trigger = { "synfam", "ack" }, type = Type.WEBSOCKET)
+    @WSEvent(name = "RecieveClientPublicKey", description = "Recieve Client Public Key", action = "ack", enabled = false, method = "synfam")
     public void recieveClientAcknowledge(RequestEvent event) throws JsonProcessingException, IOException {
     	if(event.getRequest().getData().containsKey("message")){
 			String message = event.getRequest().getData().get("message");

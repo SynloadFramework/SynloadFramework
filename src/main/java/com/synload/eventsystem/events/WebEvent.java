@@ -7,7 +7,7 @@ import org.eclipse.jetty.server.Request;
 
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
-import com.synload.framework.modules.annotations.Event.Type;
+import com.synload.eventsystem.Type;
 
 public class WebEvent extends EventClass {
     public String target;

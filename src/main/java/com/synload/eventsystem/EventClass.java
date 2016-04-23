@@ -1,7 +1,5 @@
 package com.synload.eventsystem;
 
-import com.synload.framework.modules.annotations.Event.Type;
-
 public class EventClass {
     private Handler handler;
     private String[] trigger;

@@ -9,8 +9,8 @@ import com.synload.framework.SynloadFramework;
 import com.synload.framework.elements.FullPage;
 import com.synload.framework.elements.JavascriptIncludes;
 import com.synload.framework.elements.Wrapper;
-import com.synload.framework.modules.annotations.Event;
-import com.synload.framework.modules.annotations.Event.Type;
+import com.synload.framework.ws.annotations.Perms;
+import com.synload.framework.ws.annotations.WSEvent;
 
 public class DefaultWSPages {
 
@@ -34,7 +34,8 @@ public class DefaultWSPages {
     }
      */
 	
-	@Event(name = "Full body wrapper", description = "part of html page creation", trigger = { "get", "full" }, type = Type.WEBSOCKET)
+	@WSEvent(name = "Full body wrapper", description = "part of html page creation", enabled = true, method = "get", action = "full")
+	@Perms(flags = { "" })
     public void getFullPage(RequestEvent event) throws JsonProcessingException,
             IOException {
         event.getSession().send(
@@ -42,7 +43,8 @@ public class DefaultWSPages {
                         .getRequest().getTemplateCache())));
     }
 
-    @Event(name = "Wrapper", description = "part of html page creation", trigger = { "get", "wrapper" }, type = Type.WEBSOCKET)
+	@WSEvent(name = "Wrapper", description = "part of html page creation", enabled = true, action = "wrapper", method = "get")
+	@Perms(flags = { "" })
     public void getWrapper(RequestEvent event) throws JsonProcessingException,
             IOException {
         event.getSession().session.getRemote().sendString(
@@ -50,7 +52,8 @@ public class DefaultWSPages {
                         .getRequest().getTemplateCache())));
     }
 	
-	@Event(name = "Encryption confirmation", description = "checks to see if data is correct", trigger = { "get", "encrypt_confirm" }, type = Type.WEBSOCKET)
+	@WSEvent(name = "Encryption confirmation", description = "checks to see if data is correct", enabled = true, action = "encrypt_confirm", method = "get")
+	@Perms(flags = { "" })
     public void getEncryptAuth(RequestEvent event)
             throws JsonProcessingException, IOException {
         if (event.getSession().encrypt) {
@@ -59,7 +62,8 @@ public class DefaultWSPages {
         }
     }
 
-    @Event(name = "Send encryption page", description = "when encryption=true sends ws page", trigger = {}, type = Type.WEBSOCKET)
+	@WSEvent(name = "Send encryption page", description = "when encryption=true sends ws page", enabled = true, action = "wrapper", method = "get")
+	@Perms(flags = { "" })
     public void getEncryptAuth(EncryptEvent event)
             throws JsonProcessingException, IOException {
         if (event.getSession().encrypt) {
@@ -69,7 +73,8 @@ public class DefaultWSPages {
         }
     }
 	
-	@Event(name = "Ping", description = "Keep alive requests", trigger = { "get", "ping" }, type = Type.WEBSOCKET)
+	@WSEvent(name = "Ping", description = "Keep alive requests", enabled = true, action = "ping", method = "get")
+	@Perms(flags = { "" })
     public void getPing(RequestEvent event) throws JsonProcessingException,
             IOException {
         return;

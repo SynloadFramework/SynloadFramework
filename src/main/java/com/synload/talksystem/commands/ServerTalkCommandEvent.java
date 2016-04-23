@@ -2,7 +2,7 @@ package com.synload.talksystem.commands;
 
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
-import com.synload.framework.modules.annotations.Event.Type;
+import com.synload.eventsystem.Type;
 import com.synload.talksystem.Client;
 import com.synload.talksystem.ConnectionDocument;
 

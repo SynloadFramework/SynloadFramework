@@ -16,13 +16,13 @@ public @interface Module {
         INFO, WARNING, ERROR
     }
 
-    public String author() default "Anonymous";
+    public String author();
 
-    public LogLevel log() default LogLevel.INFO;
+    public LogLevel log();
 
-    public String name() default "";
+    public String name();
 
-    public String[] depend() default {};
+    public String[] depend();
 
-    public String version() default "0.1";
+    public String version();
 }

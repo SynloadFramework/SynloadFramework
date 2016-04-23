@@ -3,7 +3,6 @@ package com.synload.eventsystem;
 import java.lang.reflect.Method;
 
 import com.synload.framework.modules.ModuleClass;
-import com.synload.framework.modules.annotations.Event.Type;
 
 public class EventTrigger {
     @SuppressWarnings("rawtypes")

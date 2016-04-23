@@ -22,13 +22,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.synload.eventsystem.EventTrigger;
 import com.synload.eventsystem.Handler;
 import com.synload.eventsystem.HandlerRegistry;
+import com.synload.eventsystem.Type;
+import com.synload.eventsystem.events.annotations.Event;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.http.HTTPRegistry;
-import com.synload.framework.modules.annotations.Event;
 import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.modules.annotations.sql.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
+import com.synload.framework.ws.annotations.Perms;
+import com.synload.framework.ws.annotations.WSEvent;
+
 import dnl.utils.text.table.TextTable;
 
 public class ModuleLoader extends ClassLoader {
@@ -272,26 +276,56 @@ public class ModuleLoader extends ClassLoader {
             List<Object[]> obj = new ArrayList<Object[]>();
             for (Method m : c.getMethods()) {
             	HTTPRegistry.moduleLoad(c, m); // load http requests on methods
-                if (m.isAnnotationPresent(annotationClass.getAnnotationClass())) {
+                if (m.isAnnotationPresent(WSEvent.class)) {
                     EventTrigger et = new EventTrigger();
 
-                    Event eventAnnotation = (Event) m.getAnnotation(Handler.EVENT.getAnnotationClass());
+                    WSEvent eventAnnotation = (WSEvent) m.getAnnotation(WSEvent.class);
+                    String[] flags = new String[]{};
+                    if(m.isAnnotationPresent(Perms.class)){
+                    	Perms perm = m.getAnnotation(Perms.class);
+                    	flags = perm.flags();
+                    }
                     if (eventAnnotation.enabled()) {
                         et.setHostClass(c);
                         et.setMethod(m);
                         et.setModule(module);
-                        et.setTrigger(eventAnnotation.trigger());
-                        et.setFlags(eventAnnotation.flags());
-                        et.setEventType(eventAnnotation.type());
+                        et.setTrigger(new String[]{eventAnnotation.method(), eventAnnotation.action()});
+                        et.setFlags(flags);
+                        et.setEventType(Type.WEBSOCKET);
 
                         Object[] obj_tmp = new Object[6];
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = eventAnnotation.type();
+                        obj_tmp[3] = Type.WEBSOCKET;
                         obj_tmp[4] = eventAnnotation.description();
                         try {
-                            obj_tmp[5] = SynloadFramework.ow.writeValueAsString(eventAnnotation.trigger());
+                            obj_tmp[5] = SynloadFramework.ow.writeValueAsString(new String[]{eventAnnotation.method(), eventAnnotation.action()});
+                        } catch (JsonProcessingException e1) {
+                            e1.printStackTrace();
+                        }
+                        obj.add(obj_tmp);
+                        HandlerRegistry.register(annotationClass.getAnnotationClass(), et);
+                    }
+                }else if(m.isAnnotationPresent(Event.class)){
+                	Event eventAnnotation = (Event) m.getAnnotation(Event.class);
+                	EventTrigger et = new EventTrigger();
+                	if (eventAnnotation.enabled()) {
+                        et.setHostClass(c);
+                        et.setMethod(m);
+                        et.setModule(module);
+                        et.setTrigger(new String[]{});
+                        et.setFlags(new String[]{});
+                        et.setEventType(Type.OTHER);
+
+                        Object[] obj_tmp = new Object[6];
+                        obj_tmp[0] = c.getName();
+                        obj_tmp[1] = moduleData.getName();
+                        obj_tmp[2] = m.getName();
+                        obj_tmp[3] = Type.OTHER;
+                        obj_tmp[4] = eventAnnotation.description();
+                        try {
+                            obj_tmp[5] = SynloadFramework.ow.writeValueAsString(new String[]{});
                         } catch (JsonProcessingException e1) {
                             e1.printStackTrace();
                         }

@@ -2,7 +2,7 @@ package com.synload.eventsystem.events;
 
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
-import com.synload.framework.modules.annotations.Event.Type;
+import com.synload.eventsystem.Type;
 import com.synload.framework.ws.WSHandler;
 
 public class EncryptEvent extends EventClass {
@@ -10,7 +10,7 @@ public class EncryptEvent extends EventClass {
 
     public EncryptEvent(WSHandler session) {
         this.setSession(session);
-        this.setHandler(Handler.EVENT);
+        this.setHandler(Handler.WSEVENT);
         this.setType(Type.WEBSOCKET);
     }
 
