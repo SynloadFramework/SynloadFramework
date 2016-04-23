@@ -1,4 +1,4 @@
 SynloadFramework
 ================
 
-More info at http://synload.com/framework
+More info at http://synframe.tech
