@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Http {
-	public String path() default "";
-	public String method() default "";
+	public String path();
+	public String method();
 }
