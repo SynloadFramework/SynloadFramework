@@ -30,14 +30,14 @@ import com.synload.framework.modules.ModuleLoader;
 
 public class DefaultHTTPPages {
 	
-	@Get(path="/")
+	@Get("/")
     public void getIndex(HttpRequest httpRequest) throws IOException {
         HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), httpRequest.getResponse());
     }
 	
 	@OnlyIf(property="enableUploads", is=true)
-	@Post(path="/system/uploads")
-	@MimeType(type="text/html;charset=utf-8")
+	@Post("/system/uploads")
+	@MimeType("text/html;charset=utf-8")
     public void handleUploads(HttpRequest httpRequest) throws IOException {
 		httpRequest.getRequest().setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, HTTPHandler.MULTI_PART_CONFIG);
 		httpRequest.getBaseRequest().setHandled(true);
