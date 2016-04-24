@@ -324,15 +324,15 @@ public class HTTPRouting {
      */
     public static boolean page(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String[] URI = target.split("/",-1);
-        Log.info("Request received: "+target, HTTPRouting.class);
+        //Log.info("Request received: "+target, HTTPRouting.class);
         if(URI.length>1){
         	if (URI[1].equalsIgnoreCase("ws")) {
                 return false;
             }else if(ModuleLoader.resources.containsKey(URI[1])){
         		if(ModuleLoader.resources.get(URI[1]).containsKey(target.replace("/"+URI[1]+"/", ""))){
         			sendResource(target.replace("/"+URI[1], ""),ModuleLoader.resources.get(URI[1]).get(target.replace("/"+URI[1]+"/", "")), response);
+        			return true;
         		}
-        		return true;
         	}
         }
         Log.info("Request received: "+baseRequest.getMethod(), HTTPRouting.class);
