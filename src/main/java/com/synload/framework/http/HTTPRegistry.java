@@ -23,6 +23,7 @@ public class HTTPRegistry {
 		if(m.isAnnotationPresent(MimeType.class)){
 			MimeType mt = m.getAnnotation(MimeType.class);
 			mimetype = mt.type();
+			Log.debug("MimeType found "+mt.type(), HTTPRegistry.class);
 		}
 		if(m.isAnnotationPresent(Get.class)){
 			Get get = m.getAnnotation(Get.class);
