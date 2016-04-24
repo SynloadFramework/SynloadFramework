@@ -324,6 +324,7 @@ public class HTTPRouting {
      */
     public static boolean page(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String[] URI = target.split("/",-1);
+        Log.info("Request received: "+target, HTTPRouting.class);
         if(URI.length>1){
         	if (URI[1].equalsIgnoreCase("ws")) {
                 return false;
