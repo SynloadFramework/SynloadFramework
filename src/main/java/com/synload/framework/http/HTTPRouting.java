@@ -334,8 +334,10 @@ public class HTTPRouting {
         		return true;
         	}
         }
+        Log.info("Request received: "+baseRequest.getMethod(), HTTPRouting.class);
         for (Entry<String, HTTPResponse> httpResponses : HTTPRouting.routes.entrySet()) {
         	String path = httpResponses.getKey();
+        	Log.info("Request checked: "+httpResponses.getValue().getHttpMethod(), HTTPRouting.class);
             if (target.matches(path) && baseRequest!=null && baseRequest.getMethod().equalsIgnoreCase(httpResponses.getValue().getHttpMethod())) {
                 try {
                     HTTPResponse p = httpResponses.getValue();
