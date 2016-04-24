@@ -340,7 +340,7 @@ public class HTTPRouting {
         	String path = httpResponses.getKey();
         	//Log.info("Request checked: "+httpResponses.getValue().getHttpMethod(), HTTPRouting.class);
         	Log.info(target+"="+path, HTTPRouting.class);
-            if (target.matches(path) && baseRequest!=null && baseRequest.getMethod().equals(httpResponses.getValue().getHttpMethod().toLowerCase())) {
+            if (target.matches(path) && baseRequest.getMethod().equals(httpResponses.getValue().getHttpMethod().toLowerCase())) {
                 try {
                     HTTPResponse p = httpResponses.getValue();
                     if(p.getMimetype()!=null){
