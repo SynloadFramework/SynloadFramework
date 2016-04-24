@@ -343,7 +343,7 @@ public class HTTPRouting {
             if (target.matches(path) && baseRequest.getMethod().toLowerCase().equals(httpResponse.getValue().getHttpMethod().toLowerCase())) {
                 try {
                     HTTPResponse p = httpResponse.getValue();
-                    if(!p.getMimetype().isEmpty()){
+                    if(p.getMimetype()!=null){
 	                    response.setContentType(p.getMimetype());
 	                    response.setStatus(HttpServletResponse.SC_OK);
                     }
