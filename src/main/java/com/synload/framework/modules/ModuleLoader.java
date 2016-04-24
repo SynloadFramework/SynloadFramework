@@ -283,7 +283,7 @@ public class ModuleLoader extends ClassLoader {
                     String[] flags = new String[]{};
                     if(m.isAnnotationPresent(Perms.class)){
                     	Perms perm = m.getAnnotation(Perms.class);
-                    	flags = perm.flags();
+                    	flags = perm.value();
                     }
                     if (eventAnnotation.enabled()) {
                         et.setHostClass(c);

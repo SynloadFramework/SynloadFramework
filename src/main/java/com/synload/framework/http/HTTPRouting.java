@@ -339,14 +339,14 @@ public class HTTPRouting {
         for (Entry<String, HTTPResponse> httpResponse : HTTPRouting.routes.entrySet()) {
         	String path = httpResponse.getKey();
         	//Log.info("Request checked: "+httpResponses.getValue().getHttpMethod(), HTTPRouting.class);
-        	Log.info(target+":"+baseRequest.getMethod()+"="+path+":"+httpResponse.getValue().getHttpMethod().toLowerCase(), HTTPRouting.class);
+        	//Log.info(target+":"+baseRequest.getMethod()+"="+path+":"+httpResponse.getValue().getHttpMethod().toLowerCase(), HTTPRouting.class);
             if (target.matches(path) && baseRequest.getMethod().toLowerCase().equals(httpResponse.getValue().getHttpMethod().toLowerCase())) {
                 try {
                     HTTPResponse p = httpResponse.getValue();
                     if(p.getMimetype()!=null){
 	                    response.setContentType(p.getMimetype());
 	                    response.setStatus(HttpServletResponse.SC_OK);
-                        Log.info("Sent "+p.getMimetype(), HTTPRouting.class);
+                        //Log.info("Sent "+p.getMimetype(), HTTPRouting.class);
                     }
                     p.getListener().getMethod(
                 		p.getMethod(),
