@@ -335,11 +335,12 @@ public class HTTPRouting {
         		}
         	}
         }
-        Log.info("Request received: "+baseRequest.getMethod(), HTTPRouting.class);
+        //Log.info("Request received: "+baseRequest.getMethod(), HTTPRouting.class);
         for (Entry<String, HTTPResponse> httpResponses : HTTPRouting.routes.entrySet()) {
         	String path = httpResponses.getKey();
-        	Log.info("Request checked: "+httpResponses.getValue().getHttpMethod(), HTTPRouting.class);
-            if (target.matches(path) && baseRequest!=null && baseRequest.getMethod().equalsIgnoreCase(httpResponses.getValue().getHttpMethod())) {
+        	//Log.info("Request checked: "+httpResponses.getValue().getHttpMethod(), HTTPRouting.class);
+        	Log.info(target+"="+path, HTTPRouting.class);
+            if (target.matches(path) && baseRequest!=null && baseRequest.getMethod().equals(httpResponses.getValue().getHttpMethod().toLowerCase())) {
                 try {
                     HTTPResponse p = httpResponses.getValue();
                     if(p.getMimetype()!=null){
