@@ -130,8 +130,9 @@ class SynloadFramework{
 		}
 		this.socket =  new WebSocket('ws://'+address+path);
 		var sf = this;
+		this.addCall(this.msg,"receive");
 		this.socket.onopen = function() {
-			sf.addCall(sf.msg,"receive");
+
 		};
 		this.socket.onclose = function() {
 			this.call('close');
