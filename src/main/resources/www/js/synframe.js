@@ -386,13 +386,13 @@ class SynloadFramework{
 		}
 		if(msg.javascripts){
 			if(!this.javascriptLoaded){
+			       this.javascriptLoaded=true;
 				if(msg.javascripts.length>0){
 					var js = this.templateRender(
 						msg.js_template,
 						msg
 					);
 					eval(js);
-					this.javascriptLoaded=true;
 					//this.connected();
 				}
 			}else{
