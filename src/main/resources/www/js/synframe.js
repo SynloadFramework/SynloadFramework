@@ -178,7 +178,7 @@ class SynloadFramework{
 			$.each(this.onCallbacks[callbackName],function(key,func){
 				try{
 					if(data){
-						func(sf.socket, data);
+						func(sf, sf.socket, data);
 					}else{
 						func(sf.socket);
 					}
@@ -363,32 +363,32 @@ class SynloadFramework{
 			}
 		}
 	}
-	messageReceived(socket,msg){
+	messageReceived(sf, socket,msg){
 		if(msg.pageTitle!="" && msg.pageTitle!=null){
 			document.title = msg.pageTitle;
 		}
 		if(msg.templateId!=null && msg.templateId!=""){
 			if(msg.pageId!=null && msg.pageId!=""){
-				if(this.onUnload!=null){
-					this.onUnload();
-					this.onUnload = null;
+				if(sf.onUnload!=null){
+					sf.onUnload();
+					sf.onUnload = null;
 				}
-				this.killInterval(this.onPage);
+				sf.killInterval(sf.onPage);
 			}
 			if($(msg.parent).length){
-				this.compile(msg);
+				sf.compile(msg);
 			}else{
 				if(msg.forceParent){
-					this.requestParent(socket,msg.parentTemplate);
-					this.storedTemplates.push(msg);
+					sf.requestParent(socket,msg.parentTemplate);
+					sf.storedTemplates.push(msg);
 				}
 			}
 		}
 		if(msg.javascripts){
-			if(!this.javascriptLoaded){
-			       this.javascriptLoaded=true;
+			if(!sf.javascriptLoaded){
+			       sf.javascriptLoaded=true;
 				if(msg.javascripts.length>0){
-					var js = this.templateRender(
+					var js = sf.templateRender(
 						msg.js_template,
 						msg
 					);
@@ -396,7 +396,7 @@ class SynloadFramework{
 					//this.connected();
 				}
 			}else{
-				this.callBack('init');
+				sf.callBack('init');
 			}
 		}
 	}
