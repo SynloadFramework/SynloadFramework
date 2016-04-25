@@ -130,7 +130,7 @@ class SynloadFramework{
 		}
 		this.socket =  new WebSocket('ws://'+address+path);
 		var sf = this;
-		this.addCall(this.messageRecieved,"receive");
+		this.addCall(this.messageReceived,"receive");
 		this.socket.onopen = function() {
 
 		};
@@ -363,7 +363,7 @@ class SynloadFramework{
 			}
 		}
 	}
-	messageRecieved(socket,msg){
+	messageReceived(socket,msg){
 		if(msg.pageTitle!="" && msg.pageTitle!=null){
 			document.title = msg.pageTitle;
 		}
