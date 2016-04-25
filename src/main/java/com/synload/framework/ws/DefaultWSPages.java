@@ -35,7 +35,7 @@ public class DefaultWSPages {
      */
 	
 	@WSEvent(name = "Full body wrapper", description = "part of html page creation", enabled = true, method = "get", action = "full")
-	@Perms(flags = { "" })
+	@Perms({ "" })
     public void getFullPage(RequestEvent event) throws JsonProcessingException,
             IOException {
         event.getSession().send(
@@ -44,7 +44,7 @@ public class DefaultWSPages {
     }
 
 	@WSEvent(name = "Wrapper", description = "part of html page creation", enabled = true, action = "wrapper", method = "get")
-	@Perms(flags = { "" })
+	@Perms({ "" })
     public void getWrapper(RequestEvent event) throws JsonProcessingException,
             IOException {
         event.getSession().session.getRemote().sendString(
@@ -53,7 +53,7 @@ public class DefaultWSPages {
     }
 	
 	@WSEvent(name = "Encryption confirmation", description = "checks to see if data is correct", enabled = true, action = "encrypt_confirm", method = "get")
-	@Perms(flags = { "" })
+	@Perms({ "" })
     public void getEncryptAuth(RequestEvent event)
             throws JsonProcessingException, IOException {
         if (event.getSession().encrypt) {
@@ -63,7 +63,7 @@ public class DefaultWSPages {
     }
 
 	@WSEvent(name = "Send encryption page", description = "when encryption=true sends ws page", enabled = true, action = "wrapper", method = "get")
-	@Perms(flags = { "" })
+	@Perms({ "" })
     public void getEncryptAuth(EncryptEvent event)
             throws JsonProcessingException, IOException {
         if (event.getSession().encrypt) {
@@ -74,7 +74,7 @@ public class DefaultWSPages {
     }
 	
 	@WSEvent(name = "Ping", description = "Keep alive requests", enabled = true, action = "ping", method = "get")
-	@Perms(flags = { "" })
+	@Perms({ "" })
     public void getPing(RequestEvent event) throws JsonProcessingException,
             IOException {
         return;
