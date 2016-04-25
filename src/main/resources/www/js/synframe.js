@@ -64,17 +64,18 @@ class SynloadFramework{
 	}
 	loadDefault(){
 		var rSent = false;
+		var sf = this;
 		$.each( this.defaults , function(key,val){
 			if(!rSent){
 				if(val.resume){
-					if(this.onPage==""){
+					if(sf.onPage==""){
 						if(window.location.hash.split("/").length==3){
-							this.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
+							sf.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
 							rSent = true;
 						}
 					}
 				}else{
-					this.send(val.request);
+					sf.send(val.request);
 					rSent = true;
 				}
 			}
@@ -101,21 +102,22 @@ class SynloadFramework{
 		}
 	}
 	connected(){
+	    var sf = this;
 	   $("#loadingBar .bar").animate({"width":(390*1.0)+"px"},function(){
     	   $("#loadingBar").fadeOut(100,function(){
-    	       if(this.encryptEnabled){
+    	       if(sf.encryptEnabled){
     	           $("body").after('<img src="/synloadframework/images/technology.png" style="background:#fff;border-radius:4px;padding:4px;position:absolute;left:10px;top:55px;z-index:10000;" />');
     	       }
     	        $("#loadingBar").empty();
                 $("#loadingBar").remove();
-        		this.onConnect();
+        		sf.onConnect();
         		setInterval(function(){
         			var data = {
         				"request":"get",
         				"page":"ping",
         				"class":"Request"
         			}
-        			this.send(data);
+        			sf.send(data);
         		},10000);
     		});
 		});
@@ -127,8 +129,9 @@ class SynloadFramework{
 			WebSocket = MozWebSocket;
 		}
 		this.socket =  new WebSocket('ws://'+address+path);
+		var sf = this;
 		this.socket.onopen = function() {
-			this.addCall(this.msg,"recieve");
+			sf.addCall(sf.msg,"receive");
 		};
 		this.socket.onclose = function() {
 			this.call('close');
@@ -138,21 +141,21 @@ class SynloadFramework{
 			this.ekey = "";
 			this.encryptEnabled = false;
 			setTimeout(function(){
-				this.connect(this.wsAddress,this.wsPath);
+				sf.connect(sf.wsAddress,sf.wsPath);
 			},5000);
 		};
 		this.socket.onmessage = function( msg ) {
-			if(this.encryptEnabled){
-				var data = jQuery.parseJSON(jQuery.parseJSON(this.decrypt(msg.data)));
+			if(sf.encryptEnabled){
+				var data = jQuery.parseJSON(jQuery.parseJSON(sf.decrypt(msg.data)));
 			}else{
 				var data = jQuery.parseJSON(msg.data);
 			}
 			if(data.callEvent!=null && data.callEvent!=""){
-				this.call(data.callEvent,data);
+				sf.call(data.callEvent,data);
 			}else if(data.trigger){
-				this.triggers[data.trigger](data);
+				sf.triggers[data.trigger](data);
 			}else{
-				this.call('recieve', data);
+				sf.call('receive', data);
 			}
 		};
 	}
@@ -170,12 +173,13 @@ class SynloadFramework{
 	}
 	call(callbackName,data){
 		if(this.onCallbacks[callbackName]){
+		    var sf = this;
 			$.each(this.onCallbacks[callbackName],function(key,func){
 				try{
 					if(data){
-						func(this.socket, data);
+						func(sf.socket, data);
 					}else{
-						func(this.socket);
+						func(sf.socket);
 					}
 				}catch(err){
 					console.log(err);
@@ -225,6 +229,7 @@ class SynloadFramework{
 		if($(parent).html()===html){
 			return;
 		}
+		var sf = this;
 		switch(method){
 			case "cabot":
 				$(parent).addClass('animated fadeOutLeft');
@@ -234,11 +239,11 @@ class SynloadFramework{
 					$(parent).addClass('animated fadeInLeft');
 					setTimeout(function(){
 						$(parent).removeClass('animated fadeInLeft');
-						this.build();
+						sf.build();
 						if(tmpldata.pageId!="" && tmpldata.pageId!="null" && tmpldata.pageId!=undefined){
 							//$.scrollTo(  { top:0, left:0}, 250 );
 						}
-						this.exec(tmpldata);
+						sf.exec(tmpldata);
 					},400);
 				},200);
 			break;
@@ -250,11 +255,11 @@ class SynloadFramework{
 					$(parent).addClass('animated fadeInLeft');
 					setTimeout(function(){
 						$(parent).removeClass('animated fadeInLeft');
-						this.build();
+						sf.build();
 						if(tmpldata.pageId!="" && tmpldata.pageId!="null" && tmpldata.pageId!=undefined){
 							//$.scrollTo(  { top:0, left:0}, 250 );
 						}
-						this.exec(tmpldata);
+						sf.exec(tmpldata);
 					},400);
 				},200);
 			break;
@@ -262,8 +267,8 @@ class SynloadFramework{
 				$(parent).effect(tmpldata.transitionOut,300,function(){
 					$(parent).html(html);
 					$(parent).show(tmpldata.transitionIn,200,function(){
-						this.build();
-						this.exec(tmpldata);
+						sf.build();
+						sf.exec(tmpldata);
 					});
 					if(tmpldata.redirect){
 						setTimeout(function(){
@@ -272,31 +277,31 @@ class SynloadFramework{
 								"page":tmpldata.redirect.page,
 								"class":"Request"
 							};
-							this.send(s);
+							sf.send(s);
 						},tmpldata.sleep);
 					}else if(tmpldata.callEvent){
 						setTimeout(function(){
-							this.call(tmpldata.callEvent);
+							sf.call(tmpldata.callEvent);
 						},tmpldata.sleep);
 					}	
 				});
 			break;
 			case "abot":
 				$(parent).append(html);
-				this.build();
+				sf.build();
 			break;
 			case "cabot":
 				$(parent).html("");
 				$(parent).append(html);
-				this.build();
+				sf.build();
 			break;
 			case "atop":
 				$(parent).prepend(html);
-				this.build();
+				sf.build();
 			break;
 			default:
 				$(parent).html(html);
-				this.build();
+				sf.build();
 			break;
 		}
 	}
