@@ -114,18 +114,18 @@ public class SynloadFramework extends ModuleClass {
                         .getProperty("enableUploads"));
                 siteDefaults = Boolean
                         .valueOf(prop.getProperty("siteDefaults"));
-                modulePath = prop.getProperty("modulePath", modulePath);
-                dbPath = prop.getProperty("dbPath", dbPath);
-                configPath = prop.getProperty("configPath", configPath);
+                modulePath = defaultPath+prop.getProperty("modulePath", defaultPath+modulePath);
+                dbPath = defaultPath+prop.getProperty("dbPath", dbPath);
+                configPath = defaultPath+prop.getProperty("configPath", defaultPath+configPath);
                 sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
                 encryptLevel = Integer.valueOf(prop.getProperty("encryptLevel"));
-                graphDBPath = prop.getProperty("graphDBPath");
+                graphDBPath = defaultPath+prop.getProperty("graphDBPath");
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
                 debug = Boolean.valueOf(prop.getProperty("debug"));
                 dbEnabled = Boolean.valueOf(prop.getProperty("dbenabled"));
-                uploadPath = prop.getProperty("uploadPath");
+                uploadPath = defaultPath+prop.getProperty("uploadPath");
                 maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
                 serverTalkEnable = Boolean.valueOf(prop.getProperty("serverTalkEnable"));
                 serverTalkKey = prop.getProperty("serverTalkKey");
