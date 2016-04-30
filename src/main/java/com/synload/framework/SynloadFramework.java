@@ -95,15 +95,15 @@ public class SynloadFramework extends ModuleClass {
     	// DONE parsing arguments
     	// DEFAULT CONFIG FILE
     	String defaultPath = "./";
-    	if(parser.getCmd().hasOption("p")){
-    		defaultPath = parser.getCmd().getOptionValue("p"); // user selected different app root
+    	if(parser.getCmd().hasOption("sitepath")){
+    		defaultPath = parser.getCmd().getOptionValue("sitepath"); // user selected different app root
     		if(!defaultPath.substring(defaultPath.length()-1).equals("/")){
     			defaultPath=defaultPath+"/";
     		}
     	}
     	String configFile = defaultPath+"config.ini";
-    	if(parser.getCmd().hasOption("c")){
-    		configFile =parser.getCmd().getOptionValue("c"); // user selected different config file
+    	if(parser.getCmd().hasOption("config")){
+    		configFile =parser.getCmd().getOptionValue("config"); // user selected different config file
     	}
         Log.info( "Starting Synload Development Framework Server", SynloadFramework.class );
         try {
@@ -139,6 +139,10 @@ public class SynloadFramework extends ModuleClass {
                 os.close();
                 is.close();
                 System.exit(0);
+            }
+            if(parser.getCmd().hasOption("port")){
+                port = Integer.valueOf(parser.getCmd().getOptionValue("port")); // user selected different app root
+
             }
             if(!new File(defaultPath+"log4j.properties").exists()){
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("log4j.properties");
@@ -206,10 +210,6 @@ public class SynloadFramework extends ModuleClass {
 
             Log.info("SQL versions", SynloadFramework.class);
             SQLRegistry.checkVersions();
-
-            if (args.length >= 1) {
-                port = Integer.valueOf(args[0]);
-            }
             
             Log.info("Setting up http/websocket server", SynloadFramework.class);
             LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(150);
