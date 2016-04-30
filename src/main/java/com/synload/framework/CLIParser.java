@@ -13,8 +13,9 @@ public class CLIParser {
 	public CLIParser(String[] args){
 		parser = new DefaultParser();
     	options = new Options();
-    	options.addOption("c", true, "Configuration file");
-    	options.addOption("p", true, "Path to program root");
+    	options.addOption("config", true, "Configuration file");
+    	options.addOption("sitepath", true, "Path to program root");
+		options.addOption("port", true, "Port to run the site on");
     	try {
 			cmd = parser.parse( options, args);
 		} catch (ParseException e) {
