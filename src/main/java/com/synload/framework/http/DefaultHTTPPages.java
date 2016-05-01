@@ -29,7 +29,7 @@ import com.synload.framework.http.modules.UploadedFile;
 import com.synload.framework.modules.ModuleLoader;
 
 public class DefaultHTTPPages {
-	
+    @OnlyIf(property="enableDefaultIndex", is=true)
 	@Get("/")
     public void getIndex(HttpRequest httpRequest) throws IOException {
         HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), httpRequest.getResponse());

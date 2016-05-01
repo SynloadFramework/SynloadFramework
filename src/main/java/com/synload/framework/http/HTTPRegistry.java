@@ -16,7 +16,7 @@ public class HTTPRegistry {
 		if(m.isAnnotationPresent(Get.class) || m.isAnnotationPresent(Post.class) || m.isAnnotationPresent(Http.class)){
 			if(m.isAnnotationPresent(OnlyIf.class)){
 				OnlyIf oi = m.getAnnotation(OnlyIf.class);
-				if(Boolean.valueOf(SynloadFramework.getProp().getProperty(oi.property()))!=oi.is()){
+				if(SynloadFramework.getProp().containsKey(oi.property()) && Boolean.valueOf(SynloadFramework.getProp().getProperty(oi.property()))!=oi.is()){
 					return; // do not register this http response, disabled
 				}
 			}
