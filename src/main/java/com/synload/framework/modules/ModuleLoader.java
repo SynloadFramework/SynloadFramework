@@ -92,6 +92,15 @@ public class ModuleLoader extends ClassLoader {
         HashMap<String,String> toLoadList = new HashMap<String,String>();
         File[] listOfFiles = folder.listFiles();
         Class<?> loadedClass;
+        /*
+         * SynloadFramework defaults!
+         */
+        try {
+            String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
+            loadModuleFiles("lib/", SynJar[SynJar.length-1], true, false);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
                 fileName = listOfFiles[i].getName();
@@ -117,17 +126,6 @@ public class ModuleLoader extends ClassLoader {
                 }
             }
         }
-        
-        /*
-         * SynloadFramework defaults!
-         */
-        try {
-        	String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
-			loadModuleFiles("lib/", SynJar[SynJar.length-1], true, false);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-        
         for(Entry<String, ModuleData> clazz : jarList.entrySet()){
         	for(String clazzPath : clazz.getValue().getClasses()){
 				try {
