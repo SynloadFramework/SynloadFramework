@@ -374,6 +374,25 @@ public class Model {
         }
         f.set(s, ids);
     }
+    public boolean _removeFromList(Object s, Field f, Object id)
+            throws IllegalArgumentException, IllegalAccessException {
+        String ids = (String) f.get(s);
+        List<String> comb = null;
+        if (ids == null || ids.equals("")) {
+            return false;
+        } else {
+            comb = new ArrayList<String>(Arrays.asList(ids.split(",")));
+        }
+        if (comb.contains(String.valueOf(id))) {
+            comb.remove(String.valueOf(id));
+            ids = StringUtils.join(comb, ",");
+            f.set(s, ids);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     @SuppressWarnings("rawtypes")
     public Object _getKeyFromAnnotation(Class c, Object s, String key)
@@ -382,8 +401,52 @@ public class Model {
         return c.getField(key).get(s);
     }
 
-    @SuppressWarnings("rawtypes")
-    public <T> void _set(Object obj) throws IllegalArgumentException,
+    public void _unset(Object obj) throws IllegalArgumentException,
+            IllegalAccessException, NoSuchFieldException, SecurityException,
+            SQLException{
+        Model s = (Model) obj;
+        Class c = obj.getClass();
+
+        Object[] local = _getFieldAnnotation(this.getClass(), c);
+        Object[] remote = _getFieldAnnotation(c, this.getClass());
+
+        Field localField, remoteField = null;
+        Object refIdLocal, refIdRemote = null;
+
+        if (local != null) {
+            localField = (Field) local[0];
+            if (HasMany.class.isInstance(local[1])) {
+                HasMany hsm = (HasMany) local[1];
+                refIdRemote = this._getKeyFromAnnotation(c, obj, hsm.key());
+                this._removeFromList(this, localField, refIdRemote);
+            } else if (HasOne.class.isInstance(local[1])) {
+                localField.set(this, "");
+            }
+            this._save(localField.getName(), localField.get(this));
+        } else {
+            Log.error("unSet relation failed " + this.getClass().getSimpleName() + " => " + c.getSimpleName(), this.getClass());
+        }
+        if (remote != null) {
+            if (this.getClass() != c) {
+                remoteField = (Field) remote[0];
+                if (HasMany.class.isInstance(remote[1])) {
+                    HasMany hsm = (HasMany) remote[1];
+                    refIdLocal = this._getKeyFromAnnotation(this.getClass(),
+                            this, hsm.key());
+                    s._removeFromList(obj, remoteField, refIdLocal);
+                } else if (HasOne.class.isInstance(local[1])) {
+                    remoteField.set(obj, "");
+                }
+                s._save(remoteField.getName(), remoteField.get(obj));
+            }
+        } else {
+            Log.error("unset relation failed " + c.getSimpleName() + " => "
+                    + this.getClass().getSimpleName(), this.getClass());
+        }
+
+    }
+
+    public void _set(Object obj) throws IllegalArgumentException,
             IllegalAccessException, NoSuchFieldException, SecurityException,
             SQLException {
         Model s = (Model) obj;
