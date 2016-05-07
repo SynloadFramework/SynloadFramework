@@ -92,8 +92,9 @@ public class PKI {
 		}
     }
     
-    @WSEvent(name = "RecieveClientPublicKey", description = "Recieve Client Public Key", action = "cpk", enabled = true, method = "synfam")
-    public void recieveClientPub(RequestEvent event) throws JsonProcessingException, IOException {
+    @WSEvent(name = "ReceiveClientPublicKey", description = "Receive Client Public Key", action = "cpk", enabled = true, method = "synfam")
+    public void receiveClientPub(RequestEvent event) throws JsonProcessingException, IOException {
+		System.out.println("Encrypt Received");
     	if(event.getRequest().getData().containsKey("cpk")){
     		Security.addProvider(new BouncyCastleProvider());
     		try {
@@ -126,8 +127,8 @@ public class PKI {
     	}
     }
     
-    @WSEvent(name = "RecieveClientPublicKey", description = "Recieve Client Public Key", action = "ack", enabled = false, method = "synfam")
-    public void recieveClientAcknowledge(RequestEvent event) throws JsonProcessingException, IOException {
+    @WSEvent(name = "ReceiveClientPublicKey", description = "Receive Client Public Key", action = "ack", enabled = true, method = "synfam")
+    public void receiveClientAcknowledge(RequestEvent event) throws JsonProcessingException, IOException {
     	if(event.getRequest().getData().containsKey("message")){
 			String message = event.getRequest().getData().get("message");
 			if(message.equals("HELLO")){
