@@ -408,7 +408,7 @@ class SynloadFramework{
         }
     }
 }
-function sendEncryptHandshake(){
+function sendEncryptHandshake(sf){
     if(loadedJSEncrypt){
         loadedEncrypt();
         var eKey = _sf.encrypt(
@@ -423,8 +423,8 @@ function sendEncryptHandshake(){
             "page":"cpk",
             "class":"Request"
         };
-        _sf.send(s);
-        _sf.encryptEnabled=true;
+        sf.send(s);
+        sf.encryptEnabled=true;
     }else{
         setTimeout(function(){
             sendEncryptHandshake();
@@ -432,22 +432,21 @@ function sendEncryptHandshake(){
     }
 }
 var _sf = new SynloadFramework();
-_sf.addCall(function(ws, data){
+_sf.addCall(function(sf, ws, data){
 
     $("body").append('<div id="loadingBar" style="border-radius:5px;-webkit-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);-moz-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);float:left;position:absolute;"><span style="width:400px;text-align:center;float:left;display:block;font-weight:bold;">ENCRYPTING CONNECTION</span><span style="display:block;width:390px;float:left;height:20px;padding:5px;margin-top:10px;margin-bottom:10px;background:#ccc;border-radius:5px;"><span class="bar" style="background:#50C441;border-radius:5px;float:left;width:0px;height:20px;"></span></span></div>');
     $("#loadingBar").css({"background":"#E6F7FC","padding":"20px","top":"40%","left":"50%","marginLeft":"-220px","width":"400px","textAlign":"center"});
     // test data
     $("#loadingBar .bar").animate({"width":(390*.10)+"px"},100);
-    console.log(data);
-    serverKey = data.spk;
+    serverKey = data.data.spk;
     //console.log(serverKey);
-    sendEncryptHandshake();
+    sendEncryptHandshake(sf);
     
     $("#loadingBar .bar").animate({"width":(390*.40)+"px"},100);
     
 }, "encryption_handshake");
 
-_sf.addCall(function(ws, data){
+_sf.addCall(function(sf, ws, data){
     //console.log(data);
     var d = data.data.spk;
     serverKey = d;
@@ -459,7 +458,7 @@ _sf.addCall(function(ws, data){
         "page":"ack",
         "class":"Request"
     };
-    _sf.send(s);
+    sf.send(s);
     $("#loadingBar .bar").animate({"width":(390*.75)+"px"},100);
 }, "encryption_handshake_two");
 _sf.addCall(function(ws, data){
