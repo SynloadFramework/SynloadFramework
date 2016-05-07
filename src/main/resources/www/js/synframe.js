@@ -438,7 +438,8 @@ _sf.addCall(function(ws, data){
     $("#loadingBar").css({"background":"#E6F7FC","padding":"20px","top":"40%","left":"50%","marginLeft":"-220px","width":"400px","textAlign":"center"});
     // test data
     $("#loadingBar .bar").animate({"width":(390*.10)+"px"},100);
-    serverKey = data.data.spk;
+    console.log(data);
+    serverKey = data.spk;
     //console.log(serverKey);
     sendEncryptHandshake();
     
