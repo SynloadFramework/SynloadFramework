@@ -328,7 +328,7 @@ public class ModuleLoader extends ClassLoader {
                             e1.printStackTrace();
                         }
                         obj.add(obj_tmp);
-                        HandlerRegistry.register(annotationClass.getAnnotationClass(), et);
+                        HandlerRegistry.register(eventAnnotation.getClass(), et);
                     }
                 }
             }
