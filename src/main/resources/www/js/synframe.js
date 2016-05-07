@@ -427,7 +427,7 @@ function sendEncryptHandshake(sf){
         sf.encryptEnabled=true;
     }else{
         setTimeout(function(){
-            sendEncryptHandshake();
+            sendEncryptHandshake(sf);
         },400);
     }
 }
