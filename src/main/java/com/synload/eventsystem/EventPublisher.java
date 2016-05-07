@@ -23,10 +23,10 @@ public class EventPublisher {
     }
 
     private static void raise(final EventClass event, String target) {
-        //System.out.println("event class "+event.getClass().getName());
-        //System.out.println("check "+event.getHandler().getAnnotationClass().getName());
+        System.out.println("event class "+event.getClass().getName());
+        System.out.println("check "+event.getHandler().getAnnotationClass().getName());
         if (HandlerRegistry.getHandlers().containsKey(event.getHandler().getAnnotationClass())) {
-            //System.out.println("found "+event.getHandler().getAnnotationClass().getName());
+            System.out.println("found "+event.getHandler().getAnnotationClass().getName());
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())){
                 //System.out.println("check trigger "+trigger.getTrigger());
                 if (event instanceof RequestEvent){
@@ -48,19 +48,8 @@ public class EventPublisher {
                         }
 
                     }
-                    // Don't raise event if trigger does not exist.
-                    /*else {
-                        if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
-                            try {
-                                trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }*/
-
-                } else if (event.getClass() != RequestEvent.class) { // No more WebEvent, handled in HttpRouting, Custom Events Only
-                    if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
+                } else { // No more WebEvent, handled in HttpRouting, Custom Events Only
+                    if (trigger.getMethod().getParameterTypes().length>0 && trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
                         try {
                             trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
                         } catch (Exception e) {
