@@ -94,6 +94,7 @@ public class PKI {
     
     @WSEvent(name = "ReceiveClientPublicKey", description = "Receive Client Public Key", action = "cpk", enabled = true, method = "synfam")
     public void receiveClientPub(RequestEvent event) throws JsonProcessingException, IOException {
+		System.out.println("test");
     	if(event.getRequest().getData().containsKey("cpk")){
     		Security.addProvider(new BouncyCastleProvider());
     		try {

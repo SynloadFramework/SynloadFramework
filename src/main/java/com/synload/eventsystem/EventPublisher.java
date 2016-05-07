@@ -27,8 +27,11 @@ public class EventPublisher {
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())){
                 if (trigger.getMethod().getParameterTypes().length>0 && event.getClass() == RequestEvent.class && RequestEvent.class == trigger.getMethod().getParameterTypes()[0] && trigger.getEventType() == Type.WEBSOCKET) {
                     // Websocket Event!
+                    System.out.println("Comparing");
                     if (trigger.getTrigger().length == 2) {
                         RequestEvent requestEvent = (RequestEvent) event;
+                        System.out.println(trigger.getTrigger()[0]+" to method "+requestEvent.getRequest().getMethod());
+                        System.out.println(trigger.getTrigger()[1]+" to action "+requestEvent.getRequest().getAction());
                         if (
                                 trigger.getTrigger()[0].equalsIgnoreCase(requestEvent.getRequest().getMethod()) // method / method
                                 && trigger.getTrigger()[1].equalsIgnoreCase(requestEvent.getRequest().getAction()) // action / action
