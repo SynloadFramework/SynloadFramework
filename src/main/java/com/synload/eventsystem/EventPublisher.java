@@ -25,20 +25,18 @@ public class EventPublisher {
     private static void raise(final EventClass event, String target) {
         if (HandlerRegistry.getHandlers().containsKey(event.getHandler().getAnnotationClass())) {
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())){
-                if (event.getClass() == RequestEvent.class && RequestEvent.class == trigger.getMethod().getParameterTypes()[0] && trigger.getEventType() == Type.WEBSOCKET) {
+                if (trigger.getMethod().getParameterTypes().length>0 && event.getClass() == RequestEvent.class && RequestEvent.class == trigger.getMethod().getParameterTypes()[0] && trigger.getEventType() == Type.WEBSOCKET) {
                     // Websocket Event!
-                    if (event.getTrigger() != null && event.getTrigger().length > 0 && trigger.getTrigger().length > 0) {
-
+                    if (trigger.getTrigger().length == 2) {
+                        RequestEvent requestEvent = (RequestEvent) event;
                         if (
-                                trigger.getTrigger()[0].equalsIgnoreCase(event.getTrigger()[0]) // method / method
-                                && trigger.getTrigger()[1].equalsIgnoreCase(event.getTrigger()[1]) // action / action
+                                trigger.getTrigger()[0].equalsIgnoreCase(requestEvent.getRequest().getMethod()) // method / method
+                                && trigger.getTrigger()[1].equalsIgnoreCase(requestEvent.getRequest().getAction()) // action / action
                         ) {
-                            if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
-                                try {
-                                    trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                            try {
+                                trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
 

@@ -15,7 +15,7 @@ public class RequestEvent extends EventClass {
         this.setHandler(Handler.WSEVENT);
         this.setType(Type.WEBSOCKET);
         this.setSession(session);
-        this.setTrigger(new String[] { request.getMethod(), request.getAction() });
+        //this.setTrigger(new String[] { request.getMethod(), request.getAction() });
     }
 
     public Request getRequest() {

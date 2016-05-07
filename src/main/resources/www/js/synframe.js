@@ -4,7 +4,7 @@ var clientKey;
 var serverKey;
 var key;
 function loadedEncrypt(){
-    crypt = new JSEncrypt({default_key_size: 2048});
+    crypt = new JSEncrypt({default_key_size: 1024});
     key = crypt.getKey();
     clientRSA=key.getPrivateKey();
     //console.log(clientRSA);

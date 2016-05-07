@@ -34,11 +34,11 @@ public class WSRouting {
         }
     }*/
 
-    public static void page(WSHandler ws, Request request)
-            throws JsonProcessingException {
-        ObjectWriter ow = new ObjectMapper().writer()
-                .withDefaultPrettyPrinter();
-        WSRequest pg = new WSRequest(request.getMethod(), request.getAction());
+    public static void page(WSHandler ws, Request request)throws JsonProcessingException {
+        EventPublisher.raiseEvent(new RequestEvent(ws, request), true, null); // multithreaded
+        return;
+        //ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        //WSRequest pg = new WSRequest(request.getMethod(), request.getAction());
         // System.out.println("[WR][I] Request recieved!");
         /*if (routes.containsKey(ow.writeValueAsString(pg))) {
             // System.out.println("[WR][I] Route Found!");
@@ -74,8 +74,7 @@ public class WSRouting {
         } else {*/
             // route does not exist send out to more complex modules
             // System.out.println("[WR][W] Route does not exist!");
-            EventPublisher.raiseEvent(new RequestEvent(ws, request), true, null);
-            return;
+
         //}
     }
 }

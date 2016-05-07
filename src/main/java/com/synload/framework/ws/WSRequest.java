@@ -7,26 +7,26 @@ public class WSRequest {
     /**
 	 * 
 	 */
-    public String pri, request = "";
+    public String method, action = "";
 
-    public WSRequest(String page, String request) {
-        this.request = request;
-        this.pri = page;
+    public WSRequest(String method, String action) {
+        this.method = method;
+        this.action = action;
     }
 
-    public String getPri() {
-        return pri;
+    public String getAction() {
+        return action;
     }
 
-    public void setPri(String page) {
-        this.pri = page;
+    public void setAction(String action) {
+        this.action = action;
     }
 
-    public String getRequest() {
-        return request;
+    public String getMethod() {
+        return method;
     }
 
-    public void setRequest(String request) {
-        this.request = request;
+    public void setMethod(String method) {
+        this.method = method;
     }
 }
