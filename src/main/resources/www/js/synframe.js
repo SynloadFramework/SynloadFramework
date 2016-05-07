@@ -45,8 +45,8 @@ class SynloadFramework{
                     "data":{
                         "element": "body"
                     },
-                    "request": "get",
-                    "page": "index",
+                    "method": "get",
+                    "action": "index",
                     "class": "Request"
                 }
             }
@@ -84,11 +84,11 @@ class SynloadFramework{
 	alert(text,extra){
 		$.jGrowl(text,extra);
 	}
-	request(method, page, data){
+	request(method, action, data){
 		var data = {
 			"data": data,
-			"request":method,
-			"page":page,
+			"method":method,
+			"action":action,
 			"class":"Request"
 		}
 		this.send(data);
@@ -113,8 +113,8 @@ class SynloadFramework{
         		sf.onConnect();
         		setInterval(function(){
         			var data = {
-        				"request":"get",
-        				"page":"ping",
+        				"method":"get",
+        				"action":"ping",
         				"class":"Request"
         			}
         			sf.send(data);
@@ -274,8 +274,8 @@ class SynloadFramework{
 					if(tmpldata.redirect){
 						setTimeout(function(){
 							var s = {
-								"request":tmpldata.redirect.request,
-								"page":tmpldata.redirect.page,
+								"method":tmpldata.redirect.request,
+								"action":tmpldata.redirect.page,
 								"class":"Request"
 							};
 							sf.send(s);
@@ -336,8 +336,8 @@ class SynloadFramework{
 	}
 	requestParent(sock,parentPage){
 		var data = {
-			"request":"get",
-			"page":parentPage,
+			"method":"get",
+			"action":parentPage,
 			"class":"Request"
 		}
 		this.send(data);
@@ -419,8 +419,8 @@ function sendEncryptHandshake(sf){
             "data":{
                 "cpk":eKey
             },
-            "request":"synfam",
-            "page":"cpk",
+            "method":"synfam",
+            "action":"cpk",
             "class":"Request"
         };
         sf.send(s);
@@ -454,8 +454,8 @@ _sf.addCall(function(sf, ws, data){
         "data":{
             "message":"HELLO"
         },
-        "request":"synfam",
-        "page":"ack",
+        "method":"synfam",
+        "action":"ack",
         "class":"Request"
     };
     sf.send(s);

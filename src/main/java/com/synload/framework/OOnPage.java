@@ -21,7 +21,7 @@ public class OOnPage {
         }
         if (ObjectsClients.containsKey(reference)) {
             if (ObjectsClients.get(reference).containsKey(id)) {
-                if (!ObjectsClients.get(reference).get(id).contains(id)) {
+                if (!ObjectsClients.get(reference).get(id).contains(client)) {
                     ObjectsClients.get(reference).get(id).add(client);
                 }
             } else {

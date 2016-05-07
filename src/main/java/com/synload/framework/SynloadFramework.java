@@ -302,7 +302,7 @@ public class SynloadFramework extends ModuleClass {
         }*/
     }
 
-    public static void registerElement(WSRequest page, Class<?> listenerClass,
+    /*public static void registerElement(WSRequest page, Class<?> listenerClass,
             String method, List<String> flags) {
         try {
             if (WSRouting.addRoutes(page, new WSResponse(listenerClass, method,
@@ -316,7 +316,7 @@ public class SynloadFramework extends ModuleClass {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
     public static HashMap<String, HashMap<String, Object>> getHtmlFiles() {
         return htmlFiles;

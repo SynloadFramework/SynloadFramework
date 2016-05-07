@@ -10,7 +10,7 @@ public enum Handler {
     private Class annotationClass;
 
     @SuppressWarnings("rawtypes")
-    private Handler(Class clazz) {
+    Handler(Class clazz) {
         this.annotationClass = clazz;
     }
 

@@ -9,7 +9,7 @@ import net.bramp.ffmpeg.FFmpeg;
  */
 public abstract class FFmpegJob implements Runnable {
 
-	public static enum State {
+	public enum State {
 		WAITING,
 		RUNNING,
 		FINISHED,

@@ -16,7 +16,7 @@ public class WSRouting {
         return routes;
     }
 
-    public static boolean addRoutes(WSRequest p, WSResponse h)
+    /*public static boolean addRoutes(WSRequest p, WSResponse h)
             throws JsonProcessingException {
         ObjectWriter ow = new ObjectMapper().writer()
                 .withDefaultPrettyPrinter();
@@ -32,15 +32,15 @@ public class WSRouting {
                 return false;
             }
         }
-    }
+    }*/
 
     public static void page(WSHandler ws, Request request)
             throws JsonProcessingException {
         ObjectWriter ow = new ObjectMapper().writer()
                 .withDefaultPrettyPrinter();
-        WSRequest pg = new WSRequest(request.getPage(), request.getRequest());
+        WSRequest pg = new WSRequest(request.getMethod(), request.getAction());
         // System.out.println("[WR][I] Request recieved!");
-        if (routes.containsKey(ow.writeValueAsString(pg))) {
+        /*if (routes.containsKey(ow.writeValueAsString(pg))) {
             // System.out.println("[WR][I] Route Found!");
             WSResponse p = routes.get(ow.writeValueAsString(pg));
             boolean flagRequirementsMet = true;
@@ -71,11 +71,11 @@ public class WSRouting {
                 // System.out.println("[WR][E] Flag not found with user!");
                 return;
             }
-        } else {
+        } else {*/
             // route does not exist send out to more complex modules
             // System.out.println("[WR][W] Route does not exist!");
-            EventPublisher.raiseEvent(new RequestEvent(ws, request), null);
+            EventPublisher.raiseEvent(new RequestEvent(ws, request), true, null);
             return;
-        }
+        //}
     }
 }

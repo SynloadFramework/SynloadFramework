@@ -8,18 +8,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Request {
-    public String request, page = "";
+    public String method, action = "";
     public List<String> templateCache = new ArrayList<String>();
     public Map<String, String> data = new HashMap<String, String>();
 
-    public Request(String request, String page) {
-        this.setRequest(request);
-        this.setPage(page);
+    public Request(String method, String action) {
+        this.method = method;
+        this.action = action;
     }
 
-    public Request(String request, String page, Map<String, String> data) {
-        this.setRequest(request);
-        this.setPage(page);
+    public Request(String method, String action, Map<String, String> data) {
+        this.method = method;
+        this.action = action;
         this.setData(data);
     }
 
@@ -34,20 +34,20 @@ public class Request {
     public Request() {
     }
 
-    public String getRequest() {
-        return request;
+    public String getMethod() {
+        return method;
     }
 
-    public void setRequest(String request) {
-        this.request = request;
+    public void setMethod(String method) {
+        this.method = method;
     }
 
-    public String getPage() {
-        return page;
+    public String getAction() {
+        return action;
     }
 
-    public void setPage(String page) {
-        this.page = page;
+    public void setAction(String action) {
+        this.action = action;
     }
 
     public Map<String, String> getData() {

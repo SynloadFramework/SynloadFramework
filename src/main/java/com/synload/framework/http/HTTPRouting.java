@@ -46,13 +46,7 @@ public class HTTPRouting {
 
     @SuppressWarnings("unused")
     public static boolean openFile(String filename, HttpServletResponse response, Request baseRequest) throws IOException {
-        boolean properFile = true;
         String mime = "text/html;charset=utf-8";
-        try {
-            // properFile =
-            // filename.split("/")[filename.split("/").length-1].matches("(?sim)([a-z.A-Z0-9]+)");
-        } catch (PatternSyntaxException ex) {
-        }
         String ext = filename.split("(?sim)\\.")[filename.split("(?sim)\\.").length - 1];
         if (ext.equalsIgnoreCase("js")) {
             mime = "application/javascript";
@@ -69,160 +63,159 @@ public class HTTPRouting {
         } else if (ext.equalsIgnoreCase("ico")) {
             mime = "image/x-icon";
         }
-        if (properFile) {
-            boolean htmlExists = (new File(filename)).exists();
-            if (htmlExists) {
-                baseRequest.setHandled(true);
-                String range = baseRequest.getHeader("Range");
-                if (baseRequest.getParameterMap().containsKey("p")) {
-                    range = "bytes="
-                            + baseRequest.getParameterMap().get("p")[0];
-                }
-                boolean isCached = false;
-                HashMap<String, Object> htmlf = null;
-                if (SynloadFramework.htmlFiles.containsKey(filename)) {
-                    htmlf = SynloadFramework.htmlFiles.get(filename);
-                    isCached = htmlf.get("modified").equals(
-                            (new File(filename)).lastModified());
-                }
-                if (range == null) {
-                    response.setCharacterEncoding("UTF-8");
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.setHeader("Accept-Ranges", "bytes");
-                    response.setContentType(mime);
-                    response.setContentLengthLong((new File(filename)).length());
-                    if (!isCached) {
-                        File htmlFile = (new File(filename));
-                        InputStream is = new FileInputStream(htmlFile);
-                        long bytesRead = 0;
-                        boolean cache = false;
-                        if ((new File(filename)).length() < 200000) {
-                            // cache = true;
-                        }
-                        byte[] buffer = new byte[8 * 1024];
-                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        int byteArrayPos = 0;
-                        while (is.read(buffer) != -1) {
-                            if (cache) {
-                                outputStream.write(buffer);
-                                outputStream.flush();
-                            }
-                            try {
-                                if (ext.equalsIgnoreCase("html")
-                                        || ext.equalsIgnoreCase("css")
-                                        || ext.equalsIgnoreCase("js")) {
-                                    response.getWriter().print(
-                                            new String(buffer));
-                                    response.getWriter().flush();
-                                } else if (ext.equalsIgnoreCase("mp4")
-                                        || ext.equalsIgnoreCase("avi")
-                                        || ext.equalsIgnoreCase("webm")
-                                        || ext.equalsIgnoreCase("jpg")
-                                        || ext.equalsIgnoreCase("png")
-                                        || ext.equalsIgnoreCase("ico")
-                                        || ext.equalsIgnoreCase("gif")) {
-                                    response.getOutputStream().write(buffer);
-                                    response.getOutputStream().flush();
-                                }
-                            } catch (IOException ex) {
-                                if (SynloadFramework.debug) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                        }
+        boolean htmlExists = (new File(filename)).exists();
+        if (htmlExists) {
+            baseRequest.setHandled(true);
+            String range = baseRequest.getHeader("Range");
+            if (baseRequest.getParameterMap().containsKey("p")) {
+                range = "bytes="
+                        + baseRequest.getParameterMap().get("p")[0];
+            }
+            boolean isCached = false;
+            HashMap<String, Object> htmlf = null;
+            if (SynloadFramework.htmlFiles.containsKey(filename)) {
+                htmlf = SynloadFramework.htmlFiles.get(filename);
+                isCached = htmlf.get("modified").equals(
+                        (new File(filename)).lastModified());
+            }
+            if (range == null) {
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setHeader("Accept-Ranges", "bytes");
+                response.setContentType(mime);
+                response.setContentLengthLong((new File(filename)).length());
+                if (!isCached) {
+                    File htmlFile = (new File(filename));
+                    InputStream is = new FileInputStream(htmlFile);
+                    long bytesRead = 0;
+                    boolean cache = false;
+                    if ((new File(filename)).length() < 200000) {
+                        cache = true;
+                    }
+                    byte[] buffer = new byte[8 * 1024];
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    int byteArrayPos = 0;
+                    while (is.read(buffer) != -1) {
                         if (cache) {
-                            HashMap<String, Object> tmpf = new HashMap<String, Object>();
-                            tmpf.put("modified",
-                                    (new File(filename)).lastModified());
-                            tmpf.put("data", outputStream.toByteArray());
-                            SynloadFramework.htmlFiles.put(filename, tmpf);
+                            outputStream.write(buffer);
+                            outputStream.flush();
                         }
-                        is.close();
-                        return true;
-                    } else {
-                        response.getOutputStream().write(
-                                (byte[]) htmlf.get("data"));
-                        return true;
+                        try {
+                            if (ext.equalsIgnoreCase("html")
+                                    || ext.equalsIgnoreCase("css")
+                                    || ext.equalsIgnoreCase("js")) {
+                                response.getWriter().print(
+                                        new String(buffer));
+                                response.getWriter().flush();
+                            } else if (ext.equalsIgnoreCase("mp4")
+                                    || ext.equalsIgnoreCase("avi")
+                                    || ext.equalsIgnoreCase("webm")
+                                    || ext.equalsIgnoreCase("jpg")
+                                    || ext.equalsIgnoreCase("png")
+                                    || ext.equalsIgnoreCase("ico")
+                                    || ext.equalsIgnoreCase("gif")) {
+                                response.getOutputStream().write(buffer);
+                                response.getOutputStream().flush();
+                            }
+                        } catch (IOException ex) {
+                            if (SynloadFramework.debug) {
+                                ex.printStackTrace();
+                            }
+                        }
                     }
+                    if (cache) {
+                        HashMap<String, Object> tmpf = new HashMap<String, Object>();
+                        tmpf.put("modified",
+                                (new File(filename)).lastModified());
+                        tmpf.put("data", outputStream.toByteArray());
+                        SynloadFramework.htmlFiles.put(filename, tmpf);
+                    }
+                    is.close();
+                    return true;
                 } else {
-                    response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                    response.setContentType(mime);
-                    String[] bytesParts = null;
-                    try {
-                        Pattern regex = Pattern
-                                .compile("bytes=([0-9\\-, ]+)",
-                                        Pattern.CASE_INSENSITIVE
-                                                | Pattern.UNICODE_CASE);
-                        Matcher regexMatcher = regex.matcher(range);
-                        if (regexMatcher.find()) {
-                            bytesParts = regexMatcher.group(1).split(",");
-                        }
-                    } catch (PatternSyntaxException ex) {
+                    response.getOutputStream().write(
+                            (byte[]) htmlf.get("data"));
+                    return true;
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                response.setContentType(mime);
+                String[] bytesParts = null;
+                try {
+                    Pattern regex = Pattern
+                            .compile("bytes=([0-9\\-, ]+)",
+                                    Pattern.CASE_INSENSITIVE
+                                            | Pattern.UNICODE_CASE);
+                    Matcher regexMatcher = regex.matcher(range);
+                    if (regexMatcher.find()) {
+                        bytesParts = regexMatcher.group(1).split(",");
                     }
-                    String outerContentRange = "";
-                    long totalSize = 0;
-                    if (bytesParts != null) {
-                        for (String part : bytesParts) {
-                            if (!part.equals("")) {
-                                String[] partData = part.trim().split("-");
-                                if (partData.length == 2) {
-                                    if (partData[1] != null
-                                            && !partData[1].equals("")) {
-                                        totalSize += Long.valueOf(partData[1])
-                                                - Long.valueOf(partData[0]);
-                                        outerContentRange = Long
-                                                .valueOf(partData[0])
-                                                + "-"
-                                                + (Long.valueOf(partData[1]) - 1);
-                                    } else {
-                                        totalSize += (new File(filename))
-                                                .length()
-                                                - Long.valueOf(partData[0]);
-                                        outerContentRange = Long
-                                                .valueOf(partData[0])
-                                                + "-"
-                                                + ((new File(filename))
-                                                        .length() - 1);
-                                    }
-                                } else {
-                                    totalSize += (new File(filename)).length()
+                } catch (PatternSyntaxException ex) {
+                    ex.printStackTrace();
+                }
+                String outerContentRange = "";
+                long totalSize = 0;
+                if (bytesParts != null) {
+                    for (String part : bytesParts) {
+                        if (!part.equals("")) {
+                            String[] partData = part.trim().split("-");
+                            if (partData.length == 2) {
+                                if (partData[1] != null
+                                        && !partData[1].equals("")) {
+                                    totalSize += Long.valueOf(partData[1])
                                             - Long.valueOf(partData[0]);
                                     outerContentRange = Long
                                             .valueOf(partData[0])
                                             + "-"
-                                            + ((new File(filename)).length() - 1);
+                                            + (Long.valueOf(partData[1]) - 1);
+                                } else {
+                                    totalSize += (new File(filename))
+                                            .length()
+                                            - Long.valueOf(partData[0]);
+                                    outerContentRange = Long
+                                            .valueOf(partData[0])
+                                            + "-"
+                                            + ((new File(filename))
+                                                    .length() - 1);
                                 }
+                            } else {
+                                totalSize += (new File(filename)).length()
+                                        - Long.valueOf(partData[0]);
+                                outerContentRange = Long
+                                        .valueOf(partData[0])
+                                        + "-"
+                                        + ((new File(filename)).length() - 1);
                             }
                         }
                     }
-                    response.setContentLengthLong(totalSize);
-                    response.setHeader("Accept-Ranges", "bytes");
-                    response.setHeader("Content-Range",
-                            "bytes " + outerContentRange + "/"
-                                    + (new File(filename)).length());
-                    if (bytesParts != null) {
-                        for (String part : bytesParts) {
-                            if (!part.equals("")) {
-                                String[] partData = part.trim().split("-");
-                                if (partData.length == 2) {
-                                    if (partData[1] != null
-                                            && !partData[1].equals("")) {
-                                        sendData(new File(filename),
-                                                response.getOutputStream(),
-                                                Long.valueOf(partData[0]),
-                                                Long.valueOf(partData[1]));
-                                    } else {
-                                        sendData(new File(filename),
-                                                response.getOutputStream(),
-                                                Long.valueOf(partData[0]),
-                                                (new File(filename)).length());
-                                    }
+                }
+                response.setContentLengthLong(totalSize);
+                response.setHeader("Accept-Ranges", "bytes");
+                response.setHeader("Content-Range",
+                        "bytes " + outerContentRange + "/"
+                                + (new File(filename)).length());
+                if (bytesParts != null) {
+                    for (String part : bytesParts) {
+                        if (!part.equals("")) {
+                            String[] partData = part.trim().split("-");
+                            if (partData.length == 2) {
+                                if (partData[1] != null
+                                        && !partData[1].equals("")) {
+                                    sendData(new File(filename),
+                                            response.getOutputStream(),
+                                            Long.valueOf(partData[0]),
+                                            Long.valueOf(partData[1]));
                                 } else {
                                     sendData(new File(filename),
                                             response.getOutputStream(),
                                             Long.valueOf(partData[0]),
                                             (new File(filename)).length());
                                 }
+                            } else {
+                                sendData(new File(filename),
+                                        response.getOutputStream(),
+                                        Long.valueOf(partData[0]),
+                                        (new File(filename)).length());
                             }
                         }
                     }
@@ -392,8 +385,8 @@ public class HTTPRouting {
             }
         }
         // System.out.println("[WB][I] File not found for route sending to modules!");
-        EventPublisher.raiseEvent(new WebEvent(target, baseRequest, request,
-                response, URI), target);
+        /*EventPublisher.raiseEvent(new WebEvent(target, baseRequest, request,
+                response, URI), target); WEB EVENT REMOVED */
 		return false;
     }
 }

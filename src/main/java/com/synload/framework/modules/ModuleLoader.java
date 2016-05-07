@@ -401,7 +401,11 @@ public class ModuleLoader extends ClassLoader {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}finally{
-			zip.close();
+			try{
+                zip.close();
+            }catch(Exception e){
+
+            }
 		}
         return mData;
     }

@@ -514,7 +514,9 @@ public class Model {
                                             _convert(f.getType(), item.getValue()));
                                 }
                             } catch (IllegalArgumentException e) {
+                                e.printStackTrace();
                             } catch (IllegalAccessException e) {
+                                e.printStackTrace();
                             } catch ( SQLException e) {
                                 e.printStackTrace();
                             }

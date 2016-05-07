@@ -26,8 +26,13 @@ public class EventPublisher {
         if (HandlerRegistry.getHandlers().containsKey(event.getHandler().getAnnotationClass())) {
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())){
                 if (event.getClass() == RequestEvent.class && RequestEvent.class == trigger.getMethod().getParameterTypes()[0] && trigger.getEventType() == Type.WEBSOCKET) {
+                    // Websocket Event!
                     if (event.getTrigger() != null && event.getTrigger().length > 0 && trigger.getTrigger().length > 0) {
-                        if (trigger.getTrigger()[0].equalsIgnoreCase(event.getTrigger()[0]) && trigger.getTrigger()[1].equalsIgnoreCase(event.getTrigger()[1])) {
+
+                        if (
+                                trigger.getTrigger()[0].equalsIgnoreCase(event.getTrigger()[0]) // method / method
+                                && trigger.getTrigger()[1].equalsIgnoreCase(event.getTrigger()[1]) // action / action
+                        ) {
                             if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
                                 try {
                                     trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
@@ -36,7 +41,10 @@ public class EventPublisher {
                                 }
                             }
                         }
-                    } else {
+
+                    }
+                    // Don't raise event if trigger does not exist.
+                    /*else {
                         if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
                             try {
                                 trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
@@ -44,16 +52,9 @@ public class EventPublisher {
                                 e.printStackTrace();
                             }
                         }
-                    }
-                /*} else if (event.getClass() == WebEvent.class && WebEvent.class == trigger.getMethod() .getParameterTypes()[0]) {
-                    if (event.getTrigger() != null && target.matches(trigger.getTrigger()[0])) {
-                        try {
-                            trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
                     }*/
-                } else if (event.getClass() != WebEvent.class && event.getClass() != RequestEvent.class) {
+
+                } else if (event.getClass() != RequestEvent.class) { // No more WebEvent, handled in HttpRouting, Custom Events Only
                     if (trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
                         try {
                             trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event);

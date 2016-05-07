@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
  */
 public class Codec {
 
-    static enum Type {
+    enum Type {
         VIDEO,
         AUDIO,
         SUBTITLE
