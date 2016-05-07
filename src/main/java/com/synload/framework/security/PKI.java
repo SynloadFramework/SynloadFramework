@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
+
+import com.synload.eventsystem.events.annotations.Event;
 import org.apache.commons.net.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -94,7 +96,6 @@ public class PKI {
     
     @WSEvent(name = "ReceiveClientPublicKey", description = "Receive Client Public Key", action = "cpk", enabled = true, method = "synfam")
     public void receiveClientPub(RequestEvent event) throws JsonProcessingException, IOException {
-		System.out.println("test");
     	if(event.getRequest().getData().containsKey("cpk")){
     		Security.addProvider(new BouncyCastleProvider());
     		try {
@@ -137,6 +138,12 @@ public class PKI {
 			}
     	}
     }
+	@Event(name="UserConnect", description = "triggered on user connection", enabled = true)
+	public void onConnect(ConnectEvent ce){
+		if(ce.getSession().encrypt){
+			System.out.println("User connected on secure line");
+		}
+	}
     public String encrypt(String data, Key key) {
     	String rdata = "";
         byte[] cipherText = null;
