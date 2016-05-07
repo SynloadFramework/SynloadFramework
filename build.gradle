@@ -47,6 +47,7 @@ dependencies {
     compile 'com.google.guava:guava:19.0'
     compile 'org.slf4j:slf4j-api:1.7.16'
     compile 'com.google.code.gson:gson:2.6.1'
+    compile 'mysql:mysql-connector-java:6.0.2'
     compile 'cglib:cglib-full:2.0.2'
     compile 'dnl.utils:j-text-utils:0.3.3'
     compile 'org.bouncycastle:bcprov-jdk15on:1.54'
