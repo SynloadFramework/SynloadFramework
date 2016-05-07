@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="/synloadframework/css/jquery-ui.theme.min.css">
 		<script>
 			$(document).ready(function(){
-				connect('127.0.0.1:8080');
+				connect(location.hostname+(location.port ? ':'+location.port: ''));
 			});
 		</script>
 	</head>
