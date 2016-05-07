@@ -277,7 +277,7 @@ public class ModuleLoader extends ClassLoader {
                 if (m.isAnnotationPresent(WSEvent.class)) {
                     EventTrigger et = new EventTrigger();
 
-                    WSEvent eventAnnotation = (WSEvent) m.getAnnotation(WSEvent.class);
+                    WSEvent eventAnnotation = m.getAnnotation(WSEvent.class);
                     String[] flags = new String[]{};
                     if(m.isAnnotationPresent(Perms.class)){
                     	Perms perm = m.getAnnotation(Perms.class);
@@ -295,7 +295,7 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = Type.WEBSOCKET;
+                        obj_tmp[3] = WSEvent.class.getName();
                         obj_tmp[4] = eventAnnotation.description();
                         try {
                             obj_tmp[5] = SynloadFramework.ow.writeValueAsString(new String[]{eventAnnotation.method(), eventAnnotation.action()});
@@ -303,10 +303,10 @@ public class ModuleLoader extends ClassLoader {
                             e1.printStackTrace();
                         }
                         obj.add(obj_tmp);
-                        HandlerRegistry.register(eventAnnotation.getClass(), et);
+                        HandlerRegistry.register(WSEvent.class, et);
                     }
                 }else if(m.isAnnotationPresent(Event.class)){
-                	Event eventAnnotation = (Event) m.getAnnotation(Event.class);
+                	Event eventAnnotation = m.getAnnotation(Event.class);
                 	EventTrigger et = new EventTrigger();
                 	if (eventAnnotation.enabled()) {
                         et.setHostClass(c);
@@ -320,7 +320,7 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = Type.OTHER;
+                        obj_tmp[3] = Event.class.getName();
                         obj_tmp[4] = eventAnnotation.description();
                         try {
                             obj_tmp[5] = SynloadFramework.ow.writeValueAsString(new String[]{});
@@ -328,7 +328,7 @@ public class ModuleLoader extends ClassLoader {
                             e1.printStackTrace();
                         }
                         obj.add(obj_tmp);
-                        HandlerRegistry.register(eventAnnotation.getClass(), et);
+                        HandlerRegistry.register(Event.class, et);
                     }
                 }
             }
