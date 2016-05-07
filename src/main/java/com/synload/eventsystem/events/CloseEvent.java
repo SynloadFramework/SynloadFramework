@@ -10,8 +10,8 @@ public class CloseEvent extends EventClass {
 
     public CloseEvent(WSHandler session) {
         this.setSession(session);
-        this.setHandler(Handler.WSEVENT);
-        this.setType(Type.WEBSOCKET);
+        this.setHandler(Handler.EVENT);
+        this.setType(Type.OTHER);
     }
 
     public WSHandler getSession() {

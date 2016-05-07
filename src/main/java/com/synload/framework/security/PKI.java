@@ -133,8 +133,8 @@ public class PKI {
     	if(event.getRequest().getData().containsKey("message")){
 			String message = event.getRequest().getData().get("message");
 			if(message.equals("HELLO")){
+				EventPublisher.raiseEvent(new ConnectEvent(event.getSession()), true, null);
 				event.getSession().send(new Connected());
-				EventPublisher.raiseEvent(new ConnectEvent(event.getSession()), null);
 			}
     	}
     }

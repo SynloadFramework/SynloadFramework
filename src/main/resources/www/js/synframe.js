@@ -448,8 +448,7 @@ _sf.addCall(function(sf, ws, data){
 
 _sf.addCall(function(sf, ws, data){
     //console.log(data);
-    var d = data.data.spk;
-    serverKey = d;
+    serverKey = data.data.spk;
     var s = {
         "data":{
             "message":"HELLO"

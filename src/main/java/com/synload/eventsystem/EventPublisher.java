@@ -23,10 +23,10 @@ public class EventPublisher {
     }
 
     private static void raise(final EventClass event, String target) {
-        System.out.println("event class "+event.getClass().getName());
-        System.out.println("check "+event.getHandler().getAnnotationClass().getName());
+        //System.out.println("event class "+event.getClass().getName());
+        //System.out.println("check "+event.getHandler().getAnnotationClass().getName());
         if (HandlerRegistry.getHandlers().containsKey(event.getHandler().getAnnotationClass())) {
-            System.out.println("found "+event.getHandler().getAnnotationClass().getName());
+            //System.out.println("found "+event.getHandler().getAnnotationClass().getName());
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())){
                 //System.out.println("check trigger "+trigger.getTrigger());
                 if (event instanceof RequestEvent){
