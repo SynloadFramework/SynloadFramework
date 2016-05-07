@@ -23,19 +23,19 @@ public class EventPublisher {
     }
 
     private static void raise(final EventClass event, String target) {
-        System.out.println("event class "+event.getClass().getName());
-        System.out.println("check "+event.getHandler().getAnnotationClass().getName());
+        //System.out.println("event class "+event.getClass().getName());
+        //System.out.println("check "+event.getHandler().getAnnotationClass().getName());
         if (HandlerRegistry.getHandlers().containsKey(event.getHandler().getAnnotationClass())) {
-            System.out.println("found "+event.getHandler().getAnnotationClass().getName());
+            //System.out.println("found "+event.getHandler().getAnnotationClass().getName());
             for (EventTrigger trigger : HandlerRegistry.getHandlers(event.getHandler().getAnnotationClass())){
-                System.out.println("check trigger "+trigger.getTrigger());
+                //System.out.println("check trigger "+trigger.getTrigger());
                 if (event instanceof RequestEvent){
                     // Websocket Event!
-                    System.out.println("Comparing");
+                    //System.out.println("Comparing");
                     if (trigger.getTrigger().length == 2) {
                         RequestEvent requestEvent = (RequestEvent) event;
-                        System.out.println(trigger.getTrigger()[0]+" to method "+requestEvent.getRequest().getMethod());
-                        System.out.println(trigger.getTrigger()[1]+" to action "+requestEvent.getRequest().getAction());
+                        //System.out.println(trigger.getTrigger()[0]+" to method "+requestEvent.getRequest().getMethod());
+                        //System.out.println(trigger.getTrigger()[1]+" to action "+requestEvent.getRequest().getAction());
                         if (
                                 trigger.getTrigger()[0].equalsIgnoreCase(requestEvent.getRequest().getMethod()) // method / method
                                 && trigger.getTrigger()[1].equalsIgnoreCase(requestEvent.getRequest().getAction()) // action / action
