@@ -11,6 +11,7 @@ public class HandlerRegistry {
 
     @SuppressWarnings("rawtypes")
     public static void register(Class handler, EventTrigger trigger) {
+        System.out.println(handler.getName() + " trigger "+trigger.getTrigger() );
         if (triggers.containsKey(handler)) {
             if (!triggers.get(handler).contains(trigger)) {
                 triggers.get(handler).add(trigger);
