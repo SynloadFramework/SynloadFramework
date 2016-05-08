@@ -35,7 +35,7 @@ public class WSRouting {
     }*/
 
     public static void page(WSHandler ws, Request request)throws JsonProcessingException {
-        EventPublisher.raiseEvent(new RequestEvent(ws, request), true, null); // multithreaded
+        EventPublisher.raiseEvent(new RequestEvent(ws, request), null); // multithreaded
         return;
         //ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         //WSRequest pg = new WSRequest(request.getMethod(), request.getAction());
