@@ -134,12 +134,12 @@ class SynloadFramework{
 
 		};
 		this.socket.onclose = function() {
-			this.call('close');
-			this.onPage="";
-			this.onPage_request="";
-			this.ecsnt = false;
-			this.ekey = "";
-			this.encryptEnabled = false;
+			sf.call('close');
+			sf.onPage="";
+			sf.onPage_request="";
+			sf.ecsnt = false;
+			sf.ekey = "";
+			sf.encryptEnabled = false;
 			setTimeout(function(){
 				sf.connect(sf.wsAddress,sf.wsPath);
 			},5000);
