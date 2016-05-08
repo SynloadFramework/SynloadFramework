@@ -329,7 +329,6 @@ class SynloadFramework{
 		}
 		if(tmpldata.pageId!="" && tmpldata.pageId!="null" && tmpldata.pageId!=undefined){
 			this.onPage_request = JSON.stringify(tmpldata.request);
-			this.hideLoad();
 			window.location.hash = "/"+tmpldata.pageId+"/"+window.btoa(JSON.stringify(tmpldata.request));
 			this.onPage = tmpldata.pageId;
 		}
