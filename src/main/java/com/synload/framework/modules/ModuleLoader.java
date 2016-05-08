@@ -291,7 +291,7 @@ public class ModuleLoader extends ClassLoader {
                         et.setFlags(flags);
                         et.setEventType(Type.WEBSOCKET);
 
-                        Object[] obj_tmp = new Object[6];
+                        Object[] obj_tmp = new Object[7];
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
@@ -317,7 +317,7 @@ public class ModuleLoader extends ClassLoader {
                         et.setFlags(new String[]{});
                         et.setEventType(Type.OTHER);
 
-                        Object[] obj_tmp = new Object[6];
+                        Object[] obj_tmp = new Object[7];
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
