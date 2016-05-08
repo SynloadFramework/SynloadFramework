@@ -17,7 +17,7 @@ $.getScript("/synloadframework/js/JSEncrypt.js",function(){
 });
 
 class SynloadFramework{
-	constructor(){
+	constructor(func){
 		this.loading = false;
 		this.encryptEnabled = false;
 		this.interval = new Array();
@@ -35,6 +35,7 @@ class SynloadFramework{
 		this.wsPath = "";
 		this.javascriptLoaded = false;
 		this.onCallbacks = new Array();
+		func(this);
 	}
 	exec(msg){
 		if(msg.javascript.length>0){
@@ -391,7 +392,6 @@ class SynloadFramework{
         }
     }
 }
-var _sf = new SynloadFramework();
 function sendEncryptHandshake(sf){
     if(loadedJSEncrypt){
         loadedEncrypt();
@@ -415,49 +415,49 @@ function sendEncryptHandshake(sf){
         },400);
     }
 }
-_sf.addCall(function(sf, ws, data){
-
-    $("body").append('<div id="loadingBar" style="border-radius:5px;-webkit-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);-moz-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);float:left;position:absolute;"><span style="width:400px;text-align:center;float:left;display:block;font-weight:bold;">ENCRYPTING CONNECTION</span><span style="display:block;width:390px;float:left;height:20px;padding:5px;margin-top:10px;margin-bottom:10px;background:#ccc;border-radius:5px;"><span class="bar" style="background:#50C441;border-radius:5px;float:left;width:0px;height:20px;"></span></span></div>');
-    $("#loadingBar").css({"background":"#E6F7FC","padding":"20px","top":"40%","left":"50%","marginLeft":"-220px","width":"400px","textAlign":"center"});
-    // test data
-    $("#loadingBar .bar").animate({"width":(390*.10)+"px"},100);
-    serverKey = data.data.spk;
-    //console.log(serverKey);
-    sendEncryptHandshake(sf);
-    
-    $("#loadingBar .bar").animate({"width":(390*.40)+"px"},100);
-    
-}, "encryption_handshake");
-
-_sf.addCall(function(sf, ws, data){
-    //console.log(data);
-    serverKey = data.data.spk;
-    var s = {
-        "data":{
-            "message":"HELLO"
-        },
-        "method":"synfam",
-        "action":"ack",
-        "class":"Request"
-    };
-    sf.send(s);
-    $("#loadingBar .bar").animate({"width":(390*.75)+"px"},100);
-}, "encryption_handshake_two");
-_sf.addCall(function(sf, ws, data){
-    //_sf.loadDefault();
-    sf.connected();
-}, "conn_est");
-
-window.onhashchange = function(){
-	if(window.location.hash.split("/").length==3){
-		if(window.atob(window.location.hash.split("/")[2])!=_sf.onPage_request){
-			_sf.showLoad();
-			_sf.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
-		}
-	}
-}
+var _sf;
 function connect(domain,func){
+    _sf = new SynloadFramework(function(sf){
+        sf.addCall(function(sf, ws, data){
+
+            $("body").append('<div id="loadingBar" style="border-radius:5px;-webkit-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);-moz-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);float:left;position:absolute;"><span style="width:400px;text-align:center;float:left;display:block;font-weight:bold;">ENCRYPTING CONNECTION</span><span style="display:block;width:390px;float:left;height:20px;padding:5px;margin-top:10px;margin-bottom:10px;background:#ccc;border-radius:5px;"><span class="bar" style="background:#50C441;border-radius:5px;float:left;width:0px;height:20px;"></span></span></div>');
+            $("#loadingBar").css({"background":"#E6F7FC","padding":"20px","top":"40%","left":"50%","marginLeft":"-220px","width":"400px","textAlign":"center"});
+            // test data
+            $("#loadingBar .bar").animate({"width":(390*.10)+"px"},100);
+            serverKey = data.data.spk;
+            //console.log(serverKey);
+            sendEncryptHandshake(sf);
+
+            $("#loadingBar .bar").animate({"width":(390*.40)+"px"},100);
+
+        }, "encryption_handshake");
+        sf.addCall(function(sf, ws, data){
+            //console.log(data);
+            serverKey = data.data.spk;
+            var s = {
+                "data":{
+                    "message":"HELLO"
+                },
+                "method":"synfam",
+                "action":"ack",
+                "class":"Request"
+            };
+            sf.send(s);
+            $("#loadingBar .bar").animate({"width":(390*.75)+"px"},100);
+        }, "encryption_handshake_two");
+        sf.addCall(function(sf, ws, data){
+            //_sf.loadDefault();
+            sf.connected();
+        }, "conn_est");
+    });
 	$("._sf_connect_hideme").hide();
     _sf.connect(domain,"/ws/");
     _sf.onConnect = func;
 }
+/*window.onhashchange = function(){
+	if(window.location.hash.split("/").length==3){
+		if(window.atob(window.location.hash.split("/")[2])!=_sf.onPage_request){
+			_sf.send($.parseJSON(window.atob(window.location.hash.split("/")[2])));
+		}
+	}
+}*/
