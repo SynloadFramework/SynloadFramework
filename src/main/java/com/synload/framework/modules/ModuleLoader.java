@@ -222,7 +222,7 @@ public class ModuleLoader extends ClassLoader {
         TextTable tt = new TextTable(new String[] { "Class", "Name", "Author", "Version" }, modules.toArray(new Object[modules.size()][]));
         tt.printTable();
         System.out.println("\nEvents Loaded");
-        tt = new TextTable(new String[] { "Class", "Module", "Method Name", "Type", "Description", "Trigger" }, events.toArray(new Object[events.size()][]));
+        tt = new TextTable(new String[] { "Class", "Module", "Method Name", "Type", "Event", "Description", "Trigger" }, events.toArray(new Object[events.size()][]));
         tt.printTable();
         System.out.println("\nSQL Tables Loaded");
         tt = new TextTable(new String[] { "Class", "Module", "Name", "Description", "Version" }, sql.toArray(new Object[sql.size()][]));
@@ -295,10 +295,11 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = WSEvent.class.getName();
-                        obj_tmp[4] = eventAnnotation.description();
+                        obj_tmp[3] = WSEvent.class.getCanonicalName();
+                        obj_tmp[4] = "N/A";
+                        obj_tmp[5] = eventAnnotation.description();
                         try {
-                            obj_tmp[5] = SynloadFramework.ow.writeValueAsString(new String[]{eventAnnotation.method(), eventAnnotation.action()});
+                            obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{eventAnnotation.method(), eventAnnotation.action()});
                         } catch (JsonProcessingException e1) {
                             e1.printStackTrace();
                         }
@@ -320,10 +321,11 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = Event.class.getName();
-                        obj_tmp[4] = eventAnnotation.description();
+                        obj_tmp[3] = Event.class.getCanonicalName();
+                        obj_tmp[4] = m.getParameterTypes()[0].getCanonicalName();
+                        obj_tmp[5] = eventAnnotation.description();
                         try {
-                            obj_tmp[5] = SynloadFramework.ow.writeValueAsString(new String[]{});
+                            obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{});
                         } catch (JsonProcessingException e1) {
                             e1.printStackTrace();
                         }

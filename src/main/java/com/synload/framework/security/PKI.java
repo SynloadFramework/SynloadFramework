@@ -140,7 +140,7 @@ public class PKI {
     }
 	@Event(name="UserConnect", description = "triggered on user connection", enabled = true)
 	public void onConnect(ConnectEvent ce){
-		if(ce.getSession().encrypt){
+		if(ce.getSession().encrypt==true){
 			System.out.println("User connected on secure line");
 		}
 	}
