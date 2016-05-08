@@ -406,6 +406,7 @@ class SynloadFramework{
         }
     }
 }
+var _sf = new SynloadFramework();
 function sendEncryptHandshake(sf){
     if(loadedJSEncrypt){
         loadedEncrypt();
@@ -429,7 +430,6 @@ function sendEncryptHandshake(sf){
         },400);
     }
 }
-var _sf = new SynloadFramework();
 _sf.addCall(function(sf, ws, data){
 
     $("body").append('<div id="loadingBar" style="border-radius:5px;-webkit-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);-moz-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);float:left;position:absolute;"><span style="width:400px;text-align:center;float:left;display:block;font-weight:bold;">ENCRYPTING CONNECTION</span><span style="display:block;width:390px;float:left;height:20px;padding:5px;margin-top:10px;margin-bottom:10px;background:#ccc;border-radius:5px;"><span class="bar" style="background:#50C441;border-radius:5px;float:left;width:0px;height:20px;"></span></span></div>');
@@ -458,7 +458,7 @@ _sf.addCall(function(sf, ws, data){
     sf.send(s);
     $("#loadingBar .bar").animate({"width":(390*.75)+"px"},100);
 }, "encryption_handshake_two");
-_sf.addCall(function(ws, data){
+_sf.addCall(function(sf, ws, data){
     //_sf.loadDefault();
     _sf.connected();
 }, "conn_est");
