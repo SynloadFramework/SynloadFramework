@@ -35,21 +35,6 @@ class SynloadFramework{
 		this.wsPath = "";
 		this.javascriptLoaded = false;
 		this.onCallbacks = new Array();
-		this.defaults = [
-            {
-                "resume":true
-            },
-            {
-                "request": {
-                    "data":{
-                        "element": "body"
-                    },
-                    "method": "get",
-                    "action": "index",
-                    "class": "Request"
-                }
-            }
-        ];
 	}
 	exec(msg){
 		if(msg.javascript.length>0){
@@ -109,7 +94,7 @@ class SynloadFramework{
     	       }
     	        $("#loadingBar").empty();
                 $("#loadingBar").remove();
-        		sf.onConnect();
+        		sf.onConnect(sf);
         		setInterval(function(){
         			var data = {
         				"method":"get",
@@ -174,7 +159,7 @@ class SynloadFramework{
 	call(callbackName,data){
 		if(this.onCallbacks[callbackName]){
 		    var sf = this;
-			$.each(this.onCallbacks[callbackName],function(key,func){
+			$.each(sf.onCallbacks[callbackName],function(key,func){
 				try{
 					if(data){
 						func(sf, sf.socket, data);
@@ -460,7 +445,7 @@ _sf.addCall(function(sf, ws, data){
 }, "encryption_handshake_two");
 _sf.addCall(function(sf, ws, data){
     //_sf.loadDefault();
-    _sf.connected();
+    sf.connected();
 }, "conn_est");
 
 window.onhashchange = function(){
