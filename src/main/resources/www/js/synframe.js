@@ -89,6 +89,7 @@ class SynloadFramework{
     }
 	send(e){
 		e.templateCache = this.cache;
+		console.log(JSON.stringify(e));
 		if(this.encryptEnabled){
 			this.socket.send(this.encrypt(JSON.stringify(e),serverKey));
 		}else{
@@ -96,25 +97,33 @@ class SynloadFramework{
 		}
 	}
 	connected(){
-	    var sf = this;
-	   $("#loadingBar .bar").animate({"width":(390*1.0)+"px"},function(){
-    	   $("#loadingBar").fadeOut(100,function(){
-    	       if(sf.encryptEnabled){
-    	           $("body").after('<img src="/synloadframework/images/technology.png" style="background:#fff;border-radius:4px;padding:4px;position:absolute;left:10px;top:55px;z-index:10000;" />');
-    	       }
-    	        $("#loadingBar").empty();
-                $("#loadingBar").remove();
-        		sf.onConnect(sf);
-        		setInterval(function(){
-        			var data = {
-        				"method":"get",
-        				"action":"ping",
-        				"class":"Request"
-        			}
-        			sf.send(data);
-        		},10000);
-    		});
-		});
+        var sf = this;
+        if(sf.encryptEnabled){
+            $("#loadingBar .bar").animate({"width":(390*1.0)+"px"},function(){
+                $("#loadingBar").fadeOut(100,function(){
+                    $("body").after('<img src="/synloadframework/images/technology.png" style="background:#fff;border-radius:4px;padding:4px;position:absolute;left:10px;top:55px;z-index:10000;" />');
+                    sf.onConnect(sf);
+                    setInterval(function(){
+                        var data = {
+                            "method":"get",
+                            "action":"ping",
+                            "class":"Request"
+                        }
+                        sf.send(data);
+                    },10000);
+                });
+            });
+        }else{
+            sf.onConnect(sf);
+            setInterval(function(){
+                var data = {
+                    "method":"get",
+                    "action":"ping",
+                    "class":"Request"
+                }
+                sf.send(data);
+            },10000);
+        }
 	}
 	connect(address,path){ // WebSocket Object
 		this.wsAddress = address;
