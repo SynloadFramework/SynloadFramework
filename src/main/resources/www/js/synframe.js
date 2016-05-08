@@ -78,6 +78,15 @@ class SynloadFramework{
 		}
 		this.send(data);
 	}
+	request(method, action){
+        var data = {
+            "data": null,
+            "method":method,
+            "action":action,
+            "class":"Request"
+        }
+        this.send(data);
+    }
 	send(e){
 		e.templateCache = this.cache;
 		if(this.encryptEnabled){
