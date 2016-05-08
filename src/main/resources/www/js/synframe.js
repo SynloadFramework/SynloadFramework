@@ -23,7 +23,6 @@ class SynloadFramework{
 		this.interval = new Array();
 		this.ekey = "";
 		this.cache = new Array();
-		this.cacheTemplate = new Array();
 		this.ecsnt = false;
 		this.onUnload = null;
 		this.socket = null;
@@ -312,13 +311,13 @@ class SynloadFramework{
 	compile(tmpldata){
 		if(this.cache.indexOf(tmpldata.templateId) > -1){
 			this.inject(
-				this.templateRender(this.cacheTemplate[tmpldata.templateId],tmpldata),
+				this.templateRender(this.cache[tmpldata.templateId],tmpldata),
 				tmpldata.parent,
 				tmpldata.action,
 				tmpldata
 			);
 		}else{
-			this.cacheTemplate[tmpldata.templateId] = tmpldata.template;
+			this.cache[tmpldata.templateId] = tmpldata.template;
 			this.cache.push(tmpldata.templateId);
 			this.inject(
 				this.templateRender(tmpldata.template,tmpldata),
