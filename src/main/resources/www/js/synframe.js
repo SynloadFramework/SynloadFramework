@@ -61,7 +61,7 @@ class SynloadFramework{
 			}
 		}
 	}
-	loadDefault(){
+	/*loadDefault(){
 		var rSent = false;
 		var sf = this;
 		$.each( this.defaults , function(key,val){
@@ -79,7 +79,7 @@ class SynloadFramework{
 				}
 			}
 		});
-	}
+	}*/
 	alert(text,extra){
 		$.jGrowl(text,extra);
 	}
@@ -459,7 +459,7 @@ _sf.addCall(function(sf, ws, data){
     $("#loadingBar .bar").animate({"width":(390*.75)+"px"},100);
 }, "encryption_handshake_two");
 _sf.addCall(function(ws, data){
-    _sf.loadDefault();
+    //_sf.loadDefault();
     _sf.connected();
 }, "conn_est");
 
