@@ -69,16 +69,16 @@ class SynloadFramework{
 	alert(text,extra){
 		$.jGrowl(text,extra);
 	}
-	request(method, action, data){
+	request(method, action, datav){
 		var data = {
-			"data": data,
+			"data": datav,
 			"method":method,
 			"action":action,
 			"class":"Request"
 		}
 		this.send(data);
 	}
-	request(method, action){
+	requestSingle(method, action){
         var data = {
             "data": null,
             "method":method,
