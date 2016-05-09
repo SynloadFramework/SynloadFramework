@@ -226,18 +226,18 @@ public class WSHandler {
 
         public void writeFailed(Throwable arg0) {
             this.ws.isSending = false;
-            System.out.println("Failed to send");
+            //System.out.println("Failed to send");
         }
 
         public void writeSuccess() {
             this.ws.isSending = false;
-            System.out.println("Successfully sent");
+            //System.out.println("Successfully sent");
         }
     }
 
     @OnWebSocketMessage
     public void onWebSocketText(String message) {
-        System.out.println(message.substring(0,30));
+        //System.out.println(message.substring(0,30));
         ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
