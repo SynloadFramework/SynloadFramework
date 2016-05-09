@@ -295,7 +295,7 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = WSEvent.class.getCanonicalName();
+                        obj_tmp[3] = WSEvent.class.getSimpleName();
                         obj_tmp[4] = "N/A";
                         obj_tmp[5] = eventAnnotation.description();
                         try {
@@ -321,8 +321,8 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[0] = c.getName();
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
-                        obj_tmp[3] = Event.class.getCanonicalName();
-                        obj_tmp[4] = m.getParameterTypes()[0].getCanonicalName();
+                        obj_tmp[3] = Event.class.getSimpleName();
+                        obj_tmp[4] = m.getParameterTypes()[0].getSimpleName();
                         obj_tmp[5] = eventAnnotation.description();
                         try {
                             obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{});
