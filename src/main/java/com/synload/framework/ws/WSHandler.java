@@ -117,6 +117,11 @@ public class WSHandler {
 
     public void send(String data) {
         queue.add(data);
+        try{
+            throw new Exception();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void send(Response r) {
@@ -126,12 +131,22 @@ public class WSHandler {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+        try{
+            throw new Exception();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void send(Data r) {
         try {
             queue.add(SynloadFramework.ow.writeValueAsString(r));
         } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        try{
+            throw new Exception();
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
