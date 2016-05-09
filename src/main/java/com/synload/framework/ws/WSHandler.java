@@ -1,12 +1,8 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -37,7 +33,7 @@ public class WSHandler {
     @JsonIgnore
     public Session session = null;
     @JsonIgnore
-    public List<String> queue = new ArrayList<String>();
+    public Vector<String> queue = new Vector<String>();
     public Map<String, Object> sessionData = new HashMap<String, Object>();
     private PKI pki;
     public boolean encrypt = false;
@@ -117,11 +113,6 @@ public class WSHandler {
 
     public void send(String data) {
         queue.add(data);
-        try{
-            throw new Exception();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
     }
 
     public void send(Response r) {
@@ -131,22 +122,12 @@ public class WSHandler {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        try{
-            throw new Exception();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
     }
 
     public void send(Data r) {
         try {
             queue.add(SynloadFramework.ow.writeValueAsString(r));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        try{
-            throw new Exception();
-        }catch(Exception e){
             e.printStackTrace();
         }
     }
@@ -182,35 +163,26 @@ public class WSHandler {
             while (true) {
                 try {
                     if (ws.queue.size() > 0) {
-                        List<String> queueTemp = new ArrayList<String>(ws.queue);
-
-                        Iterator<String> queueIterator = queueTemp.iterator();
-                        int c=0;
-                        while (queueIterator.hasNext()) {
-                            ws.isSending = true;
-                            if (ws.encrypt) {
-                                ws.session.getRemote().sendString(
-                                     pki.encrypt(
-                                         SynloadFramework.ow.writeValueAsString(queueIterator.next()),
-                                         ws.getPki().getClientPublicKey()
-                                     ),
-                                     new verifySend(ws)
-                                 );
-                            } else {
-                                String msg = queueIterator.next();
-                                System.out.println("sent: "+msg.substring(0,30));
-                                ws.session.getRemote().sendString(
-                                        msg,
-                                    new verifySend(ws)
-                                );
-                            }
-                            if(ws.queue.size()>c){
-                            	ws.queue.remove(c);
-                            }
-                            c++;
+                        String message = ws.queue.get(0);
+                        ws.isSending = true;
+                        if (ws.encrypt) {
+                            ws.session.getRemote().sendString(
+                                 pki.encrypt(
+                                     SynloadFramework.ow.writeValueAsString(message),
+                                     ws.getPki().getClientPublicKey()
+                                 ),
+                                 new verifySend(ws)
+                             );
+                        } else {
+                            ws.session.getRemote().sendString(
+                                message,
+                                new verifySend(ws)
+                            );
                         }
+                        ws.queue.remove(0);
+                        ws.queue.trimToSize();
                     }
-                    Thread.sleep(20);
+                    Thread.sleep(1);
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
