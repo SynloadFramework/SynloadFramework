@@ -167,7 +167,6 @@ public class WSHandler {
             while (true) {
                 try {
                     if (ws.queue.size() > 0) {
-
                         List<String> queueTemp = new ArrayList<String>(ws.queue);
 
                         Iterator<String> queueIterator = queueTemp.iterator();
@@ -201,6 +200,8 @@ public class WSHandler {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
                     }
+                    ws.session.close();
+                    return; // ws session died, close down.
                 }
             }
         }
