@@ -167,7 +167,9 @@ public class WSHandler {
             while (true) {
                 try {
                     if (ws.queue.size() > 0) {
+
                         List<String> queueTemp = new ArrayList<String>(ws.queue);
+
                         Iterator<String> queueIterator = queueTemp.iterator();
                         int c=0;
                         while (queueIterator.hasNext()) {
@@ -181,8 +183,10 @@ public class WSHandler {
                                      new verifySend(ws)
                                  );
                             } else {
+                                String msg = queueIterator.next();
+                                System.out.println("sent: "+msg.substring(0,30));
                                 ws.session.getRemote().sendString(
-                                    queueIterator.next(),
+                                        msg,
                                     new verifySend(ws)
                                 );
                             }
@@ -192,7 +196,7 @@ public class WSHandler {
                             c++;
                         }
                     }
-                    Thread.sleep(1);
+                    Thread.sleep(20);
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
@@ -234,15 +238,18 @@ public class WSHandler {
 
         public void writeFailed(Throwable arg0) {
             this.ws.isSending = false;
+            System.out.println("Failed to send");
         }
 
         public void writeSuccess() {
             this.ws.isSending = false;
+            System.out.println("Successfully sent");
         }
     }
 
     @OnWebSocketMessage
     public void onWebSocketText(String message) {
+        System.out.println(message.substring(0,30));
         ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
