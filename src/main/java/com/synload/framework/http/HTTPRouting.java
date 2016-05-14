@@ -13,6 +13,8 @@ import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.synload.framework.modules.ModuleResource;
 import org.eclipse.jetty.server.Request;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.WebEvent;
@@ -321,9 +323,9 @@ public class HTTPRouting {
         if(URI.length>1){
         	if (URI[1].equalsIgnoreCase("ws")) {
                 return false;
-            }else if(ModuleLoader.resources.containsKey(URI[1])){
-        		if(ModuleLoader.resources.get(URI[1]).containsKey(target.replace("/"+URI[1]+"/", ""))){
-        			sendResource(target.replace("/"+URI[1], ""),ModuleLoader.resources.get(URI[1]).get(target.replace("/"+URI[1]+"/", "")), response);
+            }else if(ModuleResource.moduleExists(URI[1])){
+        		if(ModuleResource.fileExists(URI[1],target.replace("/"+URI[1]+"/", ""))){
+        			sendResource(target.replace("/"+URI[1], ""),ModuleResource.get(URI[1],target.replace("/"+URI[1]+"/", "")), response);
         			return true;
         		}
         	}

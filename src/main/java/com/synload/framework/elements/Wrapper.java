@@ -6,13 +6,14 @@ import java.util.List;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.handlers.Response;
 import com.synload.framework.modules.ModuleLoader;
+import com.synload.framework.modules.ModuleResource;
 
 public class Wrapper extends Response {
     public Wrapper(List<String> templateCache) {
         this.setTemplateId("wp1");
         if (!templateCache.contains(this.getTemplateId())) {
             try {
-				this.setTemplate(this.getTemplate(new String(ModuleLoader.resources.get("synloadframework").get("wrapper.html"),"UTF-8")));
+				this.setTemplate(this.getTemplate(new String(ModuleResource.get("synloadframework","wrapper.html"),"UTF-8")));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

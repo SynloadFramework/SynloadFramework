@@ -7,6 +7,7 @@ import com.synload.framework.SynloadFramework;
 import com.synload.framework.handlers.Response;
 import com.synload.framework.js.Javascript;
 import com.synload.framework.modules.ModuleLoader;
+import com.synload.framework.modules.ModuleResource;
 
 public class JavascriptIncludes extends Response {
     public List<Javascript> javascripts = SynloadFramework.javascripts;
@@ -15,7 +16,7 @@ public class JavascriptIncludes extends Response {
     public JavascriptIncludes(){
     	super();
     	try {
-			js_template = new String(ModuleLoader.resources.get("synloadframework").get("js/include_script.js"),"UTF-8");
+			js_template = new String(ModuleResource.get("synloadframework","js/include_script.js"),"UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import com.synload.framework.modules.ModuleResource;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.server.Request;
 
@@ -32,7 +33,7 @@ public class DefaultHTTPPages {
     @OnlyIf(property="enableDefaultIndex", is=true)
 	@Get("/")
     public void getIndex(HttpRequest httpRequest) throws IOException {
-        HTTPRouting.sendResource("index.html", ModuleLoader.resources.get("synloadframework").get("index.html"), httpRequest.getResponse());
+        HTTPRouting.sendResource("index.html", ModuleResource.get("synloadframework","index.html"), httpRequest.getResponse());
     }
 	
 	@OnlyIf(property="enableUploads", is=true)

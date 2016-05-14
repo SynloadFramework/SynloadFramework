@@ -7,13 +7,14 @@ import java.util.Map;
 import com.synload.framework.handlers.Request;
 import com.synload.framework.handlers.Response;
 import com.synload.framework.modules.ModuleLoader;
+import com.synload.framework.modules.ModuleResource;
 
 public class LoginBox extends Response {
     public LoginBox(List<String> templateCache) {
         this.setTemplateId("lb1");
         if (!templateCache.contains(this.getTemplateId())) {
             try {
-				this.setTemplate(this.getTemplate(new String(ModuleLoader.resources.get("synloadframework").get("login.html"),"UTF-8")));
+				this.setTemplate(this.getTemplate(new String(ModuleResource.get("synloadframework","login.html"),"UTF-8")));
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

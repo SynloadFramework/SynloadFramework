@@ -37,7 +37,7 @@ import dnl.utils.text.table.TextTable;
 
 public class ModuleLoader extends ClassLoader {
 	public static Thread checkNewJar=null;
-	public static Hashtable<String, Hashtable<String,byte[]>> resources = new Hashtable<String, Hashtable<String,byte[]>>();
+
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
     public static HashMap<String, String> loadedModules = new HashMap<String, String>();
     
@@ -347,7 +347,7 @@ public class ModuleLoader extends ClassLoader {
     
     public static boolean addResourceByteArray(String zip, String file, String moduleName, byte[] buffer){
     	//Log.info(file, ModuleLoader.class);
-    	resources.get(moduleName).put(file.replace("www/", ""), buffer);
+        ModuleResource.getResources().get(moduleName).put(file.replace("www/", ""), buffer);
     	return false;
     }
     
@@ -374,7 +374,7 @@ public class ModuleLoader extends ClassLoader {
         	Log.error("Error module name is reserved 'ws'", ModuleLoader.class);
         	System.exit(-1);
         }
-        resources.put(moduleName, new Hashtable<String,byte[]>());
+        ModuleResource.getResources().put(moduleName, new Hashtable<String,byte[]>());
         zip = new ZipInputStream(new FileInputStream(file));
 		try {
 	        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
