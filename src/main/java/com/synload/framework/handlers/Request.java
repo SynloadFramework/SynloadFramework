@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Request {
-    public String method, action = "";
+    public String method, action, reference = "";
     public List<String> templateCache = new ArrayList<String>();
     public Map<String, String> data = new HashMap<String, String>();
 
@@ -32,6 +32,14 @@ public class Request {
     }
 
     public Request() {
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
     }
 
     public String getMethod() {

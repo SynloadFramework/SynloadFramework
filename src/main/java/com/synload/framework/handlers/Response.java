@@ -15,7 +15,7 @@ import com.synload.framework.SynloadFramework;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Response {
     public String template, parent, pri, action, parentTemplate, callEvent,
-            pageId, pageTitle, templateId = "";
+            pageId, pageTitle, templateId,reference = "";
     public String transitionOut = "drop";
     public String transitionIn = "slide";
     public boolean forceParent = true;
@@ -86,6 +86,14 @@ public class Response {
 
     public String getTransitionOut() {
         return transitionOut;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
     }
 
     public void setTransitionOut(String transitionOut) {

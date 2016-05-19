@@ -4,6 +4,7 @@ import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.Handler;
 import com.synload.eventsystem.Type;
 import com.synload.framework.handlers.Request;
+import com.synload.framework.handlers.Response;
 import com.synload.framework.ws.WSHandler;
 
 public class RequestEvent extends EventClass {
@@ -20,6 +21,11 @@ public class RequestEvent extends EventClass {
 
     public Request getRequest() {
         return request;
+    }
+
+    public void respond(Response r){
+        r.setReference(this.getRequest().getReference());
+        this.getSession().send(r);
     }
 
     public void setRequest(Request request) {

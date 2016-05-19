@@ -303,6 +303,15 @@ class SynloadFramework{
 				$(parent).prepend(html);
 				sf.build();
 			break;
+			case "after":
+                $(parent).prepend(html);
+                sf.build();
+            break;
+            case "before":
+                $(html);
+                $(parent).prepend();
+                sf.build();
+            break;
 			default:
 				$(parent).html(html);
 				sf.build();
