@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Data {
     public Map<String, Object> p = new HashMap<String, Object>();
-    public String trigger = "";
+    public String trigger, reference = "";
 
     public Data(HashMap<String, Object> params, String trigger) {
         this.p = params;
@@ -29,6 +29,14 @@ public class Data {
 
     public Object put(String k, Object o) {
         return p.put(k, o);
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
     }
 
     public String getTrigger() {
