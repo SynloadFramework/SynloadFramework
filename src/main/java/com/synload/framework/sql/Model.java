@@ -294,48 +294,22 @@ public class Model {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static boolean _exists(Class c, String where, Object... objs) {
-        Object key = null;
-        for (Field f : c.getFields()) {
-            if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)){
-                ColumnData cd = new ColumnData(f);
-                if (cd.isAutoIncrement()) {
-                    key = f.getName();
-                }
-            }
-        }
-        QuerySet qs = new QuerySet(where, objs, _getColumns(c),
-                _tableName(c.getSimpleName()));
-        qs.ret = new String[] { "COUNT(`" + key + "`) as c" };
-        Object obj = null;
+        QuerySet qs = new QuerySet(where, objs, _getColumns(c), _tableName(c.getSimpleName()));
+        int obj = -1;
         try {
 			obj = qs.count();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
+            if (obj == -1) {
+                Log.error("s", c);
+                return false;
+            } else {
+                if (obj > 0) {
+                    return true;
+                }
+            }
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-        if (obj == null) {
-            Log.error("s", c);
-            return false;
-        } else {
-            if (Long.valueOf(String.valueOf(obj)) > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return false;
     }
 
     @SuppressWarnings("rawtypes")

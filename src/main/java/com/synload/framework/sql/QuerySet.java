@@ -86,19 +86,16 @@ public class QuerySet {
         return ms;
     }
 
-    public Object count() throws InstantiationException,
+    public int count() throws InstantiationException,
             IllegalAccessException, IllegalArgumentException, SQLException,
             NoSuchMethodException, SecurityException, ClassNotFoundException,
             InvocationTargetException {
-        Object c = null;
+        int c = -1;
         String sql = "SELECT ";
         sql += "COUNT(*) as c";
         sql += " FROM `" + name + "`";
         if (where != "") {
             sql += " WHERE " + where;
-        }
-        if (order.length > 0) {
-            sql += " ORDER BY " + StringUtils.join(order, ", ");
         }
         if (limit != null) {
             sql += " LIMIT " + limit;
@@ -108,9 +105,8 @@ public class QuerySet {
             ps.setObject(x + 1, data[x]);
         }
         ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            c = rs.getObject("c");
-        }
+        rs.next();
+        c = rs.getInt("c");
         rs.close();
         ps.close();
         return c;
