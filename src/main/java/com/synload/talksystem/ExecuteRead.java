@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.synload.eventsystem.EventPublisher;
+import com.synload.eventsystem.events.STMessageReceivedEvent;
 import com.synload.framework.Log;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.talksystem.systemMessages.ClassNotFoundMessage;
@@ -89,17 +92,21 @@ public class ExecuteRead implements Runnable{
                                 }else{
                                     ConnectionType type = null;
                                     ConnectionDocument doc = (ConnectionDocument) data;
-                                    List<ConnectionType> types = new ArrayList<ConnectionType>(ServerTalk.types);
-                                    for(ConnectionType t : types){
-                                        if(t.getName().equals(doc.getTypeName())){
-                                               type = t;
-                                               break;
+                                    if(doc.getTypeName()!=null){
+                                        List<ConnectionType> types = new ArrayList<ConnectionType>(ServerTalk.types);
+                                        for (ConnectionType t : types) {
+                                            if (t.getName().equals(doc.getTypeName())) {
+                                                type = t;
+                                                break;
+                                            }
                                         }
-                                    }
-                                    if(type!=null){
-                                        type.execute(this.getClient(), (ConnectionDocument) data);
+                                        if (type != null) {
+                                            type.execute(this.getClient(), (ConnectionDocument) data);
+                                        } else {
+                                            this.getClient().write(new UnrecognizedMessage());
+                                        }
                                     }else{
-                                        this.getClient().write(new UnrecognizedMessage());
+                                        EventPublisher.raiseEvent( new STMessageReceivedEvent(client, doc), true, null);
                                     }
                                 }
                             }

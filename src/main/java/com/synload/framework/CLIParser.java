@@ -16,6 +16,9 @@ public class CLIParser {
     	options.addOption("config", true, "Configuration file");
     	options.addOption("sitepath", true, "Path to program root");
 		options.addOption("port", true, "Port to run the site on");
+		options.addOption("cb", true, "Connect back api with stats");
+		options.addOption("scb", false, "Send stats back through the connectback bridge");
+		options.addOption("id", true, "identifier for this server");
     	try {
 			cmd = parser.parse( options, args);
 		} catch (ParseException e) {

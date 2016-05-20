@@ -5,7 +5,7 @@ import java.util.UUID;
 
 @SuppressWarnings("serial")
 public class ConnectionDocument implements Serializable {
-    public String typeName = "";
+    public String typeName = null;
     public UUID chain = null;
     public ConnectionDocument(String type, UUID chain){
         this.chain = chain;

@@ -16,6 +16,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import com.synload.talksystem.Client;
+import com.synload.talksystem.statistics.Statistics;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
@@ -47,11 +50,11 @@ import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
 import com.synload.talksystem.ServerTalk;
 
-@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.2.1", depend = { "" }, log = LogLevel.INFO)
+@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.3", depend = { "" }, log = LogLevel.INFO)
 public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
-    public static String version="1.3";
+    public static String version="1.4.3";
     public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
     public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
@@ -88,12 +91,17 @@ public class SynloadFramework extends ModuleClass {
     public static String modulePath = "modules/";
     public static String configPath = "configs/";
     public static String dbPath = "databases/";
+    public static Client masterControl;
+    public static String identifier = "";
 
     public static void main(String[] args) {
     	// PARSE ARGUMENTS USING COMMON CLI
     	CLIParser parser = new CLIParser(args);
     	// DONE parsing arguments
     	// DEFAULT CONFIG FILE
+        if(parser.getCmd().hasOption("id")){
+            identifier = parser.getCmd().getOptionValue("id");
+        }
     	String defaultPath = "./";
     	if(parser.getCmd().hasOption("sitepath")){
     		defaultPath = parser.getCmd().getOptionValue("sitepath"); // user selected different app root
@@ -103,8 +111,18 @@ public class SynloadFramework extends ModuleClass {
     	}
     	String configFile = defaultPath+"config.ini";
     	if(parser.getCmd().hasOption("config")){
-    		configFile =parser.getCmd().getOptionValue("config"); // user selected different config file
+    		configFile = parser.getCmd().getOptionValue("config"); // user selected different config file
     	}
+        if(parser.getCmd().hasOption("cb")){
+            String[] connectElements = parser.getCmd().getOptionValue("cb").split("&");
+            String[] addressElements = connectElements[0].split(":");
+            try {
+                masterControl = Client.createConnection(addressElements[0], Integer.valueOf(addressElements[1]), false, connectElements[1]);
+            }catch(Exception e){ e.printStackTrace(); }
+        }
+        if(parser.getCmd().hasOption("scb") && parser.getCmd().hasOption("cb")){
+            new Thread(new Statistics()).start();
+        }
         Log.info( "Starting Synload Development Framework Server", SynloadFramework.class );
         try {
             if ((new File(configFile)).exists()) {

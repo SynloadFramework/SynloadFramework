@@ -11,6 +11,14 @@ function loadedEncrypt(){
     clientKey=key.getPublicKey();
     //console.log(clientKey);
 }
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for( var i=0; i < 10; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
+}
 var loadedJSEncrypt = false;
 $.getScript("/synloadframework/js/JSEncrypt.js",function(){
     loadedJSEncrypt=true;
@@ -24,6 +32,7 @@ class SynloadFramework{
 		this.ekey = "";
 		this.cache = new Array();
 		this.ecsnt = false;
+		this.actionCallers = new Array();
 		this.onUnload = null;
 		this.socket = null;
 		this.storedTemplates = new Array();
@@ -69,13 +78,25 @@ class SynloadFramework{
 	alert(text,extra){
 		$.jGrowl(text,extra);
 	}
-	request(method, action, datav){
+	request(method, action, requestData){
 		var data = {
-			"data": datav,
+			"data": requestData,
 			"method":method,
 			"action":action,
 			"class":"Request"
 		}
+		this.send(data);
+	}
+	action(method, action, requestData, returnFunction){
+		var referenceID = makeid();
+		var data = {
+			"data": requestData,
+			"method":method,
+			"action":action,
+			"class":"Request",
+			"reference":referenceID
+		}
+		this.actionCallers[referenceID]=returnFunction;
 		this.send(data);
 	}
 	requestSingle(method, action){
@@ -96,6 +117,7 @@ class SynloadFramework{
 			this.socket.send(JSON.stringify(e));
 		}
 	}
+
 	connected(){
         var sf = this;
         if(sf.encryptEnabled){
@@ -154,12 +176,19 @@ class SynloadFramework{
 			}else{
 				var data = jQuery.parseJSON(msg.data);
 			}
-			if(data.callEvent!=null && data.callEvent!=""){
-				sf.call(data.callEvent,data);
-			}else if(data.trigger){
-				sf.triggers[data.trigger](data);
+			if(data.reference!=null && data.reference!=""){
+				if(sf.actionCallers[data.reference]){
+					sf.actionCallers[data.reference](data);
+					delete sf.actionCallers[data.reference];
+				}
 			}else{
-				sf.call('receive', data);
+				if(data.callEvent!=null && data.callEvent!=""){
+					sf.call(data.callEvent,data);
+				}else if(data.trigger){
+					sf.triggers[data.trigger](data);
+				}else{
+					sf.call('receive', data);
+				}
 			}
 		};
 	}
@@ -239,7 +268,8 @@ class SynloadFramework{
 				$(parent).addClass('animated fadeOutLeft');
 				setTimeout(function(){
 					$(parent).removeClass('animated fadeOutLeft');
-					$(parent).html(html);
+					var $html = $(html);
+					$(parent).html($html);
 					$(parent).addClass('animated fadeInLeft');
 					setTimeout(function(){
 						$(parent).removeClass('animated fadeInLeft');
@@ -255,7 +285,8 @@ class SynloadFramework{
 				$(parent).addClass('animated fadeOutLeft');
 				setTimeout(function(){
 					$(parent).removeClass('animated fadeOutLeft');
-					$(parent).html(html);
+					var $html = $(html);
+					$(parent).html($html);
 					$(parent).addClass('animated fadeInLeft');
 					setTimeout(function(){
 						$(parent).removeClass('animated fadeInLeft');
@@ -269,7 +300,8 @@ class SynloadFramework{
 			break;
 			case "wait":
 				$(parent).effect(tmpldata.transitionOut,300,function(){
-					$(parent).html(html);
+					var $html = $(html);
+					$(parent).html($html);
 					$(parent).show(tmpldata.transitionIn,200,function(){
 						sf.build();
 						sf.exec(tmpldata);
@@ -287,33 +319,42 @@ class SynloadFramework{
 						setTimeout(function(){
 							sf.call(tmpldata.callEvent);
 						},tmpldata.sleep);
-					}	
+					}
 				});
 			break;
 			case "abot":
-				$(parent).append(html);
+				var $html = $(html);
+				$(parent).append($html);
 				sf.build();
 			break;
 			case "cabot":
 				$(parent).html("");
-				$(parent).append(html);
+				var $html = $(html);
+				$(parent).append($html);
 				sf.build();
 			break;
 			case "atop":
-				$(parent).prepend(html);
+				var $f = $(html);
+				$(parent).prepend($f);
 				sf.build();
 			break;
 			case "after":
-                $(parent).prepend(html);
+				var $html = $(html);
+				$html.css({"opacity":"0"});
+                $(parent).prepend($html);
+				$html.animate({"opacity":"1"},400);
                 sf.build();
             break;
             case "before":
-                $(html);
-                $(parent).prepend();
+                var $html = $(html);
+				$html.css({"opacity":"0"});
+                $(parent).prepend($html);
+				$html.animate({"opacity":"1"},400);
                 sf.build();
             break;
 			default:
-				$(parent).html(html);
+				var $html = $(html);
+				$(parent).html($html);
 				sf.build();
 			break;
 		}
