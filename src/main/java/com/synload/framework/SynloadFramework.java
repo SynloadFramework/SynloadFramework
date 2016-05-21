@@ -50,11 +50,11 @@ import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
 import com.synload.talksystem.ServerTalk;
 
-@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.3", depend = { "" }, log = LogLevel.INFO)
+@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.3.1", depend = { "" }, log = LogLevel.INFO)
 public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
-    public static String version="1.4.3";
+    public static String version="1.4.3.1";
     public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
     public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
