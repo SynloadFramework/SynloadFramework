@@ -76,7 +76,7 @@ class ExecuteWrite implements Runnable{
                             e.printStackTrace();
                         }*/
                         dOut.writeInt(bytes.length);
-                        Log.debug("wrote "+bytes.length+" bytes", this.getClass());
+                        //Log.debug("wrote "+bytes.length+" bytes", this.getClass());
                         dOut.write(bytes);
                     } catch (IOException e) {
                         e.printStackTrace();
