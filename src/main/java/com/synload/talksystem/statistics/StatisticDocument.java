@@ -22,6 +22,7 @@ public class StatisticDocument extends ConnectionDocument {
     public String modulePath;
     public String configPath;
     public String defaultPath;
+    public Properties instanceProperties;
     public StatisticDocument(UUID chain) {
         super(null, chain);
         free = Runtime.getRuntime().freeMemory();
@@ -33,6 +34,7 @@ public class StatisticDocument extends ConnectionDocument {
         modulePath = SynloadFramework.defaultPath+SynloadFramework.modulePath;
         configPath = SynloadFramework.defaultPath+SynloadFramework.configPath;
         defaultPath = SynloadFramework.defaultPath;
+        instanceProperties = SynloadFramework.getProp();
     }
 
     public String getIdentifier() {
@@ -99,4 +101,19 @@ public class StatisticDocument extends ConnectionDocument {
         this.modulePath = modulePath;
     }
 
+    public String getDefaultPath() {
+        return defaultPath;
+    }
+
+    public void setDefaultPath(String defaultPath) {
+        this.defaultPath = defaultPath;
+    }
+
+    public Properties getInstanceProperties() {
+        return instanceProperties;
+    }
+
+    public void setInstanceProperties(Properties instanceProperties) {
+        this.instanceProperties = instanceProperties;
+    }
 }
