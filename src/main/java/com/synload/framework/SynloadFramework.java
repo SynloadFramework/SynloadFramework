@@ -50,11 +50,11 @@ import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
 import com.synload.talksystem.ServerTalk;
 
-@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.3.1", depend = { "" }, log = LogLevel.INFO)
+@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.3.2", depend = { "" }, log = LogLevel.INFO)
 public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
-    public static String version="1.4.3.1";
+    public static String version="1.4.3.2";
     public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
     public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
@@ -92,6 +92,7 @@ public class SynloadFramework extends ModuleClass {
     public static String configPath = "configs/";
     public static String dbPath = "databases/";
     public static Client masterControl;
+    public static String defaultPath = "./";
     public static String identifier = "";
 
     public static void main(String[] args) {
@@ -102,7 +103,6 @@ public class SynloadFramework extends ModuleClass {
         if(parser.getCmd().hasOption("id")){
             identifier = parser.getCmd().getOptionValue("id");
         }
-    	String defaultPath = "./";
     	if(parser.getCmd().hasOption("sitepath")){
     		defaultPath = parser.getCmd().getOptionValue("sitepath"); // user selected different app root
     		if(!defaultPath.substring(defaultPath.length()-1).equals("/")){

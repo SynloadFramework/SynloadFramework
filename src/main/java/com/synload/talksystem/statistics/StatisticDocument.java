@@ -1,8 +1,12 @@
 package com.synload.talksystem.statistics;
 
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.modules.ModuleLoader;
 import com.synload.talksystem.ConnectionDocument;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 /**
@@ -14,6 +18,10 @@ public class StatisticDocument extends ConnectionDocument {
     public long max = 0;
     public int clients = 0;
     public String identifier;
+    public HashMap<String, Properties> moduleProperties;
+    public String modulePath;
+    public String configPath;
+    public String defaultPath;
     public StatisticDocument(UUID chain) {
         super(null, chain);
         free = Runtime.getRuntime().freeMemory();
@@ -21,6 +29,10 @@ public class StatisticDocument extends ConnectionDocument {
         max = Runtime.getRuntime().maxMemory();
         clients = SynloadFramework.clients.size();
         identifier = SynloadFramework.identifier;
+        moduleProperties = new HashMap<String, Properties>(ModuleLoader.moduleProperties);
+        modulePath = SynloadFramework.defaultPath+SynloadFramework.modulePath;
+        configPath = SynloadFramework.defaultPath+SynloadFramework.configPath;
+        defaultPath = SynloadFramework.defaultPath;
     }
 
     public String getIdentifier() {
@@ -62,4 +74,29 @@ public class StatisticDocument extends ConnectionDocument {
     public void setClients(int clients) {
         this.clients = clients;
     }
+
+    public HashMap<String, Properties> getModuleProperties() {
+        return moduleProperties;
+    }
+
+    public void setModuleProperties(HashMap<String, Properties> moduleProperties) {
+        this.moduleProperties = moduleProperties;
+    }
+    public String getConfigPath() {
+        return configPath;
+    }
+
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
+    }
+
+    public String getModulePath() {
+
+        return modulePath;
+    }
+
+    public void setModulePath(String modulePath) {
+        this.modulePath = modulePath;
+    }
+
 }
