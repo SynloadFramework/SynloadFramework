@@ -37,7 +37,7 @@ import dnl.utils.text.table.TextTable;
 
 public class ModuleLoader extends ClassLoader {
 	public static Thread checkNewJar=null;
-
+    public static HashMap<String, Properties> moduleProperties = new HashMap<String, Properties>();
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
     public static HashMap<String, String> loadedModules = new HashMap<String, String>();
     
@@ -368,6 +368,8 @@ public class ModuleLoader extends ClassLoader {
         zip.close();
         
         String moduleName = moduleSettings.getProperty("module");
+
+        moduleProperties.put(moduleName,moduleSettings);
         mData.setName(moduleName);
         mData.setFile(file);
         if(moduleName.equals("ws")){
