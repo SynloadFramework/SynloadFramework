@@ -3,6 +3,7 @@ var clientRSA;
 var clientKey;
 var serverKey;
 var key;
+
 function loadedEncrypt(){
     crypt = new JSEncrypt({default_key_size: 1024});
     key = crypt.getKey();
@@ -110,7 +111,7 @@ class SynloadFramework{
     }
 	send(e){
 		e.templateCache = this.cache;
-		console.log(JSON.stringify(e));
+		//console.log(JSON.stringify(e));
 		if(this.encryptEnabled){
 			this.socket.send(this.encrypt(JSON.stringify(e),serverKey));
 		}else{
@@ -215,7 +216,7 @@ class SynloadFramework{
 						func(sf.socket);
 					}
 				}catch(err){
-					console.log(err);
+					//console.log(err);
 				}
 			});
 		}
@@ -246,7 +247,7 @@ class SynloadFramework{
 	    for(var i=0;i<partials.length;i++){
 	       var unenc = atob(crypt.decrypt(partials[i]));
 	       if(unenc==null){
-	           console.log("decrypt error!");
+	           //console.log("decrypt error!");
 	           break;
 	       }else{
                if(renc==""){
@@ -322,23 +323,21 @@ class SynloadFramework{
 					}
 				});
 			break;
-			case "abot":
-				var $html = $(html);
-				$(parent).append($html);
-				sf.build();
-			break;
-			case "cabot":
-				$(parent).html("");
-				var $html = $(html);
-				$(parent).append($html);
-				sf.build();
-			break;
-			case "atop":
-				var $f = $(html);
-				$(parent).prepend($f);
-				sf.build();
-			break;
 			case "after":
+				var $html = $(html);
+				$html.css({"opacity":"0"});
+                $(parent).after($html);
+				$html.animate({"opacity":"1"},400);
+                sf.build();
+            break;
+			case "append":
+				var $html = $(html);
+				$html.css({"opacity":"0"});
+                $(parent).append($html);
+				$html.animate({"opacity":"1"},400);
+                sf.build();
+            break;
+			case "prepend":
 				var $html = $(html);
 				$html.css({"opacity":"0"});
                 $(parent).prepend($html);
@@ -348,7 +347,7 @@ class SynloadFramework{
             case "before":
                 var $html = $(html);
 				$html.css({"opacity":"0"});
-                $(parent).prepend($html);
+                $(parent).before($html);
 				$html.animate({"opacity":"1"},400);
                 sf.build();
             break;
@@ -464,7 +463,7 @@ function sendEncryptHandshake(sf){
     if(loadedJSEncrypt){
         loadedEncrypt();
         var eKey = _sf.encrypt(
-            clientKey.replace(/-----BEGIN PUBLIC KEY-----/g, "").replace(/-----END PUBLIC KEY-----/g, ""), 
+            clientKey.replace(/-----BEGIN PUBLIC KEY-----/g, "").replace(/-----END PUBLIC KEY-----/g, ""),
             serverKey
         );
         var s = {
@@ -487,7 +486,7 @@ var _sf;
 function connect(domain,func){
     _sf = new SynloadFramework(function(sf){
         sf.onConnect = func;
-        console.log('derp');
+        //console.log('derp');
         sf.addCall(function(sf, ws, data){
 
             $("body").append('<div id="loadingBar" style="border-radius:5px;-webkit-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);-moz-box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.74);float:left;position:absolute;"><span style="width:400px;text-align:center;float:left;display:block;font-weight:bold;">ENCRYPTING CONNECTION</span><span style="display:block;width:390px;float:left;height:20px;padding:5px;margin-top:10px;margin-bottom:10px;background:#ccc;border-radius:5px;"><span class="bar" style="background:#50C441;border-radius:5px;float:left;width:0px;height:20px;"></span></span></div>');
@@ -518,7 +517,7 @@ function connect(domain,func){
         sf.addCall(function(sf, ws, data){
             //_sf.loadDefault();
             sf.connected();
-            console.log('connected');
+            //console.log('connected');
         }, "conn_est");
     });
     _sf.connect(domain,"/ws/");
