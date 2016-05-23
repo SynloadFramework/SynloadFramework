@@ -190,9 +190,9 @@ public class SynloadFramework extends ModuleClass {
             SynloadFramework.buildDefaultHTTP();
             SynloadFramework.buildJavascript();
 
-            createFolder(modulePath);
-            createFolder(configPath);
-            createFolder(dbPath);
+            createFolder(defaultPath+modulePath);
+            createFolder(defaultPath+configPath);
+            createFolder(defaultPath+dbPath);
 
             ServerTalk.defaultTypes();
             
@@ -214,7 +214,7 @@ public class SynloadFramework extends ModuleClass {
                     (new File(graphDBPath)).mkdir();
                 }
                 graphDB = new GraphDatabaseFactory()
-                    .newEmbeddedDatabaseBuilder(new File(graphDBPath))
+                    .newEmbeddedDatabaseBuilder(new File(defaultPath+graphDBPath))
                     .loadPropertiesFromFile( graphDBConfig )
                     .newGraphDatabase();
             }else{
