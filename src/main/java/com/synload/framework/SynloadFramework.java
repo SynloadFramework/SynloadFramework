@@ -128,13 +128,11 @@ public class SynloadFramework extends ModuleClass {
             if ((new File(configFile)).exists()) {
                 prop.load(new FileInputStream(configFile));
                 port = Integer.valueOf(prop.getProperty("port"));
-                handleUpload = Boolean.valueOf(prop
-                        .getProperty("enableUploads"));
-                siteDefaults = Boolean
-                        .valueOf(prop.getProperty("siteDefaults"));
-                modulePath = defaultPath+prop.getProperty("modulePath", defaultPath+modulePath);
+                handleUpload = Boolean.valueOf(prop.getProperty("enableUploads"));
+                siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
+                modulePath = defaultPath+prop.getProperty("modulePath", modulePath);
                 dbPath = defaultPath+prop.getProperty("dbPath", dbPath);
-                configPath = defaultPath+prop.getProperty("configPath", defaultPath+configPath);
+                configPath = defaultPath+prop.getProperty("configPath", configPath);
                 sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
                 encryptLevel = Integer.valueOf(prop.getProperty("encryptLevel"));
@@ -180,8 +178,7 @@ public class SynloadFramework extends ModuleClass {
             if(!dbEnabled){
                 sql=null;
             }else{
-                sql = DriverManager.getConnection(prop.getProperty("jdbc"),
-                        prop.getProperty("dbuser"), prop.getProperty("dbpass"));
+                sql = DriverManager.getConnection(prop.getProperty("jdbc"), prop.getProperty("dbuser"), prop.getProperty("dbpass"));
                 if(sql.isClosed()){
                     Log.error("MySQL failed to connect!",SynloadFramework.class);
                     //return;
@@ -190,9 +187,9 @@ public class SynloadFramework extends ModuleClass {
             SynloadFramework.buildDefaultHTTP();
             SynloadFramework.buildJavascript();
 
-            createFolder(defaultPath+modulePath);
-            createFolder(defaultPath+configPath);
-            createFolder(defaultPath+dbPath);
+            createFolder(modulePath);
+            createFolder(configPath);
+            createFolder(dbPath);
 
             ServerTalk.defaultTypes();
             
