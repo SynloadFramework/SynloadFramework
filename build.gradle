@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 sourceCompatibility = 1.5
-version = '1.4.3.2'
+version = '1.4.4'
 
 mainClassName = 'com.synload.framework.SynloadFramework'
 
@@ -29,6 +29,7 @@ dependencies {
     compile 'javax.servlet:javax.servlet-api:4.0.0-b01'
     compile 'org.eclipse.jetty:jetty-server:9.3.7.v20160115'
     compile 'commons-io:commons-io:2.4'
+    compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
     compile 'commons-logging:commons-logging:1.2'
     compile 'org.apache.httpcomponents:httpclient:4.5.2'
     compile 'org.eclipse.jetty.websocket:websocket-server:9.3.7.v20160115'
@@ -73,7 +74,7 @@ publishing {
         impl(MavenPublication) {
             groupId 'com.synload.SynloadFramework'
             artifactId 'SynloadFramework'
-            version '1.4.3.2'
+            version '1.4.4'
     
             from components.java
         }
