@@ -31,8 +31,8 @@ public class StatisticDocument extends ConnectionDocument {
         clients = SynloadFramework.clients.size();
         identifier = SynloadFramework.identifier;
         moduleProperties = new HashMap<String, Properties>(ModuleLoader.moduleProperties);
-        modulePath = SynloadFramework.defaultPath+SynloadFramework.modulePath;
-        configPath = SynloadFramework.defaultPath+SynloadFramework.configPath;
+        modulePath = SynloadFramework.modulePath;
+        configPath = SynloadFramework.configPath;
         defaultPath = SynloadFramework.defaultPath;
         instanceProperties = SynloadFramework.getProp();
     }
