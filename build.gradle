@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 sourceCompatibility = 1.5
-version = '1.4.4'
+version = '1.4.5'
 
 mainClassName = 'com.synload.framework.SynloadFramework'
 
@@ -53,6 +53,7 @@ dependencies {
     compile 'dnl.utils:j-text-utils:0.3.3'
     compile 'org.bouncycastle:bcprov-jdk15on:1.54'
     compile 'commons-cli:commons-cli:1.3.1'
+    compile 'net.jodah:expiringmap:0.5.5'
 }
 
 uploadArchives {
@@ -74,7 +75,7 @@ publishing {
         impl(MavenPublication) {
             groupId 'com.synload.SynloadFramework'
             artifactId 'SynloadFramework'
-            version '1.4.4'
+            version '1.4.5'
     
             from components.java
         }
