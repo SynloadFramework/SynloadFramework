@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 sourceCompatibility = 1.5
-version = '1.4.5'
+version = '1.4.6'
 
 mainClassName = 'com.synload.framework.SynloadFramework'
 
@@ -47,6 +47,7 @@ dependencies {
     compile 'com.opencsv:opencsv:3.7'
     compile 'com.google.guava:guava:19.0'
     compile 'org.slf4j:slf4j-api:1.7.16'
+    compile group: 'com.pi4j', name: 'pi4j-gpio-extension', version: '1.0'
     compile 'com.google.code.gson:gson:2.6.1'
     compile 'mysql:mysql-connector-java:5.1.38'
     compile 'cglib:cglib-full:2.0.2'
@@ -75,7 +76,7 @@ publishing {
         impl(MavenPublication) {
             groupId 'com.synload.SynloadFramework'
             artifactId 'SynloadFramework'
-            version '1.4.5'
+            version '1.4.6'
     
             from components.java
         }
