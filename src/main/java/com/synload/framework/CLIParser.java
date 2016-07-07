@@ -36,7 +36,7 @@ public class CLIParser {
 					Matcher regexMatcher = regex.matcher(e.getMessage());
 					if (regexMatcher.find()) {
 						String argsString = StringUtils.join(args, " ");
-						argsString.replaceAll("(?i)" + regexMatcher.group(0), "");
+						argsString = argsString.replaceAll("(?i)" + regexMatcher.group(0), "");
 						System.out.println(regexMatcher.group(0));
 						args = argsString.split(" ");
 					}
