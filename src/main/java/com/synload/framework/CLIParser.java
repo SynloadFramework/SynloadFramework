@@ -28,6 +28,7 @@ public class CLIParser {
 		while(x<20) {
 			try {
 				cmd = parser.parse( options, args);
+				break;
 			} catch (Exception e) {
 				e.printStackTrace();
 				try {
@@ -35,7 +36,8 @@ public class CLIParser {
 					Matcher regexMatcher = regex.matcher(e.getMessage());
 					if (regexMatcher.find()) {
 						String argsString = StringUtils.join(args, " ");
-						argsString.replaceAll("(?i)" + regexMatcher.group(1), "");
+						argsString.replaceAll("(?i)" + regexMatcher.group(0), "");
+						System.out.println(regexMatcher.group(0));
 						args = argsString.split(" ");
 					}
 				} catch (PatternSyntaxException ex) {
