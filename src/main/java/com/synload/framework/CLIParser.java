@@ -5,6 +5,11 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class CLIParser {
 	private CommandLineParser parser;
@@ -19,10 +24,25 @@ public class CLIParser {
 		options.addOption("cb", true, "Connect back api with stats");
 		options.addOption("scb", false, "Send stats back through the connectback bridge");
 		options.addOption("id", true, "identifier for this server");
-    	try {
-			cmd = parser.parse( options, args);
-		} catch (ParseException e) {
-			e.printStackTrace();
+		int x=0;
+		while(x<20) {
+			try {
+				cmd = parser.parse( options, args);
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					Pattern regex = Pattern.compile("-([a-zA-Z0-9:+-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+					Matcher regexMatcher = regex.matcher(e.getMessage());
+					if (regexMatcher.find()) {
+						String argsString = StringUtils.join(args, " ");
+						argsString.replaceAll("(?i)" + regexMatcher.group(1), "");
+						args = argsString.split(" ");
+					}
+				} catch (PatternSyntaxException ex) {
+					// Syntax error in the regular expression
+				}
+				x++;
+			}
 		}
 	}
 	public void addOption(String tag, boolean hasArg, String description){
