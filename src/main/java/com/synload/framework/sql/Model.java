@@ -232,10 +232,10 @@ public class Model {
                 }
             }
             if(!found){
-                Log.info("CACHE MISS IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                //Log.info("CACHE MISS IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
                 cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                Log.info("STORING CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                //Log.info("STORING CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 ms.add((T) model);
             }
         }
@@ -344,7 +344,7 @@ public class Model {
                 try {
                     if (!cache.get(_tableName(this.getClass().getSimpleName())).containsKey(String.valueOf(index.get(this)))) {
                         cache.get(_tableName(this.getClass().getSimpleName())).put(String.valueOf(index.get(this)), this);
-                        Log.info("STORING CACHE IN INSERT - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+String.valueOf(index.get(this)), Model.class);
+                        //Log.info("STORING CACHE IN INSERT - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+String.valueOf(index.get(this)), Model.class);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -352,7 +352,7 @@ public class Model {
             } else {
                 cache.put(_tableName(this.getClass().getSimpleName()), new HashMap<String, Model>());
                 if (!cache.get(_tableName(this.getClass().getSimpleName())).containsKey(String.valueOf(index.get(this)))) {
-                    Log.info("STORING CACHE IN INSERT - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+String.valueOf(index.get(this)), Model.class);
+                    //Log.info("STORING CACHE IN INSERT - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+String.valueOf(index.get(this)), Model.class);
                     cache.get(_tableName(this.getClass().getSimpleName())).put(String.valueOf(index.get(this)), this);
                 }
             }
@@ -378,7 +378,7 @@ public class Model {
             try {
                 if (cache.get(_tableName(this.getClass().getSimpleName())).containsKey(autoincrement.get(this))) {
                     cache.get(_tableName(this.getClass().getSimpleName())).remove(autoincrement.get(this)); // remove cache item
-                    Log.info("REMOVING CACHE IN DELETE - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+autoincrement.get(this), Model.class);
+                    //Log.info("REMOVING CACHE IN DELETE - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+autoincrement.get(this), Model.class);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
