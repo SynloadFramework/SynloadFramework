@@ -332,6 +332,23 @@ public class Model {
             }
         }
         ps.close();
+        Field index = Model._getKey(this.getClass());
+        if(index!=null) {
+            if (cache.containsKey(_tableName(this.getClass().getSimpleName()))) {
+                try {
+                    if (!cache.get(_tableName(this.getClass().getSimpleName())).containsKey(String.valueOf(index.get(this)))) {
+                        cache.get(_tableName(this.getClass().getSimpleName())).put(String.valueOf(index.get(this)), this);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                cache.put(_tableName(this.getClass().getSimpleName()), new HashMap<String, Model>());
+                if (!cache.get(_tableName(this.getClass().getSimpleName())).containsKey(String.valueOf(index.get(this)))) {
+                    cache.get(_tableName(this.getClass().getSimpleName())).put(String.valueOf(index.get(this)), this);
+                }
+            }
+        }
     }
     
     public void _delete() throws IllegalArgumentException, IllegalAccessException, SQLException {
@@ -349,6 +366,15 @@ public class Model {
 		ps.setObject(1, autoincrement.get(this));
 		ps.execute();
 		ps.close();
+        if (cache.containsKey(_tableName(this.getClass().getSimpleName()))) {
+            try {
+                if (cache.get(_tableName(this.getClass().getSimpleName())).containsKey(autoincrement.get(this))) {
+                    cache.get(_tableName(this.getClass().getSimpleName())).remove(autoincrement.get(this)); // remove cache item
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 	}
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
