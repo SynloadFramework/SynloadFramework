@@ -89,7 +89,7 @@ public class QuerySet {
                 if (Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
                     try {
                         if (Model.cache.get(Model._tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
-                            Log.info("HIT CACHE IN QuerySet EXEC - KEY:"+rs.getString(index.getName()), Model.class);
+                            Log.info("HIT CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                             Model model = Model.cache.get(Model._tableName(c.getSimpleName())).get(rs.getString(index.getName()));
                             model._updateVars(c, rs);
                             ms.add((T) model);
@@ -103,10 +103,10 @@ public class QuerySet {
                 }
             }
             if(!found){
-                Log.info("CACHE MISS IN QuerySet EXEC - KEY:"+rs.getString(index.getName()), Model.class);
+                Log.info("CACHE MISS IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
                 Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                Log.info("STORING CACHE IN QuerySet EXEC - KEY:"+rs.getString(index.getName()), Model.class);
+                Log.info("STORING CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 ms.add((T) model);
             }
         }

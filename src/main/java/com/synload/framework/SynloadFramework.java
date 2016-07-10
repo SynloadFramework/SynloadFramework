@@ -50,7 +50,7 @@ import com.synload.framework.ws.WSRouting;
 import com.synload.framework.ws.WebsocketHandler;
 import com.synload.talksystem.ServerTalk;
 
-@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.6.1", depend = { "" }, log = LogLevel.INFO)
+@Module(author="Nathaniel Davidson", name="SynloadFramework", version="1.4.7", depend = { "" }, log = LogLevel.INFO)
 public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
