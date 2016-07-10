@@ -110,6 +110,11 @@ public class Model {
 
     public void _save(String colName, Object data) throws SQLException,
             IllegalArgumentException, IllegalAccessException {
+        try {
+            this.getClass().getField(colName).set(this, _convert(this.getClass().getField(colName).getType(), String.valueOf(data)));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         for (Field f : this.getClass().getDeclaredFields()) {
             ColumnData cd = new ColumnData(f);
             if (cd.isAutoIncrement()) {
