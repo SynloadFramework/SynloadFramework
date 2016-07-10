@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.synload.framework.SynloadFramework;
-import com.synload.framework.modules.annotations.sql.NonSQL;
+import com.synload.framework.sql.annotations.NonSQL;
 
 public class TableStatus extends Model {
 

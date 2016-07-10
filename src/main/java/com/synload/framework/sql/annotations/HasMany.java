@@ -1,4 +1,4 @@
-package com.synload.framework.modules.annotations.sql;
+package com.synload.framework.sql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -8,11 +8,9 @@ import java.lang.annotation.Target;
 
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface SQLTable {
-    public String name();
+@Target(ElementType.FIELD)
+public @interface HasMany {
+    public Class<?> of();
 
-    public double version();
-
-    public String description();
+    public String key();
 }

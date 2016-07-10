@@ -1,4 +1,4 @@
-package com.synload.framework.modules.annotations.sql;
+package com.synload.framework.sql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -9,10 +9,5 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface HasOne {
-    public Class<?> of();
-
-    public String key();
-}/*
-  * MANY -> one
-  */
+public @interface NonSQL {
+}

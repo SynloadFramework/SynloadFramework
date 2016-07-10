@@ -1,4 +1,4 @@
-package com.synload.framework.modules.annotations.sql;
+package com.synload.framework.sql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -9,8 +9,10 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface BooleanColumn {
-    public String Type() default "boolean";
+public @interface MediumIntegerColumn {
+    public int length();
+
+    public String Type() default "mediumint";
 
     public String CharSet() default "";
 

@@ -28,7 +28,7 @@ import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.http.HTTPRegistry;
 import com.synload.framework.modules.annotations.Module;
-import com.synload.framework.modules.annotations.sql.SQLTable;
+import com.synload.framework.sql.annotations.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
 import com.synload.framework.ws.annotations.Perms;
 import com.synload.framework.ws.annotations.WSEvent;

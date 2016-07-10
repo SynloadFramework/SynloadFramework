@@ -6,10 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,39 +14,30 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
-import com.synload.framework.modules.annotations.sql.BigIntegerColumn;
-import com.synload.framework.modules.annotations.sql.BooleanColumn;
-import com.synload.framework.modules.annotations.sql.DoubleColumn;
-import com.synload.framework.modules.annotations.sql.FloatColumn;
-import com.synload.framework.modules.annotations.sql.HasMany;
-import com.synload.framework.modules.annotations.sql.HasOne;
-import com.synload.framework.modules.annotations.sql.LongBlobColumn;
-import com.synload.framework.modules.annotations.sql.MediumIntegerColumn;
-import com.synload.framework.modules.annotations.sql.NonSQL;
-import com.synload.framework.modules.annotations.sql.SQLType;
-import com.synload.framework.modules.annotations.sql.StringColumn;
+import com.synload.framework.sql.annotations.BigIntegerColumn;
+import com.synload.framework.sql.annotations.BooleanColumn;
+import com.synload.framework.sql.annotations.DoubleColumn;
+import com.synload.framework.sql.annotations.FloatColumn;
+import com.synload.framework.sql.annotations.HasMany;
+import com.synload.framework.sql.annotations.HasOne;
+import com.synload.framework.sql.annotations.LongBlobColumn;
+import com.synload.framework.sql.annotations.MediumIntegerColumn;
+import com.synload.framework.sql.annotations.NonSQL;
+import com.synload.framework.sql.annotations.SQLType;
+import com.synload.framework.sql.annotations.StringColumn;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Model {
+    private static Map<String, Map<String, Model>> cache = new HashMap<String, Map<String, Model>>();
     public Model(ResultSet rs) {
-        try {
-            for (Field f : Model._getFields(this.getClass())) {
-                try {
-                    if (_annotationPresent(f)
-                            && !f.isAnnotationPresent(NonSQL.class)) {
-                        f.set(this,
-                                _convert(f.getType(), rs.getString(f.getName())));
-                    }
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+        for (Field f : Model._getFields(this.getClass())) {
+            try {
+                if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
+                    f.set(this,_convert(f.getType(), rs.getString(f.getName())));
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -73,6 +61,43 @@ public class Model {
         }
     }
 
+    public static <T> Field _getKey(Class<T> c){
+        Field[] columns = _getFields(c);
+        for(Field f : columns){
+            if (f.isAnnotationPresent(StringColumn.class)){
+                StringColumn ann = f.getAnnotation(StringColumn.class);
+                if(ann.Key()){
+                    return f;
+                }
+            }else if (f.isAnnotationPresent(BigIntegerColumn.class)){
+                BigIntegerColumn ann = f.getAnnotation(BigIntegerColumn.class);
+                if(ann.Key()){
+                    return f;
+                }
+            }else if (f.isAnnotationPresent(DoubleColumn.class)){
+                DoubleColumn ann = f.getAnnotation(DoubleColumn.class);
+                if(ann.Key()){
+                    return f;
+                }
+            }else if (f.isAnnotationPresent(MediumIntegerColumn.class)){
+                MediumIntegerColumn ann = f.getAnnotation(MediumIntegerColumn.class);
+                if(ann.Key()){
+                    return f;
+                }
+            }else if (f.isAnnotationPresent(FloatColumn.class)){
+                FloatColumn ann = f.getAnnotation(FloatColumn.class);
+                if(ann.Key()){
+                    return f;
+                }
+            }else if (f.isAnnotationPresent(LongBlobColumn.class)){
+                LongBlobColumn ann = f.getAnnotation(LongBlobColumn.class);
+                if(ann.Key()){
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
     public static String _tableName(String name) {
         String nm = name.toLowerCase();
         if((nm.substring(nm.length() - 1)).equals("y")){
@@ -142,16 +167,18 @@ public class Model {
     }
 
     public static boolean _annotationPresent(Field f) {
-        if (f.isAnnotationPresent(BigIntegerColumn.class)
-                || f.isAnnotationPresent(BooleanColumn.class)
-                || f.isAnnotationPresent(DoubleColumn.class)
-                || f.isAnnotationPresent(FloatColumn.class)
-                || f.isAnnotationPresent(LongBlobColumn.class)
-                || f.isAnnotationPresent(MediumIntegerColumn.class)
-                || f.isAnnotationPresent(StringColumn.class)
-                || f.isAnnotationPresent(HasMany.class)
-                || f.isAnnotationPresent(HasOne.class)
-                || f.isAnnotationPresent(SQLType.class)) {
+        if (
+            f.isAnnotationPresent(BigIntegerColumn.class)
+            || f.isAnnotationPresent(BooleanColumn.class)
+            || f.isAnnotationPresent(DoubleColumn.class)
+            || f.isAnnotationPresent(FloatColumn.class)
+            || f.isAnnotationPresent(LongBlobColumn.class)
+            || f.isAnnotationPresent(MediumIntegerColumn.class)
+            || f.isAnnotationPresent(StringColumn.class)
+            || f.isAnnotationPresent(HasMany.class)
+            || f.isAnnotationPresent(HasOne.class)
+            || f.isAnnotationPresent(SQLType.class)
+        ){
             return true;
         }
         return false;
@@ -180,13 +207,45 @@ public class Model {
         }
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            ms.add((T) con.newInstance(rs));
+            Field index = Model._getKey(c.getClass());
+            boolean found = false;
+            if(index!=null) {
+                if (cache.containsKey(_tableName(c.getClass().getSimpleName()))) {
+                    try {
+                        if (cache.get(_tableName(c.getClass().getSimpleName())).containsKey(rs.getString(index.getName()))) {
+                            Model model = cache.get(_tableName(c.getClass().getSimpleName())).get(rs.getString(index.getName()));
+                            model._updateVars(c, rs);
+                            ms.add((T) model);
+                            found = true;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    cache.put(_tableName(c.getClass().getSimpleName()), new HashMap<String, Model>());
+                }
+            }
+            if(!found){
+                Model model = (Model) con.newInstance(rs);
+                cache.get(_tableName(c.getClass().getSimpleName())).put(rs.getString(index.getName()), model);
+                ms.add((T) model);
+            }
         }
         rs.close();
         ps.close();
         return ms;
     }
-
+    public <T> void _updateVars(Class<T> c,  ResultSet rs){
+        for (Field f : Model._getFields(c.getClass())) {
+            try {
+                if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
+                    f.set(this,_convert(f.getType(), rs.getString(f.getName())));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
     public <T> QuerySet _related(Class<T> c) throws NoSuchFieldException,
             SecurityException {
         for (Field f : this.getClass().getFields()) {

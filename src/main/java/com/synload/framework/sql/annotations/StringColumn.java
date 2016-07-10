@@ -1,4 +1,4 @@
-package com.synload.framework.modules.annotations.sql;
+package com.synload.framework.sql.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -9,12 +9,14 @@ import java.lang.annotation.Target;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface DoubleColumn {
-    public String Type() default "double";
+public @interface StringColumn {
+    public int length();
 
-    public String CharSet() default "";
+    public String Type() default "varchar";
 
-    public String Default() default "";
+    public String CharSet() default "utf8";
+
+    public String Default() default "utf8_general_ci";
 
     public String Collation() default "";
 
