@@ -86,11 +86,11 @@ public class QuerySet {
             Field index = Model._getKey(c);
             boolean found = false;
             if(index!=null) {
-                if (Model.cache.containsKey(Model._tableName(c.getClass().getSimpleName()))) {
+                if (Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
                     try {
-                        if (Model.cache.get(Model._tableName(c.getClass().getSimpleName())).containsKey(rs.getString(index.getName()))) {
+                        if (Model.cache.get(Model._tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
                             Log.info("HIT CACHE IN QuerySet EXEC - KEY:"+rs.getString(index.getName()), Model.class);
-                            Model model = Model.cache.get(Model._tableName(c.getClass().getSimpleName())).get(rs.getString(index.getName()));
+                            Model model = Model.cache.get(Model._tableName(c.getSimpleName())).get(rs.getString(index.getName()));
                             model._updateVars(c, rs);
                             ms.add((T) model);
                             found = true;
@@ -99,13 +99,13 @@ public class QuerySet {
                         e.printStackTrace();
                     }
                 } else {
-                    Model.cache.put(Model._tableName(c.getClass().getSimpleName()), new HashMap<String, Model>());
+                    Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
                 }
             }
             if(!found){
                 Log.info("CACHE MISS IN QuerySet EXEC - KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
-                Model.cache.get(Model._tableName(c.getClass().getSimpleName())).put(rs.getString(index.getName()), model);
+                Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
                 Log.info("STORING CACHE IN QuerySet EXEC - KEY:"+rs.getString(index.getName()), Model.class);
                 ms.add((T) model);
             }
