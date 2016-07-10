@@ -28,7 +28,7 @@ import com.synload.framework.sql.annotations.StringColumn;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Model {
-    private static Map<String, Map<String, Model>> cache = new HashMap<String, Map<String, Model>>();
+    public static Map<String, Map<String, Model>> cache = new HashMap<String, Map<String, Model>>();
     public Model(ResultSet rs) {
         for (Field f : Model._getFields(this.getClass())) {
             try {
