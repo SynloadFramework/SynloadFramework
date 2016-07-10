@@ -95,8 +95,12 @@ public class ModuleLoader extends ClassLoader {
         /*
          * SynloadFramework defaults!
          */
-        Module mod = SynloadFramework.class.getAnnotation(Module.class);
-        loadModuleFiles("lib/", mod.name()+"-"+mod.version()+".jar", true, false);
+        try {
+            String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
+            loadModuleFiles("lib/", SynJar[SynJar.length-1], true, false);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
                 fileName = listOfFiles[i].getName();
@@ -105,7 +109,7 @@ public class ModuleLoader extends ClassLoader {
                     try {
                     	hashIS = new FileInputStream(new File(path+fileName));
         				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
-        			} catch (NoSuchAlgorithmException e) { 
+        			} catch (NoSuchAlgorithmException e) {
         				e.printStackTrace();
         			} catch (IOException e) {
 						e.printStackTrace();
