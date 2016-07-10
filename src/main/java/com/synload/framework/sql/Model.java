@@ -324,7 +324,6 @@ public class Model {
         Object[] valuesA = values.toArray();
         sql = "INSERT INTO `" + _tableName(this.getClass().getSimpleName())
                 + "` ( " + sql + " ) VALUES ( " + sqlQs + ");";
-        System.out.println(sql);
         PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,
                 java.sql.Statement.RETURN_GENERATED_KEYS);
         for (int i = 0; i < valuesA.length; i++) {
@@ -394,7 +393,6 @@ public class Model {
         try {
 			obj = qs.count();
             if (obj == -1) {
-                Log.error("s", c);
                 return false;
             } else {
                 if (obj > 0) {
