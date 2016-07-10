@@ -212,14 +212,14 @@ public class Model {
         }
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            Field index = Model._getKey(c.getClass());
+            Field index = Model._getKey(c);
             boolean found = false;
             if(index!=null) {
-                if (cache.containsKey(_tableName(c.getClass().getSimpleName()))) {
+                if (cache.containsKey(_tableName(c.getSimpleName()))) {
                     try {
-                        if (cache.get(_tableName(c.getClass().getSimpleName())).containsKey(rs.getString(index.getName()))) {
+                        if (cache.get(_tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
                             Log.info("HIT CACHE IN SQLFETCH - KEY:"+rs.getString(index.getName()), Model.class);
-                            Model model = cache.get(_tableName(c.getClass().getSimpleName())).get(rs.getString(index.getName()));
+                            Model model = cache.get(_tableName(c.getSimpleName())).get(rs.getString(index.getName()));
                             model._updateVars(c, rs);
                             ms.add((T) model);
                             found = true;
@@ -228,13 +228,13 @@ public class Model {
                         e.printStackTrace();
                     }
                 } else {
-                    cache.put(_tableName(c.getClass().getSimpleName()), new HashMap<String, Model>());
+                    cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
                 }
             }
             if(!found){
                 Log.info("CACHE MISS IN SQLFETCH - KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
-                cache.get(_tableName(c.getClass().getSimpleName())).put(rs.getString(index.getName()), model);
+                cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
                 Log.info("STORING CACHE IN SQLFETCH - KEY:"+rs.getString(index.getName()), Model.class);
                 ms.add((T) model);
             }
@@ -244,7 +244,7 @@ public class Model {
         return ms;
     }
     public <T> void _updateVars(Class<T> c,  ResultSet rs){
-        for (Field f : Model._getFields(c.getClass())) {
+        for (Field f : Model._getFields(c)) {
             try {
                 if (_annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
                     f.set(this,_convert(f.getType(), rs.getString(f.getName())));
@@ -293,8 +293,7 @@ public class Model {
                 }
             }
         }
-        Log.error("No relation for " + _tableName(c.getSimpleName()),
-                this.getClass());
+        Log.error("No relation for " + _tableName(c.getSimpleName()), this.getClass());
         return new QuerySet("",new Object[]{}, _getColumns(c),_tableName(c.getSimpleName()));
     }
 

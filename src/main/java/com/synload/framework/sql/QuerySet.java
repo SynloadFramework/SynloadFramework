@@ -83,7 +83,7 @@ public class QuerySet {
         }
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            Field index = Model._getKey(c.getClass());
+            Field index = Model._getKey(c);
             boolean found = false;
             if(index!=null) {
                 if (Model.cache.containsKey(Model._tableName(c.getClass().getSimpleName()))) {
