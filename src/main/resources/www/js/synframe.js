@@ -33,6 +33,7 @@ class SynloadFramework{
 		this.ekey = "";
 		this.cache = new Array();
 		this.ecsnt = false;
+        this.addCall(this.messageReceived,"receive");
 		this.actionCallers = new Array();
 		this.onUnload = null;
 		this.socket = null;
@@ -156,7 +157,6 @@ class SynloadFramework{
 		}
 		this.socket =  new WebSocket('ws://'+address+path);
 		var sf = this;
-		this.addCall(this.messageReceived,"receive");
 		this.socket.onopen = function() {
 
 		};
