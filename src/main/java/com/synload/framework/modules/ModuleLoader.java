@@ -211,6 +211,7 @@ public class ModuleLoader extends ClassLoader {
     	Log.info("Loaded file: "+path+fileName, ModuleLoader.class);
     	try {
             ModuleData moduleData = getJarData(path + fileName);
+            System.out.println(moduleData.toString());
             ModuleLoader.jarList.put(path + fileName, moduleData);
             return moduleData;
         } catch (IOException e) {
