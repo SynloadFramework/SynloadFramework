@@ -97,7 +97,9 @@ public class ModuleLoader extends ClassLoader {
          */
         try {
             String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
-            loadModuleFiles("lib/", SynJar[SynJar.length-1], true, false);
+            try {
+                loadModuleFiles((new File(".")).getCanonicalPath() + "/lib/", SynJar[SynJar.length - 1], true, false);
+            }catch (Exception e){}
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
