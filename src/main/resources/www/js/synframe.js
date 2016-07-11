@@ -33,7 +33,6 @@ class SynloadFramework{
 		this.ekey = "";
 		this.cache = new Array();
 		this.ecsnt = false;
-        this.addCall(this.messageReceived,"receive");
 		this.actionCallers = new Array();
 		this.onUnload = null;
 		this.socket = null;
@@ -46,6 +45,7 @@ class SynloadFramework{
 		this.wsPath = "";
 		this.javascriptLoaded = false;
 		this.onCallbacks = new Array();
+		this.addCall(this.messageReceived,"receive");
 		func(this);
 	}
 	exec(msg){
