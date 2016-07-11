@@ -63,6 +63,7 @@ public class ModuleLoader extends ClassLoader {
 
     public void loadClass(String clazzName, byte[] clazzBytes) {
         try {
+            System.out.println(clazzName);
             Class.forName(clazzName);
         } catch (Exception e) {
             Class<?> c = defineClass(clazzName, clazzBytes, 0, clazzBytes.length);
