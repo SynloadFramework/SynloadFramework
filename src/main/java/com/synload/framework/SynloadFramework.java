@@ -54,7 +54,7 @@ import com.synload.talksystem.ServerTalk;
 public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
-    public static String version="1.4.6.1";
+    public static String version="1.4.7";
     public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
     public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
