@@ -27,7 +27,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.+'
     compile 'org.objenesis:objenesis:2.2'
     compile 'javax.servlet:javax.servlet-api:4.0.0-b01'
-    compile 'org.eclipse.jetty:jetty-server:9.3.7.v20160115'
     compile 'commons-io:commons-io:2.4'
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
     compile 'commons-logging:commons-logging:1.2'
