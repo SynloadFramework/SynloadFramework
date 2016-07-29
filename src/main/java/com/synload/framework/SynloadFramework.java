@@ -184,8 +184,6 @@ public class SynloadFramework extends ModuleClass {
                     //return;
                 }
             }
-            SynloadFramework.buildDefaultHTTP();
-            SynloadFramework.buildJavascript();
 
             createFolder(modulePath);
             createFolder(configPath);
@@ -262,26 +260,6 @@ public class SynloadFramework extends ModuleClass {
         return new BigInteger(130, random).toString(length);
     }
 
-    public static void buildJavascript() {
-        /*Javascript jsPKI = new Javascript();
-        jsPKI.setScript("/synloadframework/js/pki.js");
-        SynloadFramework.registerJavascriptFile(jsPKI, "PKI_JS");
-        Javascript jsPage = new Javascript();
-        jsPage.setScript("/js/page.js");
-        SynloadFramework.registerJavascriptFile(jsPage, "Page Handler");
-        Javascript jsForm = new Javascript();
-        jsForm.setScript("/js/form.js");
-        SynloadFramework.registerJavascriptFile(jsForm, "Form Handler");*/
-    }
-
-    public static void buildDefaultHTTP() {
-        //SynloadFramework.registerHTTPPage("/", DefaultHTTPPages.class, "getIndex");
-        /*if (handleUpload) {
-            Log.info("Upload handler enabled!", SynloadFramework.class);
-            SynloadFramework.registerHTTPPage("/system/uploads", DefaultHTTPPages.class, "handleUploads");
-        }*/
-    }
-
     public static void broadcast(String data) {
         for (WSHandler user : SynloadFramework.clients) {
             user.send(data);
@@ -298,40 +276,6 @@ public class SynloadFramework extends ModuleClass {
         // System.out.println("[JS] Registered javascript <"+name+">");
         SynloadFramework.javascripts.add(js);
     }
-
-    public static void registerHTTPPage(String page, Class<?> listenerClass,
-            String method) {
-    	Log.info("Use annotations!", SynloadFramework.class);
-        /*
-         * Use Annotations
-         * try {
-            if (HTTPRouting.addRoutes(page, new HTTPResponse(listenerClass, method, "post", "text/plain"))) {
-                // System.out.println("[WB] Registered path <"+page+">");
-            } else {
-                // System.out.println("[WB][E] Failed to add <"+page+"> path");
-            }
-        } catch (Exception e) {
-            if (SynloadFramework.debug) {
-                e.printStackTrace();
-            }
-        }*/
-    }
-
-    /*public static void registerElement(WSRequest page, Class<?> listenerClass,
-            String method, List<String> flags) {
-        try {
-            if (WSRouting.addRoutes(page, new WSResponse(listenerClass, method,
-                    flags))) {
-                // System.out.println("[PG] Registered page <"+page.getPri()+"> with action <"+page.getRequest()+">");
-            } else {
-                // System.out.println("[PG][E] Failed to add <"+page.getPri()+"> with action <"+page.getRequest()+">");
-            }
-        } catch (JsonProcessingException e) {
-            if (SynloadFramework.debug) {
-                e.printStackTrace();
-            }
-        }
-    }*/
 
     public static HashMap<String, HashMap<String, Object>> getHtmlFiles() {
         return htmlFiles;
@@ -469,6 +413,7 @@ public class SynloadFramework extends ModuleClass {
 	public static void setEncryptLevel(int encryptLevel) {
 		SynloadFramework.encryptLevel = encryptLevel;
 	}
+
 	private static List<HashMap<String, String>> parsePubKeyServers(String pubKeyServerList){
 		List<HashMap<String, String>> servers = new ArrayList<HashMap<String, String>>();
 		String[] pubKeyServers = pubKeyServerList.split("&");

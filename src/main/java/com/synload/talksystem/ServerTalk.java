@@ -63,6 +63,7 @@ public class ServerTalk implements Runnable {
                 )
             );
         } catch ( SecurityException e) {
+            e.printStackTrace();
         } catch (NoSuchMethodException  e) {
             e.printStackTrace();
         }

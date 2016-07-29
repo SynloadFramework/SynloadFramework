@@ -20,6 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import com.synload.framework.Log;
 import com.synload.framework.ws.AesUtil;
+import com.synload.talksystem.eventShare.EventShare;
 
 public class Client implements Runnable {
     private String address;
@@ -28,6 +29,7 @@ public class Client implements Runnable {
     private int port;
     private Thread writer = null;
     private Thread reader = null;
+    private EventShare es = null;
     private boolean keepRunning=true;
     public List<Object> queue = new ArrayList<Object>();
     private boolean closeAfterSend = false;
@@ -166,6 +168,30 @@ public class Client implements Runnable {
 
     public void setdIn(DataInputStream dIn) {
         this.dIn = dIn;
+    }
+
+    public EventShare getEs() {
+        return es;
+    }
+
+    public void setEs(EventShare es) {
+        this.es = es;
+    }
+
+    public List<Object> getQueue() {
+        return queue;
+    }
+
+    public void setQueue(List<Object> queue) {
+        this.queue = queue;
+    }
+
+    public boolean isIncoming() {
+        return incoming;
+    }
+
+    public void setIncoming(boolean incoming) {
+        this.incoming = incoming;
     }
 
     public Client(Socket socket, String key){

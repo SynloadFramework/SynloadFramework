@@ -11,6 +11,9 @@ import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.events.STMessageReceivedEvent;
 import com.synload.framework.Log;
 import com.synload.framework.modules.ModuleLoader;
+import com.synload.talksystem.eventShare.ESData;
+import com.synload.talksystem.eventShare.ESHandler;
+import com.synload.talksystem.eventShare.ESPush;
 import com.synload.talksystem.systemMessages.ClassNotFoundMessage;
 import com.synload.talksystem.systemMessages.UnrecognizedMessage;
 
@@ -84,9 +87,9 @@ public class ExecuteRead implements Runnable{
                                     Log.error("Unrecognized Connection Type", Client.class);
                                 }else if(ClassNotFoundMessage.class.isInstance(data)){
                                     Log.error("Unrecognized Connection Type", Client.class);
-                                }else if(ConnectionTypeDocument.class.isInstance(data)){
+                                }else if(ConnectionTypeDocument.class.isInstance(data)) {
                                     ConnectionTypeDocument c = (ConnectionTypeDocument) data;
-                                    if(c.getTypeName().equals("communicationSocket")){
+                                    if (c.getTypeName().equals("communicationSocket")) {
                                         ServerTalk.getConnected().add(this.getClient());
                                     }
                                 }else{
@@ -109,6 +112,13 @@ public class ExecuteRead implements Runnable{
                                         EventPublisher.raiseEvent( new STMessageReceivedEvent(client, doc), true, null);
                                     }
                                 }
+                            }else if(ESData.class.isInstance(data)){
+                                if(this.getClient().getEs()!=null){
+                                    this.getClient().getEs().respond((ESData) data);
+                                }
+                            }else if(ESPush.class.isInstance(data)){
+                                ESPush esp = (ESPush) data;
+                                esp.getEvent().setResponse(new ESHandler(esp.getEvent().getIdentifier(), this.getClient().getEs()));
                             }
                         }
                     }

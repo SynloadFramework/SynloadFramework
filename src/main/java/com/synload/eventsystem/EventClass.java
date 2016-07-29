@@ -1,9 +1,15 @@
 package com.synload.eventsystem;
 
+import com.synload.framework.modules.Responder;
+
+import java.util.UUID;
+
 public class EventClass {
     private Handler handler;
     private String[] trigger;
     private Type type;
+    private String identifier = null;
+    private Responder response;
 
     public Handler getHandler() {
         return handler;
@@ -27,5 +33,21 @@ public class EventClass {
 
     public void setType(Type type) {
         this.type = type;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void generateIdentifier() {
+        this.identifier = UUID.randomUUID().toString();
+    }
+
+    public Responder getResponse() {
+        return response;
+    }
+
+    public void setResponse(Responder response) {
+        this.response = response;
     }
 }

@@ -3,10 +3,13 @@ package com.synload.eventsystem;
 import java.lang.reflect.Method;
 
 import com.synload.framework.modules.ModuleClass;
+import com.synload.talksystem.eventShare.EventShare;
+
 
 public class EventTrigger {
     @SuppressWarnings("rawtypes")
     private Class hostClass;
+    private EventShare server = null;
     private Method method;
     private Object route;
     private String[] trigger;
@@ -82,5 +85,13 @@ public class EventTrigger {
 
     public void setEventType(Type eventType) {
         this.eventType = eventType;
+    }
+
+    public EventShare getServer() {
+        return server;
+    }
+
+    public void setServer(EventShare server) {
+        this.server = server;
     }
 }

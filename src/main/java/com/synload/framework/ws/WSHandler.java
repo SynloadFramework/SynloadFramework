@@ -3,6 +3,8 @@ package com.synload.framework.ws;
 import java.io.IOException;
 import java.util.*;
 
+import com.synload.framework.modules.Responder;
+import com.synload.framework.security.SpamDetection;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -29,7 +31,7 @@ import com.synload.framework.security.PKI;
 
 @WebSocket
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public class WSHandler {
+public class WSHandler extends Responder {
     @JsonIgnore
     public Session session = null;
     @JsonIgnore
@@ -111,10 +113,12 @@ public class WSHandler {
         Log.error(t.getMessage(), this.getClass());
     }
 
+    @Override
     public void send(String data) {
         queue.add(data);
     }
 
+    @Override
     public void send(Response r) {
         OOnPage.newPage(this, r);
         try {
@@ -124,6 +128,7 @@ public class WSHandler {
         }
     }
 
+    @Override
     public void send(Data r) {
         try {
             queue.add(SynloadFramework.ow.writeValueAsString(r));
@@ -164,23 +169,25 @@ public class WSHandler {
                 try {
                     if (ws.queue.size() > 0) {
                         String message = ws.queue.get(0);
-                        ws.isSending = true;
-                        if (ws.encrypt) {
-                            ws.session.getRemote().sendString(
-                                 pki.encrypt(
-                                     SynloadFramework.ow.writeValueAsString(message),
-                                     ws.getPki().getClientPublicKey()
-                                 ),
-                                 new verifySend(ws)
-                             );
-                        } else {
-                            ws.session.getRemote().sendString(
-                                message,
-                                new verifySend(ws)
-                            );
+                        if (SpamDetection.respondAllowed(ws.session.getRemoteAddress().getAddress().getHostAddress())) {
+                            ws.isSending = true;
+                            if (ws.encrypt) {
+                                ws.session.getRemote().sendString(
+                                        pki.encrypt(
+                                                SynloadFramework.ow.writeValueAsString(message),
+                                                ws.getPki().getClientPublicKey()
+                                        ),
+                                        new verifySend(ws)
+                                );
+                            } else {
+                                ws.session.getRemote().sendString(
+                                        message,
+                                        new verifySend(ws)
+                                );
+                            }
+                            ws.queue.remove(0);
+                            ws.queue.trimToSize();
                         }
-                        ws.queue.remove(0);
-                        ws.queue.trimToSize();
                     }
                     Thread.sleep(1);
                 } catch (Exception e) {
