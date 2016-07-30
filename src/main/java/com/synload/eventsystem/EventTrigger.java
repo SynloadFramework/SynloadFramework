@@ -8,7 +8,7 @@ import com.synload.talksystem.eventShare.EventShare;
 
 public class EventTrigger {
     @SuppressWarnings("rawtypes")
-    private Class hostClass;
+    private Class hostClass = null;
     private EventShare server = null;
     private Method method;
     private Object route;

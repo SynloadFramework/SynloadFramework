@@ -4,6 +4,7 @@ import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.EventTrigger;
 import com.synload.eventsystem.HandlerRegistry;
+import com.synload.eventsystem.events.annotations.ES;
 import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HttpRequest;
 import com.synload.framework.ws.WSHandler;
@@ -43,10 +44,20 @@ public class EventShare {
             String annotation = eventGroup.getKey().getName();
             for(EventTrigger trigger : eventGroup.getValue()){
                 if(trigger.getServer()!=this) { // do not send own events...
-                    try {
-                        eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if(trigger.getMethod()!=null){
+                        if(trigger.getMethod().isAnnotationPresent(ES.class)){
+                            try {
+                                eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }else {
+                        try {
+                            eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
