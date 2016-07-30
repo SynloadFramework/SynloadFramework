@@ -2,6 +2,8 @@ package com.synload.talksystem.eventShare;
 
 import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.EventPublisher;
+import com.synload.eventsystem.EventTrigger;
+import com.synload.eventsystem.HandlerRegistry;
 import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HttpRequest;
 import com.synload.framework.ws.WSHandler;
@@ -9,7 +11,9 @@ import com.synload.talksystem.Client;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Created by Nathaniel on 7/22/2016.
@@ -17,13 +21,33 @@ import java.util.Map;
 public class EventShare {
     public Client eventBusServer;
     public Map<String, Object> requestMap = new HashMap<String, Object>();
-    public EventShare(String ip, int port, String key){
+    public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         try {
             eventBusServer = Client.createConnection(ip, port, false, key);
-
             eventBusServer.setEs(this);
+            eventBusServer.write(new ESTypeConnection(remoteShare));
+            // send Events
+            if(localShare){
+                this.transmitEvents();
+            }
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+    public EventShare(Client eventBusServer){
+        this.eventBusServer = eventBusServer;
+    }
+    public void transmitEvents(){
+        // Currently transmit all events
+        for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
+            String annotation = eventGroup.getKey().getName();
+            for(EventTrigger trigger : eventGroup.getValue()){
+                try {
+                    eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
     public void transmit(EventClass e, WSHandler client){

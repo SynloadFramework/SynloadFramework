@@ -61,7 +61,7 @@ public class WebEvent extends EventClass {
         this.request = request;
     }
 
-    public HttpServletResponse getResponse() {
+    public HttpServletResponse getHTTPResponse() {
         return response;
     }
 

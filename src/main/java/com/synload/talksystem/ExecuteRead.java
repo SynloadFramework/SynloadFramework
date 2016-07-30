@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.synload.eventsystem.EventPublisher;
+import com.synload.eventsystem.EventTrigger;
+import com.synload.eventsystem.HandlerRegistry;
 import com.synload.eventsystem.events.STMessageReceivedEvent;
 import com.synload.framework.Log;
 import com.synload.framework.modules.ModuleLoader;
-import com.synload.talksystem.eventShare.ESData;
-import com.synload.talksystem.eventShare.ESHandler;
-import com.synload.talksystem.eventShare.ESPush;
+import com.synload.talksystem.eventShare.*;
 import com.synload.talksystem.systemMessages.ClassNotFoundMessage;
 import com.synload.talksystem.systemMessages.UnrecognizedMessage;
 
@@ -119,6 +119,27 @@ public class ExecuteRead implements Runnable{
                             }else if(ESPush.class.isInstance(data)){
                                 ESPush esp = (ESPush) data;
                                 esp.getEvent().setResponse(new ESHandler(esp.getEvent().getIdentifier(), this.getClient().getEs()));
+                            }else if(ESSharedEvent.class.isInstance(data)){
+                                ESSharedEvent esse = (ESSharedEvent)data;
+                                try {
+                                    Class c = Class.forName(esse.getAnnotation());
+                                    if(!HandlerRegistry.getHandlers().containsKey(c)){
+                                        HandlerRegistry.getHandlers().put(c, new ArrayList<EventTrigger>() );
+                                    }
+                                    EventTrigger eventTrigger = new EventTrigger();
+                                    eventTrigger.setTrigger(esse.getTrigger());
+                                    eventTrigger.setServer(this.getClient().getEs());
+                                    HandlerRegistry.getHandlers().get(c).add(eventTrigger);
+                                    Log.info("Registered event from remote server [ "+eventTrigger.getTrigger().toString()+" ]", ExecuteRead.class);
+                                }catch(Exception e){
+                                    e.printStackTrace();
+                                }
+                            }else if(ESTypeConnection.class.isInstance(data)){
+                                ESTypeConnection estc = (ESTypeConnection) data;
+                                this.getClient().setEs(new EventShare(this.getClient()));
+                                if(estc.isShareEvents()){
+                                    this.getClient().getEs().transmitEvents();
+                                }
                             }
                         }
                     }
