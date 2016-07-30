@@ -42,10 +42,12 @@ public class EventShare {
         for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
             String annotation = eventGroup.getKey().getName();
             for(EventTrigger trigger : eventGroup.getValue()){
-                try {
-                    eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
-                }catch (Exception e){
-                    e.printStackTrace();
+                if(trigger.getServer()!=this) { // do not send own events...
+                    try {
+                        eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
