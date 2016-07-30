@@ -18,6 +18,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.synload.talksystem.Client;
+import com.synload.talksystem.eventShare.EventShare;
 import com.synload.talksystem.statistics.Statistics;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
@@ -238,7 +239,17 @@ public class SynloadFramework extends ModuleClass {
             server.setHandler(handlerCollection);
 
             Log.info("Loaded all aspects running on port " + port, SynloadFramework.class);
-
+            if(parser.getCmd().hasOption("eshare")){
+                String[] connectElements = parser.getCmd().getOptionValue("eshare").split("&");
+                String[] addressElements = connectElements[0].split(":");
+                if(connectElements.length==4 && addressElements.length==2) {
+                    try {
+                        EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.getBoolean(connectElements[2]), Boolean.getBoolean(connectElements[3]));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
             server.start();
             server.join();
 
