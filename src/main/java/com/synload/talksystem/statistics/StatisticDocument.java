@@ -125,4 +125,36 @@ public class StatisticDocument extends ConnectionDocument {
     public void setInstanceProperties(Properties instanceProperties) {
         this.instanceProperties = instanceProperties;
     }
+
+    public long getHttp_receive() {
+        return http_receive;
+    }
+
+    public void setHttp_receive(long http_receive) {
+        this.http_receive = http_receive;
+    }
+
+    public long getWs_sent() {
+        return ws_sent;
+    }
+
+    public void setWs_sent(long ws_sent) {
+        this.ws_sent = ws_sent;
+    }
+
+    public long getWs_receive() {
+        return ws_receive;
+    }
+
+    public void setWs_receive(long ws_receive) {
+        this.ws_receive = ws_receive;
+    }
+
+    public long getHttp_sent() {
+        return http_sent;
+    }
+
+    public void setHttp_sent(long http_sent) {
+        this.http_sent = http_sent;
+    }
 }
