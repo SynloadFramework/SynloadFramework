@@ -11,6 +11,7 @@ import com.synload.framework.ws.WSHandler;
 import com.synload.talksystem.Client;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,9 @@ import java.util.Map.Entry;
  */
 public class EventShare {
     public Client eventBusServer;
+    public boolean shareOut = false;
     public Map<String, Object> requestMap = new HashMap<String, Object>();
+    public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         try {
             eventBusServer = Client.createConnection(ip, port, false, key);
@@ -29,14 +32,17 @@ public class EventShare {
             eventBusServer.write(new ESTypeConnection(remoteShare));
             // send Events
             if(localShare){
+                shareOut=true;
                 this.transmitEvents();
             }
+            eventShareServers.add(this);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
     public EventShare(Client eventBusServer){
         this.eventBusServer = eventBusServer;
+        eventShareServers.add(this);
     }
     public void transmitEvents(){
         // Currently transmit all events
@@ -132,5 +138,21 @@ public class EventShare {
 
     public void setRequestMap(Map<String, Object> requestMap) {
         this.requestMap = requestMap;
+    }
+
+    public boolean isShareOut() {
+        return shareOut;
+    }
+
+    public void setShareOut(boolean shareOut) {
+        this.shareOut = shareOut;
+    }
+
+    public static List<EventShare> getEventShareServers() {
+        return eventShareServers;
+    }
+
+    public static void setEventShareServers(List<EventShare> eventShareServers) {
+        EventShare.eventShareServers = eventShareServers;
     }
 }

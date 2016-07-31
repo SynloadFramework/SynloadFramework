@@ -18,6 +18,7 @@ import com.synload.talksystem.systemMessages.ClassNotFoundMessage;
 import com.synload.talksystem.systemMessages.UnrecognizedMessage;
 
 public class ExecuteRead implements Runnable{
+
     public DataInputStream dIn;
     private Client client;
     private boolean keepRunning=true;
@@ -131,6 +132,12 @@ public class ExecuteRead implements Runnable{
                                     eventTrigger.setServer(this.getClient().getEs());
                                     HandlerRegistry.getHandlers().get(c).add(eventTrigger);
                                     Log.info("Registered event from remote server [ "+eventTrigger.getTrigger().toString()+" ]", ExecuteRead.class);
+                                    // Get other connected EventShares and send Events
+                                    for(EventShare es : EventShare.getEventShareServers()){
+                                        if(es.isShareOut()){
+                                            es.getEventBusServer().write(esse);
+                                        }
+                                    }
                                 }catch(Exception e){
                                     e.printStackTrace();
                                 }
@@ -138,6 +145,7 @@ public class ExecuteRead implements Runnable{
                                 ESTypeConnection estc = (ESTypeConnection) data;
                                 this.getClient().setEs(new EventShare(this.getClient()));
                                 if(estc.isShareEvents()){
+                                    this.getClient().getEs().setShareOut(true);
                                     this.getClient().getEs().transmitEvents();
                                 }
                             }
