@@ -4,7 +4,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'application'
 
 sourceCompatibility = 1.7
-version = '1.4.7'
+version = '1.4.8'
 
 mainClassName = 'com.synload.framework.SynloadFramework'
 
@@ -76,7 +76,7 @@ publishing {
         impl(MavenPublication) {
             groupId 'com.synload.SynloadFramework'
             artifactId 'SynloadFramework'
-            version '1.4.7'
+            version '1.4.8'
     
             from components.java
         }
