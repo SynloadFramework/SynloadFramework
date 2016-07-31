@@ -1,6 +1,7 @@
 package com.synload.talksystem.statistics;
 
 import com.synload.framework.SynloadFramework;
+import com.synload.framework.TransmissionStats;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.talksystem.ConnectionDocument;
 
@@ -17,6 +18,10 @@ public class StatisticDocument extends ConnectionDocument {
     public long total = 0;
     public long max = 0;
     public int clients = 0;
+    public long ws_sent = 0;
+    public long ws_receive = 0;
+    public long http_sent = 0;
+    public long http_receive = 0;
     public String identifier;
     public HashMap<String, Properties> moduleProperties;
     public String modulePath;
@@ -25,6 +30,10 @@ public class StatisticDocument extends ConnectionDocument {
     public Properties instanceProperties;
     public StatisticDocument(UUID chain) {
         super(null, chain);
+        ws_sent = TransmissionStats.ws_sent;
+        ws_receive = TransmissionStats.ws_receive;
+        http_receive = TransmissionStats.http_receive;
+        http_sent = TransmissionStats.http_sent;
         free = Runtime.getRuntime().freeMemory();
         total = Runtime.getRuntime().totalMemory();
         max = Runtime.getRuntime().maxMemory();

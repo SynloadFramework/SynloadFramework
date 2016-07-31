@@ -3,6 +3,7 @@ package com.synload.framework.ws;
 import java.io.IOException;
 import java.util.*;
 
+import com.synload.framework.TransmissionStats;
 import com.synload.framework.modules.Responder;
 import com.synload.framework.security.SpamDetection;
 import org.eclipse.jetty.websocket.api.*;
@@ -172,14 +173,17 @@ public class WSHandler extends Responder {
                         if (SpamDetection.respondAllowed(ws.session.getRemoteAddress().getAddress().getHostAddress())) {
                             ws.isSending = true;
                             if (ws.encrypt) {
+                                String cipher = pki.encrypt(
+                                        SynloadFramework.ow.writeValueAsString(message),
+                                        ws.getPki().getClientPublicKey()
+                                );
+                                TransmissionStats.ws_sent+=cipher.length();
                                 ws.session.getRemote().sendString(
-                                        pki.encrypt(
-                                                SynloadFramework.ow.writeValueAsString(message),
-                                                ws.getPki().getClientPublicKey()
-                                        ),
+                                        cipher,
                                         new verifySend(ws)
                                 );
                             } else {
+                                TransmissionStats.ws_sent+=message.length();
                                 ws.session.getRemote().sendString(
                                         message,
                                         new verifySend(ws)
@@ -248,11 +252,13 @@ public class WSHandler extends Responder {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
+            TransmissionStats.ws_receive+=message.length();
             if (encrypt) {
 				request = mapper.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
             } else {
                 request = mapper.readValue(message, Request.class);
             }
+
             (new Thread(new HandleRequest(this, request))).start();
         } catch (IOException e) {
             if (SynloadFramework.debug) {
