@@ -272,8 +272,9 @@ public class Client implements Runnable {
             e1.printStackTrace();
         }
         while(!socket.isClosed()){
+            Log.info("Still connected?", Client.class);
             try {
-                Thread.sleep(1L);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
