@@ -47,11 +47,7 @@ public class EventPublisher {
                                 if(trigger.getServer()==null) {
                                     trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
                                 }else if(event.getIdentifier()!=null){
-                                    if(ESHandler.class.isInstance(event.getResponse())){
-                                        trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
-                                    }else if(WSHandler.class.isInstance(event.getResponse())){
-                                        trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
-                                    }
+                                    trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
                                 }else{
                                     trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
                                 }

@@ -114,7 +114,7 @@ public class EventShare {
                 }
             }else if(EventShare.class.isInstance(client)){
                 try {
-                    ((EventShare) client).getEventBusServer().write(esd.getData());
+                    ((EventShare) client).getEventBusServer().write(esd);
                 }catch(Exception e){
                     e.printStackTrace();
                 }

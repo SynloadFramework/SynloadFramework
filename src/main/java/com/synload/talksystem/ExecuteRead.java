@@ -121,6 +121,7 @@ public class ExecuteRead implements Runnable{
                             }else if(ESPush.class.isInstance(data)){
                                 ESPush esp = (ESPush) data;
                                 esp.getEvent().setResponse(new ESHandler(esp.getEvent().getIdentifier(), this.getClient().getEs()));
+                                EventPublisher.raiseEvent(esp.getEvent(), true, null);
                             }else if(ESSharedEvent.class.isInstance(data)){
                                 ESSharedEvent esse = (ESSharedEvent)data;
                                 try {
@@ -135,8 +136,10 @@ public class ExecuteRead implements Runnable{
                                     Log.info("Registered event from remote server "+ SynloadFramework.getOw().writeValueAsString(eventTrigger.getTrigger()), ExecuteRead.class);
                                     // Get other connected EventShares and send Events
                                     for(EventShare es : EventShare.getEventShareServers()){
-                                        if(es.isShareOut()){
-                                            es.getEventBusServer().write(esse);
+                                        if(es!=this.getClient().getEs()) {
+                                            if (es.isShareOut()) {
+                                                es.getEventBusServer().write(esse);
+                                            }
                                         }
                                     }
                                 }catch(Exception e){
