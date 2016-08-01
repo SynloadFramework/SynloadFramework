@@ -4,6 +4,7 @@ import com.synload.eventsystem.EventClass;
 import com.synload.eventsystem.EventPublisher;
 import com.synload.eventsystem.EventTrigger;
 import com.synload.eventsystem.HandlerRegistry;
+import com.synload.eventsystem.events.RequestEvent;
 import com.synload.eventsystem.events.annotations.ES;
 import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HttpRequest;
@@ -72,6 +73,9 @@ public class EventShare {
     public void transmit(EventClass e, WSHandler client){
         e.generateIdentifier();
         requestMap.put(e.getIdentifier(), client);
+        if(RequestEvent.class.isInstance(e)){
+            ((RequestEvent)e).setSession(null);
+        }
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
@@ -89,6 +93,9 @@ public class EventShare {
     }
     public void transmit(EventClass e, EventShare client){
         requestMap.put(e.getIdentifier(), client);
+        if(RequestEvent.class.isInstance(e)){
+            ((RequestEvent)e).setSession(null);
+        }
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
