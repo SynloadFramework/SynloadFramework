@@ -73,9 +73,6 @@ public class EventShare {
     public void transmit(EventClass e, WSHandler client){
         e.generateIdentifier();
         requestMap.put(e.getIdentifier(), client);
-        if(RequestEvent.class.isInstance(e)){
-            ((RequestEvent)e).setSession(null);
-        }
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
