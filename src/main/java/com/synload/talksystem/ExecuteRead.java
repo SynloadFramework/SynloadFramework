@@ -116,13 +116,13 @@ public class ExecuteRead implements Runnable{
                                 }
                             }else if(ESData.class.isInstance(data)){
                                 if(this.getClient().getEs()!=null){
+                                    Log.info("Received Event Data", ExecuteRead.class);
                                     this.getClient().getEs().respond((ESData) data);
                                 }
-                                Log.info("Received Event Data", ExecuteRead.class);
                             }else if(ESPush.class.isInstance(data)){
                                 ESPush esp = (ESPush) data;
                                 esp.getEvent().setResponse(new ESHandler(esp.getEvent().getIdentifier(), this.getClient().getEs()));
-                                Log.info("Received Event!", ExecuteRead.class);
+                                Log.info("Received Event! ( "+esp.getEvent().getIdentifier()+" )", ExecuteRead.class);
                                 EventPublisher.raiseEvent(esp.getEvent(), true, null);
                             }else if(ESSharedEvent.class.isInstance(data)){
                                 ESSharedEvent esse = (ESSharedEvent)data;
