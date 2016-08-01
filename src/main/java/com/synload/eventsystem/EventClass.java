@@ -3,6 +3,8 @@ package com.synload.eventsystem;
 import com.synload.framework.modules.Responder;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class EventClass implements Serializable {
@@ -11,6 +13,7 @@ public class EventClass implements Serializable {
     private Type type;
     private String identifier = null;
     private Responder response;
+    private Map<String, Object> sessionData = new HashMap<String, Object>();
 
     public Handler getHandler() {
         return handler;
@@ -50,5 +53,17 @@ public class EventClass implements Serializable {
 
     public void setResponse(Responder response) {
         this.response = response;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public Map<String, Object> getSessionData() {
+        return sessionData;
+    }
+
+    public void setSessionData(Map<String, Object> sessionData) {
+        this.sessionData = sessionData;
     }
 }
