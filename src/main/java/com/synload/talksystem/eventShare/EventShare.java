@@ -6,6 +6,7 @@ import com.synload.eventsystem.EventTrigger;
 import com.synload.eventsystem.HandlerRegistry;
 import com.synload.eventsystem.events.RequestEvent;
 import com.synload.eventsystem.events.annotations.ES;
+import com.synload.framework.Log;
 import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HttpRequest;
 import com.synload.framework.ws.WSHandler;
