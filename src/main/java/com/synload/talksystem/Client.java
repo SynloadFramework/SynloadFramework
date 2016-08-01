@@ -59,7 +59,7 @@ public class Client implements Runnable {
     private boolean incoming=false;
     public void close() throws IOException{
         //ServerTalk.getConnected().remove(this);
-        Log.debug("CLOSED client "+Thread.currentThread().getName(), this.getClass());
+        Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
         //reader.interrupt();
         //writer.interrupt();
         //socket.close();
