@@ -89,6 +89,7 @@ public class SynloadFramework extends ModuleClass {
     public static boolean serverTalkEnable = false;
     public static int serverTalkPort = 8081;
     public static Level loglevel = null;
+    public static String eventShareServers;
     public static String modulePath = "modules/";
     public static String configPath = "configs/";
     public static String dbPath = "databases/";
@@ -148,6 +149,7 @@ public class SynloadFramework extends ModuleClass {
                 serverTalkKey = prop.getProperty("serverTalkKey");
                 serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
                 graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
+                eventShareServers = prop.getProperty("eventShareServers","");
                 pubkeyServers = parsePubKeyServers(prop.getProperty("pubkeyservers"));
             } else {
                 InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("config.ini");
@@ -239,14 +241,17 @@ public class SynloadFramework extends ModuleClass {
             server.setHandler(handlerCollection);
 
             Log.info("Loaded all aspects running on port " + port, SynloadFramework.class);
-            if(parser.getCmd().hasOption("eshare")){
-                String[] connectElements = parser.getCmd().getOptionValue("eshare").split("&");
-                String[] addressElements = connectElements[0].split(":");
-                if(connectElements.length==4 && addressElements.length==2) {
-                    try {
-                        EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.getBoolean(connectElements[2]), Boolean.getBoolean(connectElements[3]));
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            if(!eventShareServers.equals("")){
+                String[] eventShareConnections = eventShareServers.split(",");
+                for(String eventShareConnection: eventShareConnections) {
+                    String[] connectElements = eventShareConnection.split("&");
+                    String[] addressElements = connectElements[0].split(":");
+                    if (connectElements.length == 4 && addressElements.length == 2) {
+                        try {
+                            EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.getBoolean(connectElements[2]), Boolean.getBoolean(connectElements[3]));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

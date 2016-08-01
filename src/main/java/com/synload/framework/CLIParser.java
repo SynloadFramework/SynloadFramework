@@ -23,7 +23,6 @@ public class CLIParser {
 		options.addOption("port", true, "Port to run the site on");
 		options.addOption("cb", true, "Connect back api with stats");
 		options.addOption("scb", false, "Send stats back through the connectback bridge");
-		options.addOption("eshare", true, "Connect to server event share");
 		options.addOption("id", true, "identifier for this server");
 		int x=0;
 		while(x<20) {
