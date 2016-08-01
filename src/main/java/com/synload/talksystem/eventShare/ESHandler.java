@@ -28,7 +28,11 @@ public class ESHandler extends Responder{
     public void send(String data) {
         esdata.setData(data);
         //Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
-        es.respond(esdata);
+        try {
+            es.getEventBusServer().write(esdata);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void send(Response r) {
@@ -36,8 +40,8 @@ public class ESHandler extends Responder{
         try {
             esdata.setData(SynloadFramework.ow.writeValueAsString(r));
             //Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
-            es.respond(esdata);
-        } catch (JsonProcessingException e) {
+            es.getEventBusServer().write(esdata);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -47,8 +51,8 @@ public class ESHandler extends Responder{
         try {
             esdata.setData(SynloadFramework.ow.writeValueAsString(r));
             //Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
-            es.respond(esdata);
-        } catch (JsonProcessingException e) {
+            es.getEventBusServer().write(esdata);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
