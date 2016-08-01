@@ -142,6 +142,7 @@ public class ExecuteRead implements Runnable{
                                     e.printStackTrace();
                                 }
                             }else if(ESTypeConnection.class.isInstance(data)){
+                                Log.info("Connection is a EventShare connection!", ExecuteRead.class);
                                 ESTypeConnection estc = (ESTypeConnection) data;
                                 this.getClient().setEs(new EventShare(this.getClient()));
                                 if(estc.isShareEvents()){
