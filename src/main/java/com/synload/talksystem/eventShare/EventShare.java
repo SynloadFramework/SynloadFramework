@@ -50,7 +50,7 @@ public class EventShare {
             String annotation = eventGroup.getKey().getName();
             for(EventTrigger trigger : eventGroup.getValue()){
                 if(trigger.getServer()!=this) { // do not send own events...
-                    if(trigger.getMethod()!=null){
+                    if(trigger.getMethod()!=null){ // its a local event
                         if(trigger.getMethod().isAnnotationPresent(ES.class)){
                             try {
                                 eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));

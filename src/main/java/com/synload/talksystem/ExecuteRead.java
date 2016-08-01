@@ -12,6 +12,7 @@ import com.synload.eventsystem.EventTrigger;
 import com.synload.eventsystem.HandlerRegistry;
 import com.synload.eventsystem.events.STMessageReceivedEvent;
 import com.synload.framework.Log;
+import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.ModuleLoader;
 import com.synload.talksystem.eventShare.*;
 import com.synload.talksystem.systemMessages.ClassNotFoundMessage;
@@ -131,7 +132,7 @@ public class ExecuteRead implements Runnable{
                                     eventTrigger.setTrigger(esse.getTrigger());
                                     eventTrigger.setServer(this.getClient().getEs());
                                     HandlerRegistry.getHandlers().get(c).add(eventTrigger);
-                                    Log.info("Registered event from remote server [ "+eventTrigger.getTrigger().toString()+" ]", ExecuteRead.class);
+                                    Log.info("Registered event from remote server [ "+ SynloadFramework.getOw().writeValueAsString(eventTrigger.getTrigger())+" ]", ExecuteRead.class);
                                     // Get other connected EventShares and send Events
                                     for(EventShare es : EventShare.getEventShareServers()){
                                         if(es.isShareOut()){
