@@ -43,10 +43,10 @@ class ExecuteWrite implements Runnable{
                             Log.debug("Connection error, sending on same client connection", this.getClass());
                         }
                     }
-                    /*if(this.getQueue().size()==0 && this.isCloseAfterSend()){
+                    if(this.getQueue().size()==0 && this.isCloseAfterSend()){
                         //this.setKeepRunning(false);
                         this.getClient().close();
-                    }*/
+                    }
                 }else{
                     if(connectError){
                         connectError=false; 
@@ -77,10 +77,10 @@ class ExecuteWrite implements Runnable{
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    /*if(this.getQueue().size()==0 && this.isCloseAfterSend()){
+                    if(this.getQueue().size()==0 && this.isCloseAfterSend()){
                         //this.setKeepRunning(false);
                         this.getClient().close();
-                    }*/
+                    }
                 }
             }else{
                 try {
@@ -90,7 +90,7 @@ class ExecuteWrite implements Runnable{
                 }
             }
         }
-        //this.getClient().close();
+        this.getClient().close();
         Log.debug("Error could not close thread", this.getClass());
         return;
     }

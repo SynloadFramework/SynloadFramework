@@ -67,7 +67,7 @@ public class Client implements Runnable {
         }catch (Exception e){
             e.printStackTrace();
         }
-        Thread.currentThread().interrupt();
+        //Thread.currentThread().interrupt();
     }
 
     public boolean isKeepRunning() {
