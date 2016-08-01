@@ -58,12 +58,16 @@ public class Client implements Runnable {
     private DataOutputStream dOut = null;
     private boolean incoming=false;
     public void close(){
-        //ServerTalk.getConnected().remove(this);
+        ServerTalk.getConnected().remove(this);
         Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
-        //reader.interrupt();
-        //writer.interrupt();
-        //socket.close();
-        //Thread.currentThread().interrupt();
+        reader.interrupt();
+        writer.interrupt();
+        try {
+            socket.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        Thread.currentThread().interrupt();
     }
 
     public boolean isKeepRunning() {
