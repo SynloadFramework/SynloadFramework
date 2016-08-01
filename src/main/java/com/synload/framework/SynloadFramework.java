@@ -248,7 +248,7 @@ public class SynloadFramework extends ModuleClass {
                     String[] addressElements = connectElements[0].split(":");
                     if (connectElements.length == 4 && addressElements.length == 2) {
                         try {
-                            EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.getBoolean(connectElements[2]), Boolean.getBoolean(connectElements[3]));
+                            EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.valueOf(connectElements[2]), Boolean.valueOf(connectElements[3]));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
