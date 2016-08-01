@@ -1,12 +1,13 @@
 package com.synload.talksystem.eventShare;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Nathaniel on 7/26/2016.
  */
-public class ESData {
+public class ESData implements Serializable {
     public String identifier;
     public String data;
     public int type;

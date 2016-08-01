@@ -1,10 +1,12 @@
 package com.synload.talksystem.eventShare;
 
+import java.io.Serializable;
+
 /**
  * Created by Nathaniel on 7/29/2016.
  */
 
-public class ESSharedEvent {
+public class ESSharedEvent implements Serializable {
     public String annotation;
     public String[] trigger;
     public ESSharedEvent(String annotation, String[] trigger){
