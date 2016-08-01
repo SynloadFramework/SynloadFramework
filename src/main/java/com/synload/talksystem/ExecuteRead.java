@@ -118,6 +118,7 @@ public class ExecuteRead implements Runnable{
                                 if(this.getClient().getEs()!=null){
                                     this.getClient().getEs().respond((ESData) data);
                                 }
+                                Log.info("Received Event Data", ExecuteRead.class);
                             }else if(ESPush.class.isInstance(data)){
                                 ESPush esp = (ESPush) data;
                                 esp.getEvent().setResponse(new ESHandler(esp.getEvent().getIdentifier(), this.getClient().getEs()));
