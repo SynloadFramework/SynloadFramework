@@ -134,7 +134,7 @@ public class EventShare {
             }
         }else{
             // didn't come from this server? ignore
-            Log.info("Whoa route not found!", EventShare.class);
+            Log.info("Whoa route not found! ( "+esd.getIdentifier()+" )", EventShare.class);
         }
     }
 
