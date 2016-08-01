@@ -46,13 +46,13 @@ public class EventPublisher {
                         ) {
                             try {
                                 if(trigger.getServer()==null) {
-                                    Log.info("Event processed ", EventPublisher.class);
+                                    //Log.info("Event processed ", EventPublisher.class);
                                     trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
                                 }else if(event.getIdentifier()!=null){
-                                    Log.info("Event transmitted", EventPublisher.class);
+                                    Log.info("Event transmitted [ESHANDLER]", EventPublisher.class);
                                     trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
                                 }else{
-                                    Log.info("Event transmitted", EventPublisher.class);
+                                    Log.info("Event transmitted [WSHandler]", EventPublisher.class);
                                     trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
                                 }
                                 eventCalled = true;

@@ -11,6 +11,7 @@ import com.synload.framework.http.HTTPHandler;
 import com.synload.framework.http.HttpRequest;
 import com.synload.framework.ws.WSHandler;
 import com.synload.talksystem.Client;
+import net.jodah.expiringmap.ExpiringMap;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Nathaniel on 7/22/2016.
@@ -25,7 +27,7 @@ import java.util.Map.Entry;
 public class EventShare {
     public Client eventBusServer;
     public boolean shareOut = false;
-    public Map<String, Object> requestMap = new HashMap<String, Object>();
+    public Map<String, Object> requestMap = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
     public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         try {
