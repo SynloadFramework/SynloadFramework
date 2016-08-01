@@ -2,6 +2,7 @@ package com.synload.eventsystem;
 
 import com.synload.eventsystem.events.RequestEvent;
 import com.synload.eventsystem.events.WebEvent;
+import com.synload.framework.ws.WSHandler;
 import com.synload.talksystem.eventShare.ESHandler;
 
 public class EventPublisher {
@@ -46,7 +47,11 @@ public class EventPublisher {
                                 if(trigger.getServer()==null) {
                                     trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
                                 }else if(event.getIdentifier()!=null){
-                                    trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
+                                    if(ESHandler.class.isInstance(event.getResponse())){
+                                        trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
+                                    }else if(WSHandler.class.isInstance(event.getResponse())){
+                                        trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
+                                    }
                                 }else{
                                     trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
                                 }
