@@ -57,7 +57,7 @@ public class Client implements Runnable {
     private DataInputStream dIn = null;
     private DataOutputStream dOut = null;
     private boolean incoming=false;
-    public void close() throws IOException{
+    public void close(){
         //ServerTalk.getConnected().remove(this);
         Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
         //reader.interrupt();
@@ -267,13 +267,14 @@ public class Client implements Runnable {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        while(true){
+        while(!socket.isClosed()){
             try {
                 Thread.sleep(1L);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        this.close();
     }
     
 }
