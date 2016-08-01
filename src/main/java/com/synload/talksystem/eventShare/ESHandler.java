@@ -27,7 +27,7 @@ public class ESHandler extends Responder{
     @Override
     public void send(String data) {
         esdata.setData(data);
-        Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
+        //Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
         es.respond(esdata);
     }
 
@@ -35,7 +35,7 @@ public class ESHandler extends Responder{
         //OOnPage.newPage(this, r);
         try {
             esdata.setData(SynloadFramework.ow.writeValueAsString(r));
-            Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
+            //Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
             es.respond(esdata);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -46,7 +46,7 @@ public class ESHandler extends Responder{
     public void send(Data r) {
         try {
             esdata.setData(SynloadFramework.ow.writeValueAsString(r));
-            Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
+            //Log.info(esdata.getIdentifier()+"="+esdata.getData(),ESHandler.class);
             es.respond(esdata);
         } catch (JsonProcessingException e) {
             e.printStackTrace();

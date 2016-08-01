@@ -126,6 +126,7 @@ public class EventShare {
                 }
             }else if(EventShare.class.isInstance(client)){
                 try {
+                    Log.info("Sending to another server...!", EventShare.class);
                     ((EventShare) client).getEventBusServer().write(esd);
                 }catch(Exception e){
                     e.printStackTrace();
@@ -133,6 +134,7 @@ public class EventShare {
             }
         }else{
             // didn't come from this server? ignore
+            Log.info("Whoa route not found!", EventShare.class);
         }
     }
 
