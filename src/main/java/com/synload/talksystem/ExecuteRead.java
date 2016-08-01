@@ -132,7 +132,7 @@ public class ExecuteRead implements Runnable{
                                     eventTrigger.setTrigger(esse.getTrigger());
                                     eventTrigger.setServer(this.getClient().getEs());
                                     HandlerRegistry.getHandlers().get(c).add(eventTrigger);
-                                    Log.info("Registered event from remote server [ "+ SynloadFramework.getOw().writeValueAsString(eventTrigger.getTrigger())+" ]", ExecuteRead.class);
+                                    Log.info("Registered event from remote server "+ SynloadFramework.getOw().writeValueAsString(eventTrigger.getTrigger()), ExecuteRead.class);
                                     // Get other connected EventShares and send Events
                                     for(EventShare es : EventShare.getEventShareServers()){
                                         if(es.isShareOut()){

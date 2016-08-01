@@ -2,9 +2,10 @@ package com.synload.eventsystem;
 
 import com.synload.framework.modules.Responder;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class EventClass {
+public class EventClass implements Serializable {
     private Handler handler;
     private String[] trigger;
     private Type type;
