@@ -296,9 +296,9 @@ public class Client implements Runnable {
             e1.printStackTrace();
         }
         while(isConnected()){
-            Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
+            //Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
