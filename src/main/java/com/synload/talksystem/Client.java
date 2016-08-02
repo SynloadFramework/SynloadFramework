@@ -208,7 +208,7 @@ public class Client implements Runnable {
     public Client(Socket socket, String key, boolean incoming){
         this.socket = socket;
         this.setKey(key);
-        authenticated=false;
+        this.authenticated=false;
         this.incoming = incoming;
     }
     public void reading(){
@@ -272,7 +272,7 @@ public class Client implements Runnable {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        while(!socket.isClosed() && socket.isConnected()){
+        while(!socket.isClosed() && socket.isBound()){
             Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
             try {
                 Thread.sleep(1000);
