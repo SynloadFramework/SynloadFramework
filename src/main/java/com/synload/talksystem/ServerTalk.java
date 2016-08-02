@@ -24,6 +24,8 @@ public class ServerTalk implements Runnable {
             Socket socket;
             while( (socket = server.accept()) != null ){
                 Client c = new Client( socket, SynloadFramework.serverTalkKey, true );
+                c.setAddress("server");
+                c.setPort(SynloadFramework.serverTalkPort);
                 (new Thread(c)).start();
             }
         } catch (IOException e) {
