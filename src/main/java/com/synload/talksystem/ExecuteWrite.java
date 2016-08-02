@@ -45,7 +45,7 @@ class ExecuteWrite implements Runnable{
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
                         //this.setKeepRunning(false);
-                        this.getClient().close();
+                        this.getClient().closeDown();
                     }
                 }else{
                     if(connectError){
@@ -79,7 +79,7 @@ class ExecuteWrite implements Runnable{
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
                         //this.setKeepRunning(false);
-                        this.getClient().close();
+                        this.getClient().closeDown();
                     }
                 }
             }else{

@@ -80,6 +80,9 @@ public class ExecuteRead implements Runnable{
             while(this.isKeepRunning() && !this.getClient().getSocket().isInputShutdown()){
                 if(dIn.available()>0){
                     int length = dIn.readInt();
+                    if(length==-1){
+                        Log.info("Disconnected?", ExecuteRead.class);
+                    }
                     if(length>0){
                         Object data = read(length);
                         if(data!=null){
