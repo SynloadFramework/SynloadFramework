@@ -57,7 +57,7 @@ public class Client implements Runnable {
     private DataInputStream dIn = null;
     private DataOutputStream dOut = null;
     private boolean incoming=false;
-    public void close(){
+    public void closeDown(){
         ServerTalk.getConnected().remove(this);
         Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
         try {
@@ -280,7 +280,7 @@ public class Client implements Runnable {
                 e.printStackTrace();
             }
         }
-        this.close();
+        this.closeDown();
     }
     
 }
