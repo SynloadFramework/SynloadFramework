@@ -23,6 +23,7 @@ public class ConnectionStatus implements Runnable{
         while(client.isConnected()) {
             try {
                 client.write(new Ping(currentId));
+                responded=false;
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -78,9 +78,9 @@ class ExecuteWrite implements Runnable{
                     } catch (IOException e) {
                         e.printStackTrace();
                         //Log.info(e.getMessage(),ExecuteWrite.class);
-                        if(e.getMessage().equalsIgnoreCase("Broken pipe")) {
+                        /*if(e.getMessage().equalsIgnoreCase("Broken pipe")) {
                             this.getClient().closeDown();
-                        }
+                        }*/
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
                         //this.setKeepRunning(false);
