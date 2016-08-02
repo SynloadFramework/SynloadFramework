@@ -20,6 +20,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import com.synload.framework.Log;
 import com.synload.framework.ws.AesUtil;
+import com.synload.talksystem.connectionCheck.ConnectionStatus;
 import com.synload.talksystem.eventShare.EventShare;
 
 public class Client implements Runnable {
@@ -29,10 +30,12 @@ public class Client implements Runnable {
     private int port;
     private Thread writer = null;
     private Thread reader = null;
+    private ConnectionStatus connectionStatus;
     private EventShare es = null;
     private boolean keepRunning=true;
     public List<Object> queue = new ArrayList<Object>();
     private boolean closeAfterSend = false;
+    private boolean connected = true;
     /**
      * @param address
      * @param port
@@ -200,16 +203,36 @@ public class Client implements Runnable {
         this.incoming = incoming;
     }
 
+    public ConnectionStatus getConnectionStatus() {
+        return connectionStatus;
+    }
+
+    public void setConnectionStatus(ConnectionStatus connectionStatus) {
+        this.connectionStatus = connectionStatus;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
     public Client(Socket socket, String key){
         this.socket = socket;
         this.setKey(key);
         authenticated=false;
+        connectionStatus = new ConnectionStatus(this);
+        (new Thread(connectionStatus)).start();
     }
     public Client(Socket socket, String key, boolean incoming){
         this.socket = socket;
         this.setKey(key);
         this.authenticated=false;
         this.incoming = incoming;
+        connectionStatus = new ConnectionStatus(this);
+        (new Thread(connectionStatus)).start();
     }
     public void reading(){
         Log.debug("Socket "+Thread.currentThread().getName()+" saved as a ", this.getClass());
@@ -272,10 +295,10 @@ public class Client implements Runnable {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        while(!socket.isClosed() && socket.isBound() && this.getAddress()!=null){
-            Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
+        while(isConnected()){
+            //Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -14,6 +14,8 @@ import com.synload.eventsystem.events.STMessageReceivedEvent;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.modules.ModuleLoader;
+import com.synload.talksystem.connectionCheck.Ping;
+import com.synload.talksystem.connectionCheck.Pong;
 import com.synload.talksystem.eventShare.*;
 import com.synload.talksystem.systemMessages.ClassNotFoundMessage;
 import com.synload.talksystem.systemMessages.UnrecognizedMessage;
@@ -77,12 +79,9 @@ public class ExecuteRead implements Runnable{
     public void run() {
         Log.debug("New Execute Read "+Thread.currentThread().getName(), this.getClass());
         try {
-            while(this.isKeepRunning() && !this.getClient().getSocket().isInputShutdown() && this.getClient().getSocket().isConnected()){
+            while(this.isKeepRunning() && !this.getClient().getSocket().isInputShutdown()){
                 if(dIn.available()>0){
                     int length = dIn.readInt();
-                    if(length==-1){
-                        Log.info("Disconnected?", ExecuteRead.class);
-                    }
                     if(length>0){
                         Object data = read(length);
                         if(data!=null){
@@ -158,6 +157,10 @@ public class ExecuteRead implements Runnable{
                                     this.getClient().getEs().setShareOut(true);
                                     this.getClient().getEs().transmitEvents();
                                 }
+                            }else if(Ping.class.isInstance(data)){
+                                this.getClient().write(new Pong(((Ping)data).getId()));
+                            }else if(Pong.class.isInstance(data)){
+                                this.getClient().getConnectionStatus().response(((Pong)data).getId());
                             }
                         }
                     }
