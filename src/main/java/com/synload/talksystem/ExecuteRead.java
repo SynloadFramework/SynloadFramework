@@ -77,7 +77,7 @@ public class ExecuteRead implements Runnable{
     public void run() {
         Log.debug("New Execute Read "+Thread.currentThread().getName(), this.getClass());
         try {
-            while(this.isKeepRunning() && !this.getClient().getSocket().isInputShutdown()){
+            while(this.isKeepRunning() && !this.getClient().getSocket().isInputShutdown() && this.getClient().getSocket().isConnected()){
                 if(dIn.available()>0){
                     int length = dIn.readInt();
                     if(length==-1){
