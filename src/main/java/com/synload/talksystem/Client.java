@@ -272,7 +272,7 @@ public class Client implements Runnable {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        while(!socket.isClosed() && socket.isBound()){
+        while(!socket.isClosed() && socket.isBound() && this.getAddress()!=null){
             Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
             try {
                 Thread.sleep(1000);
