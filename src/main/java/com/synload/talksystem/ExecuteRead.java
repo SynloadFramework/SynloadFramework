@@ -161,11 +161,13 @@ public class ExecuteRead implements Runnable{
                 }
                 Thread.sleep(1L);
             }
+
         } catch (IOException e) {
         	e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        Log.info("Socket Closed reader", ExecuteRead.class);
         return;
     }
     public DataInputStream getdIn() {

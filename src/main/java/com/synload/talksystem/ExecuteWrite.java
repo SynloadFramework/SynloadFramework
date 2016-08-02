@@ -90,8 +90,8 @@ class ExecuteWrite implements Runnable{
                 }
             }
         }
-        this.getClient().close();
-        Log.debug("Error could not close thread", this.getClass());
+        Log.info("Socket Closed reader", ExecuteRead.class);
+        //Log.debug("Error could not close thread", this.getClass());
         return;
     }
     public boolean isCloseAfterSend() {
