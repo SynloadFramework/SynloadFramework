@@ -60,13 +60,15 @@ public class Client implements Runnable {
     public void close(){
         ServerTalk.getConnected().remove(this);
         Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
-        reader.interrupt();
-        writer.interrupt();
         try {
+            socket.shutdownInput();
+            socket.shutdownOutput();
             socket.close();
         }catch (Exception e){
             e.printStackTrace();
         }
+        reader.interrupt();
+        writer.interrupt();
         //Thread.currentThread().interrupt();
     }
 
@@ -255,7 +257,6 @@ public class Client implements Runnable {
 
     public void run() {
         try {
-            
             ew = new ExecuteWrite(new DataOutputStream(socket.getOutputStream()), this, this.isCloseAfterSend());
             writer = new Thread(ew);
             writer.start();
@@ -272,9 +273,9 @@ public class Client implements Runnable {
             e1.printStackTrace();
         }
         while(socket.isConnected()){
-            Log.info("Still connected?", Client.class);
+            Log.info("Still connected? "+this.getAddress()+":"+this.getPort(), Client.class);
             try {
-                Thread.sleep(200);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
