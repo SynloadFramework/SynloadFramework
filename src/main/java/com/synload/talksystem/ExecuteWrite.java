@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.SocketException;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import com.synload.framework.Log;
@@ -76,6 +77,7 @@ class ExecuteWrite implements Runnable{
                         dOut.write(bytes);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        Log.info(e.getMessage(),ExecuteWrite.class);
                     }
                     if(this.getQueue().size()==0 && this.isCloseAfterSend()){
                         //this.setKeepRunning(false);
