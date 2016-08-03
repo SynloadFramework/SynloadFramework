@@ -97,19 +97,24 @@ public class Client implements Runnable {
 
     }
 
-    public static void reconnect( EventShare es , String address, int port, boolean closeAfterSend, String key, boolean reconnect){
-        if(reconnect){
-            try {
-                Thread.sleep(5000); // wait 5 seconds
-                Client c = createConnection(address, port, closeAfterSend, key, reconnect);
-                c.setEs(es);
-                es.setEventBusServer(c);
-                es.onConnect();
-            }catch(Exception e){
-                e.printStackTrace();
-                reconnect(es, address, port, closeAfterSend, key, reconnect);
+    public static void reconnect( final EventShare es , final String address, final int port, final boolean closeAfterSend, final String key, final boolean reconnect){
+        new Thread(){
+            public void run(){
+                if(reconnect){
+                    try {
+                        Thread.sleep(5000); // wait 5 seconds
+                        Client c = createConnection(address, port, closeAfterSend, key, reconnect);
+                        c.setEs(es);
+                        es.setEventBusServer(c);
+                        es.onConnect();
+                    }catch(Exception e){
+                        e.printStackTrace();
+                        reconnect(es, address, port, closeAfterSend, key, reconnect);
+                    }
+                }
             }
-        }
+        }.start();
+
     }
     public void reconnect(String address, int port, boolean closeAfterSend, String key, boolean reconnect){
         if(reconnect){
