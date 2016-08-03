@@ -56,7 +56,6 @@ public class EventShare {
             List<EventTrigger> eventTriggers = new ArrayList<EventTrigger>(eventGroup.getValue());
             for(EventTrigger trigger : eventTriggers){
                 if(trigger.getServer()==this) { // do not send own events...
-                    HandlerRegistry.getHandlers().get(eventGroup.getKey()).remove(trigger);
                     ESRemoveEvent esre = new ESRemoveEvent(annotation, trigger.getTrigger());
                     for(EventShare es : EventShare.getEventShareServers()){
                         if(es!=this) {
@@ -69,6 +68,7 @@ public class EventShare {
                             }
                         }
                     }
+                    HandlerRegistry.getHandlers().get(eventGroup.getKey()).remove(trigger);
                     System.out.println(HandlerRegistry.getHandlers());
                 }
             }
