@@ -100,6 +100,7 @@ public class Client implements Runnable {
     public static void reconnect( final EventShare es , final String address, final int port, final boolean closeAfterSend, final String key, final boolean reconnect){
         new Thread(){
             public void run(){
+
                 if(reconnect){
                     Log.info("Reconnecting", Client.class);
                     try {
@@ -112,6 +113,8 @@ public class Client implements Runnable {
                         e.printStackTrace();
                         reconnect(es, address, port, closeAfterSend, key, reconnect);
                     }
+                }else{
+                    Log.info("Error, reconnect lost value "+reconnect, Client.class);
                 }
             }
         }.start();
