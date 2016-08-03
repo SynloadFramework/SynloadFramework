@@ -88,6 +88,7 @@ public class EventShare {
     }
     public void transmitEvents(){
         // Currently transmit all events
+        Log.info("Transmitting Events", EventShare.class);
         for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
             String annotation = eventGroup.getKey().getName();
             for(EventTrigger trigger : eventGroup.getValue()){
