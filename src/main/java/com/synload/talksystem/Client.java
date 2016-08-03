@@ -61,6 +61,9 @@ public class Client implements Runnable {
     private DataOutputStream dOut = null;
     private boolean incoming=false;
     public void closeDown(){
+        if(es!=null){
+           es.onClose();
+        }
         ServerTalk.getConnected().remove(this);
         Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
         try {

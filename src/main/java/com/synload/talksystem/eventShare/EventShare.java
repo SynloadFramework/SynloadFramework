@@ -44,9 +44,38 @@ public class EventShare {
             e.printStackTrace();
         }
     }
+
     public EventShare(Client eventBusServer){
         this.eventBusServer = eventBusServer;
         eventShareServers.add(this);
+    }
+    public void removeEvents(){
+        // Currently transmit all events
+        for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
+            String annotation = eventGroup.getKey().getName();
+            List<EventTrigger> eventTriggers = new ArrayList<EventTrigger>(eventGroup.getValue());
+            for(EventTrigger trigger : eventTriggers){
+                if(trigger.getServer()==this) { // do not send own events...
+                    HandlerRegistry.getHandlers().get(eventGroup.getKey()).remove(trigger);
+                    ESRemoveEvent esre = new ESRemoveEvent(annotation, trigger.getTrigger());
+                    for(EventShare es : EventShare.getEventShareServers()){
+                        if(es!=this) {
+                            if (es.isShareOut()) {
+                                try {
+                                    es.getEventBusServer().write(esre);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                    System.out.println(HandlerRegistry.getHandlers());
+                }
+            }
+        }
+    }
+    public void onClose(){
+        removeEvents();
     }
     public void transmitEvents(){
         // Currently transmit all events

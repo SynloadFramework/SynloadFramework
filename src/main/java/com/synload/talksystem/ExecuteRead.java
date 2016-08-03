@@ -149,6 +149,32 @@ public class ExecuteRead implements Runnable{
                                 }catch(Exception e){
                                     e.printStackTrace();
                                 }
+                            }else if(ESRemoveEvent.class.isInstance(data)){
+                                ESRemoveEvent esre = (ESRemoveEvent)data;
+                                try {
+                                    Class c = Class.forName(esre.getAnnotation());
+                                    if(HandlerRegistry.getHandlers().containsKey(c)){
+                                        List<EventTrigger> list = new ArrayList<EventTrigger>(HandlerRegistry.getHandlers().get(c));
+                                        String[] trigger=null;
+                                        for(EventTrigger eventTrigger: list){
+                                            if(eventTrigger.getTrigger().equals(esre.getTrigger()) && eventTrigger.getServer()==this.getClient().getEs()){
+                                                trigger = eventTrigger.getTrigger();
+                                                HandlerRegistry.getHandlers().get(c).remove(eventTrigger);
+                                            }
+                                        }
+                                        Log.info("Removed event from remote server "+ SynloadFramework.getOw().writeValueAsString(trigger), ExecuteRead.class);
+                                        // Get other connected EventShares and send Events
+                                        for(EventShare es : EventShare.getEventShareServers()){
+                                            if(es!=this.getClient().getEs()) {
+                                                if (es.isShareOut()) {
+                                                    es.getEventBusServer().write(esre);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }catch(Exception e){
+                                    e.printStackTrace();
+                                }
                             }else if(ESTypeConnection.class.isInstance(data)){
                                 Log.info("Connection is a EventShare connection!", ExecuteRead.class);
                                 ESTypeConnection estc = (ESTypeConnection) data;
