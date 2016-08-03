@@ -85,16 +85,11 @@ public class Client implements Runnable {
         }catch (Exception e){
             e.printStackTrace();
         }
-        try {
-            reader.interrupt();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        try {
-            writer.interrupt();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+
+        reader.interrupt();
+        writer.interrupt();
+        //Thread.currentThread().interrupt();
+
         if(es!=null) {
             reconnect(es, address, port, closeAfterSend, key, reconnect);
         }else{
@@ -107,6 +102,7 @@ public class Client implements Runnable {
         new Thread(){
             public void run(){
                 if(reconnect){
+                    Log.info("Reconnecting", Client.class);
                     try {
                         Thread.sleep(5000); // wait 5 seconds
                         Client c = createConnection(address, port, closeAfterSend, key, reconnect);
@@ -124,6 +120,7 @@ public class Client implements Runnable {
     }
     public void reconnect(String address, int port, boolean closeAfterSend, String key, boolean reconnect){
         if(reconnect){
+            Log.info("Reconnecting", Client.class);
             try {
                 Thread.sleep(5000); // wait 2 seconds
                 Socket clientSocket = new Socket(address, port);
