@@ -32,13 +32,14 @@ public class EventShare {
     public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         try {
-            eventBusServer = Client.createConnection(ip, port, false, key);
+            eventBusServer = Client.createConnection(ip, port, false, key, true);
             eventBusServer.setEs(this);
             this.localShare = localShare;
             this.remoteShare = remoteShare;
             onConnect();
         }catch (Exception e){
             e.printStackTrace();
+            Client.reconnect(this, ip, port, false, key, true);
         }
     }
     public void onConnect(){

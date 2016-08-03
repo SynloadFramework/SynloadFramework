@@ -87,16 +87,41 @@ public class Client implements Runnable {
         }
         reader.interrupt();
         writer.interrupt();
-        if(this.isReconnect()){
+        //Thread.currentThread().interrupt();
+        if(this.getEs()!=null) {
+            reconnect(this.getEs(), address, port, closeAfterSend, key, reconnect);
+        }else{
+            reconnect(address, port, closeAfterSend, key, reconnect);
+        }
+
+    }
+
+    public static void reconnect( EventShare es , String address, int port, boolean closeAfterSend, String key, boolean reconnect){
+        if(reconnect){
             try {
                 Thread.sleep(5000); // wait 2 seconds
-                this.getEs().setEventBusServer(createConnection(address, port, closeAfterSend, key, reconnect));
-                getEs().onConnect();
+                Client c = createConnection(address, port, closeAfterSend, key, reconnect);
+                es.setEventBusServer(c);
+                c.setEs(es);
+                es.onConnect();
             }catch(Exception e){
                 e.printStackTrace();
+                reconnect(es, address, port, closeAfterSend, key, reconnect);
             }
         }
-        //Thread.currentThread().interrupt();
+    }
+    public void reconnect(String address, int port, boolean closeAfterSend, String key, boolean reconnect){
+        if(reconnect){
+            try {
+                Thread.sleep(5000); // wait 2 seconds
+                Socket clientSocket = new Socket(address, port);
+                this.setSocket(clientSocket);
+                (new Thread(this)).start();
+            }catch(Exception e){
+                e.printStackTrace();
+                reconnect(address, port, closeAfterSend, key, reconnect);
+            }
+        }
     }
 
     public boolean isKeepRunning() {
