@@ -85,10 +85,16 @@ public class Client implements Runnable {
         }catch (Exception e){
             e.printStackTrace();
         }
-        reader.interrupt();
-        writer.interrupt();
-        //Thread.currentThread().interrupt();
-
+        try {
+            reader.interrupt();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            writer.interrupt();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         if(es!=null) {
             reconnect(es, address, port, closeAfterSend, key, reconnect);
         }else{
