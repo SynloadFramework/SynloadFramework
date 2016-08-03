@@ -31,6 +31,7 @@ public class EventShare {
     public Map<String, Object> requestMap = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
     public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
+        eventShareServers.add(this);
         try {
             eventBusServer = Client.createConnection(ip, port, false, key, true);
             eventBusServer.setEs(this);
@@ -47,10 +48,8 @@ public class EventShare {
             eventBusServer.write(new ESTypeConnection(remoteShare));
             // send Events
             if(localShare){
-                localShare=true;
-                this.transmitEvents();
+                transmitEvents();
             }
-            eventShareServers.add(this);
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -88,8 +88,9 @@ public class Client implements Runnable {
         reader.interrupt();
         writer.interrupt();
         //Thread.currentThread().interrupt();
-        if(this.getEs()!=null) {
-            reconnect(this.getEs(), address, port, closeAfterSend, key, reconnect);
+
+        if(es!=null) {
+            reconnect(es, address, port, closeAfterSend, key, reconnect);
         }else{
             reconnect(address, port, closeAfterSend, key, reconnect);
         }
@@ -99,10 +100,10 @@ public class Client implements Runnable {
     public static void reconnect( EventShare es , String address, int port, boolean closeAfterSend, String key, boolean reconnect){
         if(reconnect){
             try {
-                Thread.sleep(5000); // wait 2 seconds
+                Thread.sleep(5000); // wait 5 seconds
                 Client c = createConnection(address, port, closeAfterSend, key, reconnect);
-                es.setEventBusServer(c);
                 c.setEs(es);
+                es.setEventBusServer(c);
                 es.onConnect();
             }catch(Exception e){
                 e.printStackTrace();
