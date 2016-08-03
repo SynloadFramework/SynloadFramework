@@ -28,7 +28,7 @@ public class ConnectionStatus implements Runnable{
                 e.printStackTrace();
             }
             try {
-                Thread.sleep(500);
+                Thread.sleep(2000);
             }catch(Exception e){
                 e.printStackTrace();
             }
