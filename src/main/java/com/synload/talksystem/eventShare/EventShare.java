@@ -33,10 +33,10 @@ public class EventShare {
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         eventShareServers.add(this);
         try {
-            eventBusServer = Client.createConnection(ip, port, false, key, true);
-            eventBusServer.setEs(this);
             this.localShare = localShare;
             this.remoteShare = remoteShare;
+            eventBusServer = Client.createConnection(ip, port, false, key, true);
+            eventBusServer.setEs(this);
             onConnect();
         }catch (Exception e){
             e.printStackTrace();
