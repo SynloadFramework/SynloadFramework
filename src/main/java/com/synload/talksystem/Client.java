@@ -73,6 +73,11 @@ public class Client implements Runnable {
     private DataOutputStream dOut = null;
     private boolean incoming=false;
     public void closeDown(){
+        if(es!=null) {
+            reconnect(es, address, port, closeAfterSend, key, reconnect);
+        }else{
+            reconnect(address, port, closeAfterSend, key, reconnect);
+        }
         if(es!=null){
            es.onClose();
         }
@@ -89,12 +94,6 @@ public class Client implements Runnable {
         reader.interrupt();
         writer.interrupt();
         //Thread.currentThread().interrupt();
-
-        if(es!=null) {
-            reconnect(es, address, port, closeAfterSend, key, reconnect);
-        }else{
-            reconnect(address, port, closeAfterSend, key, reconnect);
-        }
 
     }
 
