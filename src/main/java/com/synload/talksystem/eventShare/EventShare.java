@@ -26,17 +26,27 @@ import java.util.concurrent.TimeUnit;
  */
 public class EventShare {
     public Client eventBusServer;
-    public boolean shareOut = false;
+    public boolean localShare = false;
+    public boolean remoteShare = false;
     public Map<String, Object> requestMap = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
     public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         try {
             eventBusServer = Client.createConnection(ip, port, false, key);
             eventBusServer.setEs(this);
+            this.localShare = localShare;
+            this.remoteShare = remoteShare;
+            onConnect();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void onConnect(){
+        try{
             eventBusServer.write(new ESTypeConnection(remoteShare));
             // send Events
             if(localShare){
-                shareOut=true;
+                localShare=true;
                 this.transmitEvents();
             }
             eventShareServers.add(this);
@@ -44,7 +54,6 @@ public class EventShare {
             e.printStackTrace();
         }
     }
-
     public EventShare(Client eventBusServer){
         this.eventBusServer = eventBusServer;
         eventShareServers.add(this);
@@ -184,11 +193,11 @@ public class EventShare {
     }
 
     public boolean isShareOut() {
-        return shareOut;
+        return localShare;
     }
 
     public void setShareOut(boolean shareOut) {
-        this.shareOut = shareOut;
+        this.localShare = shareOut;
     }
 
     public static List<EventShare> getEventShareServers() {

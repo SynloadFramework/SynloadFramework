@@ -31,6 +31,7 @@ public class Client implements Runnable {
     private Thread writer = null;
     private Thread reader = null;
     private ConnectionStatus connectionStatus;
+    private boolean reconnect = false;
     private EventShare es = null;
     private boolean keepRunning=true;
     public List<Object> queue = new ArrayList<Object>();
@@ -49,6 +50,17 @@ public class Client implements Runnable {
         Client c = new Client(clientSocket,key);
         c.setAddress(address);
         c.setPort(port);
+        c.setCloseAfterSend(closeAfterSend);
+        c.setKey(key);
+        (new Thread(c)).start();
+        return c;
+    }
+    public static Client createConnection(String address, int port, boolean closeAfterSend, String key, boolean reconnect) throws UnknownHostException, IOException{
+        Socket clientSocket = new Socket(address, port);
+        Client c = new Client(clientSocket,key);
+        c.setAddress(address);
+        c.setPort(port);
+        c.setConnected(reconnect);
         c.setCloseAfterSend(closeAfterSend);
         c.setKey(key);
         (new Thread(c)).start();
@@ -75,6 +87,15 @@ public class Client implements Runnable {
         }
         reader.interrupt();
         writer.interrupt();
+        if(this.isReconnect()){
+            try {
+                Thread.sleep(5000); // wait 2 seconds
+                this.getEs().setEventBusServer(createConnection(address, port, closeAfterSend, key, reconnect));
+                getEs().onConnect();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
         //Thread.currentThread().interrupt();
     }
 
@@ -220,6 +241,14 @@ public class Client implements Runnable {
 
     public void setConnected(boolean connected) {
         this.connected = connected;
+    }
+
+    public boolean isReconnect() {
+        return reconnect;
+    }
+
+    public void setReconnect(boolean reconnect) {
+        this.reconnect = reconnect;
     }
 
     public Client(Socket socket, String key){
