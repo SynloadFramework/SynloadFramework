@@ -199,13 +199,7 @@ public class SynloadFramework extends ModuleClass {
             ModuleLoader.load(modulePath);
 
             Log.info("Modules loaded", SynloadFramework.class);
-            
-            if(serverTalkEnable){
-                Log.info("Server talk enabled, starting up!", SynloadFramework.class);
-                new Thread (new ServerTalk()).start();
-            }else{
-                Log.info("Server talk system disabled, skipping", SynloadFramework.class);
-            }
+
             if(graphDBEnable){
                 Log.info("Neo4J enabled, starting up!", SynloadFramework.class);
                 if (!(new File(graphDBPath)).exists()) {
@@ -254,6 +248,12 @@ public class SynloadFramework extends ModuleClass {
                         }
                     }
                 }
+            }
+            if(serverTalkEnable){
+                Log.info("Server talk enabled, starting up!", SynloadFramework.class);
+                new Thread (new ServerTalk()).start();
+            }else{
+                Log.info("Server talk system disabled, skipping", SynloadFramework.class);
             }
             server.start();
             server.join();
