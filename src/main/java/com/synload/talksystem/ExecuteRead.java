@@ -157,9 +157,14 @@ public class ExecuteRead implements Runnable{
                                         List<EventTrigger> list = new ArrayList<EventTrigger>(HandlerRegistry.getHandlers().get(c));
                                         String[] trigger=null;
                                         for(EventTrigger eventTrigger: list){
-                                            if(eventTrigger.getTrigger().equals(esre.getTrigger()) && eventTrigger.getServer()==this.getClient().getEs()){
+                                            if(
+                                                eventTrigger.getTrigger()[0].equals(esre.getTrigger()[0])
+                                                && eventTrigger.getTrigger()[1].equals(esre.getTrigger()[1])
+                                                && eventTrigger.getServer()==this.getClient().getEs()
+                                            ){
                                                 trigger = eventTrigger.getTrigger();
                                                 HandlerRegistry.getHandlers().get(c).remove(eventTrigger);
+                                                System.out.println(HandlerRegistry.getHandlers());
                                             }
                                         }
                                         Log.info("Removed event from remote server "+ SynloadFramework.getOw().writeValueAsString(trigger), ExecuteRead.class);
