@@ -1,9 +1,11 @@
 package com.synload.talksystem.eventShare;
 
+import java.io.Serializable;
+
 /**
  * Created by Nathaniel on 8/2/2016.
  */
-public class ESRemoveEvent {
+public class ESRemoveEvent implements Serializable {
     public String annotation;
     public String[] trigger;
     public ESRemoveEvent(String annotation, String[] trigger){
