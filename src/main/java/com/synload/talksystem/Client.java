@@ -61,7 +61,7 @@ public class Client implements Runnable {
         Client c = new Client(clientSocket,key);
         c.setAddress(address);
         c.setPort(port);
-        c.setConnected(reconnect);
+        c.setReconnect(reconnect);
         c.setCloseAfterSend(closeAfterSend);
         c.setKey(key);
         (new Thread(c)).start();
