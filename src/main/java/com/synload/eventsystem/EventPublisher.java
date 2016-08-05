@@ -45,13 +45,13 @@ public class EventPublisher {
                             && trigger.getTrigger()[1].equalsIgnoreCase(requestEvent.getRequest().getAction()) // action / action
                         ) {
                             try {
-                                if(trigger.getServer()==null) {
+                                if(trigger.getServer()==null && trigger.getHostClass()!=null) {
                                     //Log.info("Event processed ", EventPublisher.class);
                                     trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
                                 }else if(event.getIdentifier()!=null){
                                     Log.info("Event transmitted [ESHANDLER]", EventPublisher.class);
                                     trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
-                                }else{
+                                }else if(trigger.getServer()!=null){
                                     Log.info("Event transmitted [WSHandler]", EventPublisher.class);
                                     trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
                                 }
