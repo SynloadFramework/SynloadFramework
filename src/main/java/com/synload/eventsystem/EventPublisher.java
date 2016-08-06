@@ -48,7 +48,7 @@ public class EventPublisher {
                                 if(trigger.getServer()==null && trigger.getHostClass()!=null) {
                                     //Log.info("Event processed ", EventPublisher.class);
                                     trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
-                                }else if(event.getIdentifier()!=null){
+                                }else if(event.getIdentifier()!=null && trigger.getServer()!=null){
                                     Log.info("Event transmitted [ESHANDLER]", EventPublisher.class);
                                     trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
                                 }else if(trigger.getServer()!=null){
