@@ -282,7 +282,9 @@ public class Client implements Runnable {
         this.incoming = incoming;
         connectionStatus = new ConnectionStatus(this);
         (new Thread(connectionStatus)).start();
-        ServerTalk.getConnected().add(this);
+        if(incoming) {
+            ServerTalk.getConnected().add(this);
+        }
     }
     public void reading(){
         Log.debug("Socket "+Thread.currentThread().getName()+" saved as a ", this.getClass());
