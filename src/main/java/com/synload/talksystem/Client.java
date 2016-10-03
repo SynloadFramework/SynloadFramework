@@ -273,7 +273,6 @@ public class Client implements Runnable {
         authenticated=false;
         connectionStatus = new ConnectionStatus(this);
         (new Thread(connectionStatus)).start();
-        ServerTalk.getConnected().add(this);
     }
     public Client(Socket socket, String key, boolean incoming){
         this.socket = socket;
@@ -282,9 +281,6 @@ public class Client implements Runnable {
         this.incoming = incoming;
         connectionStatus = new ConnectionStatus(this);
         (new Thread(connectionStatus)).start();
-        if(incoming) {
-            ServerTalk.getConnected().add(this);
-        }
     }
     public void reading(){
         Log.debug("Socket "+Thread.currentThread().getName()+" saved as a ", this.getClass());
