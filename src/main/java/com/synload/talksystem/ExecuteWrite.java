@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.SocketException;
 import java.util.List;
-import java.util.Stack;
-
 import org.apache.commons.io.IOUtils;
 import com.synload.framework.Log;
 
@@ -35,7 +33,8 @@ class ExecuteWrite implements Runnable{
                             Client tempFileBridge = Client.createConnection(client.getAddress(), client.getPort(), true, client.getKey());
                             for(int x=0;x<10;x++){
                                 if(this.getClient().queue.size()>0){
-                                    Object item = this.getClient().queue.pop();
+                                    Object item = this.getClient().queue.get(0);
+                                    this.getClient().queue.remove(0);
                                     tempFileBridge.queue.add(item);
                                 }
                             }
@@ -53,7 +52,8 @@ class ExecuteWrite implements Runnable{
                     if(connectError){
                         connectError=false; 
                     }
-                    Object data = this.getClient().queue.pop();
+                    Object data = this.getClient().queue.get(0);
+                    this.getClient().queue.remove(0);
                     ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
                     ObjectOutputStream out;
                     try {
@@ -76,7 +76,6 @@ class ExecuteWrite implements Runnable{
                         //Log.debug("wrote "+bytes.length+" bytes", this.getClass());
                         dOut.write(bytes);
                     } catch (IOException e) {
-                        this.getClient().queue.add(data);
                         e.printStackTrace();
                         //Log.info(e.getMessage(),ExecuteWrite.class);
                         /*if(e.getMessage().equalsIgnoreCase("Broken pipe")) {
@@ -127,7 +126,7 @@ class ExecuteWrite implements Runnable{
     public List<Object> getQueue() {
         return getClient().queue;
     }
-    public void setQueue(Stack<Object> queue) {
+    public void setQueue(List<Object> queue) {
         this.getClient().queue = queue;
     }
     

@@ -13,7 +13,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.Random;
 import java.util.UUID;
 import javax.crypto.BadPaddingException;
@@ -36,7 +35,7 @@ public class Client implements Runnable {
     private boolean reconnect = false;
     private EventShare es = null;
     private boolean keepRunning=true;
-    public Stack<Object> queue = new Stack<Object>();
+    public List<Object> queue = new ArrayList<Object>();
     private boolean closeAfterSend = false;
     private boolean connected = true;
     /**
@@ -232,7 +231,7 @@ public class Client implements Runnable {
         return queue;
     }
 
-    public void setQueue(Stack<Object> queue) {
+    public void setQueue(List<Object> queue) {
         this.queue = queue;
     }
 
