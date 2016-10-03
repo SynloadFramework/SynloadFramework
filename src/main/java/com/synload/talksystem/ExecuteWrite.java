@@ -25,7 +25,7 @@ class ExecuteWrite implements Runnable{
         Log.debug("New Execute Write "+Thread.currentThread().getName(), this.getClass());
         while(this.isKeepRunning() && !this.getClient().getSocket().isOutputShutdown()){
             if(this.getClient().queue.size()>0){
-                if(this.getClient().queue.size()>10 && connectError==false){
+                if(this.getClient().queue.size()>40 && connectError==false && !client.getKey().isEmpty()){
                     int senders = (int) Math.ceil(this.getClient().queue.size()/10);
                     //Log.info("Created "+senders+" data connections to the file bridge", ExecuteWrite.class);
                     for(int g=0;g<senders;g++){
