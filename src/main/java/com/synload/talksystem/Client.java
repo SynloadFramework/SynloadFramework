@@ -82,7 +82,7 @@ public class Client implements Runnable {
         if(es!=null){
            es.onClose();
         }
-        ServerTalk.getConnected().remove(this);
+        //ServerTalk.getConnected().remove(this);
         Log.info("CLOSED client "+Thread.currentThread().getName(), this.getClass());
         try {
             socket.shutdownInput();
@@ -271,20 +271,16 @@ public class Client implements Runnable {
         this.socket = socket;
         this.setKey(key);
         authenticated=false;
-        connectionStatus = new ConnectionStatus(this);
-        (new Thread(connectionStatus)).start();
+        /*connectionStatus = new ConnectionStatus(this);
+        (new Thread(connectionStatus)).start();*/
     }
     public Client(Socket socket, String key, boolean incoming){
         this.socket = socket;
         this.setKey(key);
         this.authenticated=false;
         this.incoming = incoming;
-        connectionStatus = new ConnectionStatus(this);
-        (new Thread(connectionStatus)).start();
-    }
-    public void reading(){
-        Log.debug("Socket "+Thread.currentThread().getName()+" saved as a ", this.getClass());
-        ServerTalk.getConnected().add(this);
+        /*connectionStatus = new ConnectionStatus(this);
+        (new Thread(connectionStatus)).start();*/
     }
     public void write(Object data) throws IOException{
         queue.add(data);
