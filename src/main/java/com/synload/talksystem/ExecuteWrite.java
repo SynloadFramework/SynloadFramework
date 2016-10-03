@@ -39,7 +39,7 @@ class ExecuteWrite implements Runnable{
                                 }
                             }
                         } catch (IOException e) {
-                            //e.printStackTrace();
+                            e.printStackTrace();
                             connectError=true;
                             Log.debug("Connection error, sending on same client connection", this.getClass());
                         }
