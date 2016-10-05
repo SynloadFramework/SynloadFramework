@@ -202,6 +202,9 @@ public class ExecuteRead implements Runnable{
         } catch (IOException e) {
         	e.printStackTrace();
         } catch (InterruptedException e) {
+            if(client.isReconnect() && !client.isIncoming()){
+                client.reconnect(client.getAddress(), client.getPort(), client.isCloseAfterSend(), client.getKey(), client.isReconnect());
+            }
             e.printStackTrace();
         }
         Log.info("Socket Closed reader", ExecuteRead.class);

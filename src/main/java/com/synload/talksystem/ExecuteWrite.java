@@ -76,6 +76,9 @@ class ExecuteWrite implements Runnable{
                         //Log.debug("wrote "+bytes.length+" bytes", this.getClass());
                         dOut.write(bytes);
                     } catch (IOException e) {
+                        if(client.isReconnect() && !client.isIncoming()){
+                            client.reconnect(client.getAddress(), client.getPort(), client.isCloseAfterSend(), client.getKey(), client.isReconnect());
+                        }
                         e.printStackTrace();
                         //Log.info(e.getMessage(),ExecuteWrite.class);
                         /*if(e.getMessage().equalsIgnoreCase("Broken pipe")) {
