@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'application'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.7
 version = '1.4.8.1'
@@ -60,6 +61,14 @@ uploadArchives {
        flatDir {
            dirs 'build/repos'
        }
+        mavenDeployer {
+            repository(url: "http://nexus.synload.com/repository/releases/") {
+                authentication(userName: "admin", password: "$System.env.PASSWORD")
+            }
+            pom.version = "${version}"
+            pom.artifactId = "mcbans-bukkit"
+            pom.groupId = "com.mcbans"
+        }
     }
 }
 
