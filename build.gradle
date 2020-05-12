@@ -66,8 +66,8 @@ uploadArchives {
                 authentication(userName: "admin", password: "$System.env.PASSWORD")
             }
             pom.version = "${version}"
-            pom.artifactId = "mcbans-bukkit"
-            pom.groupId = "com.mcbans"
+            pom.artifactId = "synloadframework"
+            pom.groupId = "com.synload"
         }
     }
 }
