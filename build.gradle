@@ -84,14 +84,13 @@ publishing {
             groupId 'com.synload.SynloadFramework'
             artifactId 'SynloadFramework'
             version '1.4.8.1'
-    
             from components.java
         }
     }
     repositories {
         maven {
             // change to point to your repo, e.g. http://my.org/repo
-            url "$buildDir/repo"
+            url "$buildDir/repos"
         }
     }
 }
