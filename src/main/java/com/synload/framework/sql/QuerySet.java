@@ -77,41 +77,41 @@ public class QuerySet {
         if (limit != null) {
             sql += " LIMIT " + limit;
         }
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-        for (int x = 0; x < data.length; x++) {
-            ps.setObject(x + 1, data[x]);
-        }
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Field index = Model._getKey(c);
-            boolean found = false;
-            if(index!=null) {
-                if (Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
-                    try {
-                        if (Model.cache.get(Model._tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
-                            //Log.info("HIT CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                            Model model = Model.cache.get(Model._tableName(c.getSimpleName())).get(rs.getString(index.getName()));
-                            model._updateVars(c, rs);
-                            ms.add((T) model);
-                            found = true;
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            for (int x = 0; x < data.length; x++) {
+                ps.setObject(x + 1, data[x]);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Field index = Model._getKey(c);
+                    boolean found = false;
+                    if(index!=null) {
+                        if (Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
+                            try {
+                                if (Model.cache.get(Model._tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
+                                    //Log.info("HIT CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                                    Model model = Model.cache.get(Model._tableName(c.getSimpleName())).get(rs.getString(index.getName()));
+                                    model._updateVars(c, rs);
+                                    ms.add((T) model);
+                                    found = true;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                } else {
-                    Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    if(!found){
+                        //Log.info("CACHE MISS IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                        Model model = (Model) con.newInstance(rs);
+                        Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
+                        //Log.info("STORING CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                        ms.add((T) model);
+                    }
                 }
             }
-            if(!found){
-                //Log.info("CACHE MISS IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                Model model = (Model) con.newInstance(rs);
-                Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                //Log.info("STORING CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                ms.add((T) model);
-            }
         }
-        rs.close();
-        ps.close();
         return ms;
     }
 
@@ -129,15 +129,15 @@ public class QuerySet {
         if (limit != null) {
             sql += " LIMIT " + limit;
         }
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-        for (int x = 0; x < data.length; x++) {
-            ps.setObject(x + 1, data[x]);
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            for (int x = 0; x < data.length; x++) {
+                ps.setObject(x + 1, data[x]);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                c = rs.getInt("c");
+            }
         }
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        c = rs.getInt("c");
-        rs.close();
-        ps.close();
         return c;
     }
 

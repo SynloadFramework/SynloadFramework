@@ -123,12 +123,12 @@ public class Model {
                         + _tableName(this.getClass().getSimpleName())
                         + "` SET `" + colName + "`=? WHERE `" + f.getName()
                         + "`=? LIMIT 1;";
-                PreparedStatement ps = SynloadFramework.sql
-                        .prepareStatement(sql);
-                ps.setObject(1, data);
-                ps.setObject(2, f.get(this));
-                ps.execute();
-                ps.close();
+                try (PreparedStatement ps = SynloadFramework.sql
+                        .prepareStatement(sql)) {
+                    ps.setObject(1, data);
+                    ps.setObject(2, f.get(this));
+                    ps.execute();
+                }
                 return;
             }
         }
@@ -206,41 +206,41 @@ public class Model {
             return null;
         }
         List<T> ms = new ArrayList<T>();
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-        for (int x = 0; x < data.length; x++) {
-            ps.setObject(x + 1, data[x]);
-        }
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Field index = Model._getKey(c);
-            boolean found = false;
-            if(index!=null) {
-                if (cache.containsKey(_tableName(c.getSimpleName()))) {
-                    try {
-                        if (cache.get(_tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
-                            Log.info("HIT CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                            Model model = cache.get(_tableName(c.getSimpleName())).get(rs.getString(index.getName()));
-                            model._updateVars(c, rs);
-                            ms.add((T) model);
-                            found = true;
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            for (int x = 0; x < data.length; x++) {
+                ps.setObject(x + 1, data[x]);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Field index = Model._getKey(c);
+                    boolean found = false;
+                    if(index!=null) {
+                        if (cache.containsKey(_tableName(c.getSimpleName()))) {
+                            try {
+                                if (cache.get(_tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
+                                    Log.info("HIT CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                                    Model model = cache.get(_tableName(c.getSimpleName())).get(rs.getString(index.getName()));
+                                    model._updateVars(c, rs);
+                                    ms.add((T) model);
+                                    found = true;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                } else {
-                    cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    if(!found){
+                        //Log.info("CACHE MISS IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                        Model model = (Model) con.newInstance(rs);
+                        cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
+                        //Log.info("STORING CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                        ms.add((T) model);
+                    }
                 }
             }
-            if(!found){
-                //Log.info("CACHE MISS IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                Model model = (Model) con.newInstance(rs);
-                cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                //Log.info("STORING CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                ms.add((T) model);
-            }
         }
-        rs.close();
-        ps.close();
         return ms;
     }
     public <T> void _updateVars(Class<T> c,  ResultSet rs){
@@ -324,20 +324,21 @@ public class Model {
         Object[] valuesA = values.toArray();
         sql = "INSERT INTO `" + _tableName(this.getClass().getSimpleName())
                 + "` ( " + sql + " ) VALUES ( " + sqlQs + ");";
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,
-                java.sql.Statement.RETURN_GENERATED_KEYS);
-        for (int i = 0; i < valuesA.length; i++) {
-            ps.setObject(i + 1, valuesA[i]);
-        }
-        ps.execute();
-        ResultSet keys = ps.getGeneratedKeys();
-        if (keys.next()) {
-            Object genId = keys.getObject(1);
-            if (autoincrement != null) {
-                autoincrement.set(this, genId);
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,
+                java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            for (int i = 0; i < valuesA.length; i++) {
+                ps.setObject(i + 1, valuesA[i]);
+            }
+            ps.execute();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    Object genId = keys.getObject(1);
+                    if (autoincrement != null) {
+                        autoincrement.set(this, genId);
+                    }
+                }
             }
         }
-        ps.close();
         Field index = Model._getKey(this.getClass());
         if(index!=null) {
             if (cache.containsKey(_tableName(this.getClass().getSimpleName()))) {
@@ -370,10 +371,10 @@ public class Model {
 		        }
 		    }
 		}
-		PreparedStatement ps = SynloadFramework.sql.prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
-		ps.setObject(1, autoincrement.get(this));
-		ps.execute();
-		ps.close();
+		try (PreparedStatement ps = SynloadFramework.sql.prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?")) {
+			ps.setObject(1, autoincrement.get(this));
+			ps.execute();
+		}
         if (cache.containsKey(_tableName(this.getClass().getSimpleName()))) {
             try {
                 if (cache.get(_tableName(this.getClass().getSimpleName())).containsKey(autoincrement.get(this))) {

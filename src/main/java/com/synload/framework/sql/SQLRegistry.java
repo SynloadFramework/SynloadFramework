@@ -44,9 +44,9 @@ public class SQLRegistry {
             if (cd.isAutoIncrement()) {
                 sql += " AUTO_INCREMENT";
             }
-            PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-            ps.execute();
-            ps.close();
+            try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+                ps.execute();
+            }
         }
     }
 
@@ -56,9 +56,9 @@ public class SQLRegistry {
             String sql = "ALTER TABLE  `"
                     + Model._tableName(table.getSimpleName())
                     + "` ADD INDEX (  `" + f.getName() + "` )";
-            PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-            ps.execute();
-            ps.close();
+            try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+                ps.execute();
+            }
         }
     }
 
@@ -66,13 +66,13 @@ public class SQLRegistry {
     public static void updateComment(Class c) {
         try {
             SQLTable sqt = ((SQLTable) c.getAnnotation(SQLTable.class));
-            PreparedStatement ps = SynloadFramework.sql
+            try (PreparedStatement ps = SynloadFramework.sql
                     .prepareStatement("ALTER TABLE `"
                             + Model._tableName(c.getSimpleName())
                             + "` COMMENT = '" + String.valueOf(sqt.version())
-                            + "'");
-            ps.execute();
-            ps.close();
+                            + "'")) {
+                ps.execute();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -82,9 +82,9 @@ public class SQLRegistry {
     public static void dropIndex(Class table, Field f) throws SQLException {
         if (Model._annotationPresent(f)) {
             String sql = "ALTER TABLE tags DROP INDEX " + f.getName();
-            PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-            ps.execute();
-            ps.close();
+            try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+                ps.execute();
+            }
         }
     }
 
@@ -94,9 +94,9 @@ public class SQLRegistry {
             String sql = "ALTER TABLE `"
                     + Model._tableName(table.getSimpleName())
                     + "` ADD PRIMARY KEY(`" + f.getName() + "`)";
-            PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-            ps.execute();
-            ps.close();
+            try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+                ps.execute();
+            }
         }
     }
 
@@ -104,9 +104,9 @@ public class SQLRegistry {
     public static void dropKey(Class table) throws SQLException {
         String sql = "ALTER TABLE `" + Model._tableName(table.getSimpleName())
                 + "` DROP PRIMARY KEY";
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-        ps.execute();
-        ps.close();
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            ps.execute();
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -114,9 +114,9 @@ public class SQLRegistry {
             throws SQLException {
         String sql = "ALTER TABLE `" + Model._tableName(table.getSimpleName())
                 + "` DROP `" + col.getField() + "`";
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-        ps.execute();
-        ps.close();
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            ps.execute();
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -140,9 +140,9 @@ public class SQLRegistry {
             if (cd.isAutoIncrement()) {
                 sql += " AUTO_INCREMENT";
             }
-            PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-            ps.execute();
-            ps.close();
+            try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+                ps.execute();
+            }
         }
     }
 
@@ -266,9 +266,10 @@ public class SQLRegistry {
         SQLTable sqltable = (SQLTable) table.getAnnotation(SQLTable.class);
         sql += ") ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE = utf8_bin COMMENT = '"
                 + sqltable.version() + "';";
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
-        boolean worked = ps.execute();
-        ps.close();
+        boolean worked;
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            worked = ps.execute();
+        }
         for (Field f : fs) {
             if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
                 ColumnData cd = new ColumnData(f);
