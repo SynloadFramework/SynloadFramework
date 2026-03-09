@@ -100,8 +100,13 @@ public class Model {
     }
     public static String _tableName(String name) {
         String nm = name.toLowerCase();
-        if((nm.substring(nm.length() - 1)).equals("y")){
-        	return nm.substring(0, nm.length() - 1) + "ies";
+        if(nm.endsWith("y") && nm.length() > 1){
+            char beforeY = nm.charAt(nm.length() - 2);
+            if("aeiou".indexOf(beforeY) >= 0){
+                return nm + "s";
+            }else{
+                return nm.substring(0, nm.length() - 1) + "ies";
+            }
         }else{
             return nm + "s";
         }
