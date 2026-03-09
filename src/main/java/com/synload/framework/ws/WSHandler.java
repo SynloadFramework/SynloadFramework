@@ -2,6 +2,8 @@ package com.synload.framework.ws;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.synload.framework.TransmissionStats;
 import com.synload.framework.modules.Responder;
@@ -33,6 +35,9 @@ import com.synload.framework.security.PKI;
 @WebSocket
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class WSHandler extends Responder {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ExecutorService MESSAGE_POOL = Executors.newCachedThreadPool();
+
     @JsonIgnore
     public Session session = null;
     @JsonIgnore
@@ -249,17 +254,16 @@ public class WSHandler extends Responder {
     @OnWebSocketMessage
     public void onWebSocketText(String message) {
         //System.out.println(message.substring(0,30));
-        ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
             TransmissionStats.ws_receive+=message.length();
             if (encrypt) {
-				request = mapper.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
+				request = MAPPER.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
             } else {
-                request = mapper.readValue(message, Request.class);
+                request = MAPPER.readValue(message, Request.class);
             }
 
-            (new Thread(new HandleRequest(this, request))).start();
+            MESSAGE_POOL.execute(new HandleRequest(this, request));
         } catch (IOException e) {
             if (SynloadFramework.debug) {
                 e.printStackTrace();
