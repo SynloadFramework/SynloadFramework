@@ -81,7 +81,7 @@ public class SQLRegistry {
     @SuppressWarnings("rawtypes")
     public static void dropIndex(Class table, Field f) throws SQLException {
         if (Model._annotationPresent(f)) {
-            String sql = "ALTER TABLE tags DROP INDEX " + f.getName();
+            String sql = "ALTER TABLE `" + Model._tableName(table.getSimpleName()) + "` DROP INDEX " + f.getName();
             PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
             ps.execute();
             ps.close();
