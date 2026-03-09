@@ -3,6 +3,7 @@ package com.synload.framework.modules;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Hashtable;
 
@@ -20,7 +21,20 @@ public class ModuleResource {
         return false;
     }
     public static byte[] get(String module, String file){
+        if(module.contains("..") || file.contains("..")) {
+            return null;
+        }
+        File baseDir = new File(module).getAbsoluteFile();
         File f = new File(module+"/"+file);
+        try {
+            String canonicalBase = baseDir.getCanonicalPath();
+            String canonicalFile = f.getCanonicalPath();
+            if(!canonicalFile.startsWith(canonicalBase + File.separator) && !canonicalFile.equals(canonicalBase)) {
+                return null;
+            }
+        } catch (IOException e) {
+            return null;
+        }
         if(f.exists()){
             try {
                 return FileUtils.readFileToByteArray(f);
