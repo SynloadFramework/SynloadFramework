@@ -44,6 +44,8 @@ public class WSHandler extends Responder {
     @JsonIgnore
     public boolean isSending = false;
     @JsonIgnore
+    private volatile boolean sendingThreadRunning = false;
+    @JsonIgnore
     private Thread sendingThreadVar = null;
 
     /*
@@ -53,15 +55,16 @@ public class WSHandler extends Responder {
      * }
      */
 
-    @SuppressWarnings("deprecation")
     @OnWebSocketClose
     public void onWebSocketClose(int statusCode, String reason) {
         EventPublisher.raiseEvent(new CloseEvent(this), null);
         OOnPage.removeClient(this);
         SynloadFramework.users.remove(session);
         SynloadFramework.clients.remove(this);
-        sendingThreadVar.stop();
-        sendingThreadVar.interrupt();
+        sendingThreadRunning = false;
+        if (sendingThreadVar != null) {
+            sendingThreadVar.interrupt();
+        }
         Log.debug("Close: statusCode=" + statusCode + ", reason=" + reason,
                 this.getClass());
     }
@@ -87,6 +90,7 @@ public class WSHandler extends Responder {
 
         this.session = session;
         SynloadFramework.users.add(session);
+        sendingThreadRunning = true;
         sendingThreadVar = (new Thread(new sendingThread(this)));
         sendingThreadVar.start();
         SynloadFramework.clients.add(this);
@@ -166,7 +170,7 @@ public class WSHandler extends Responder {
         }
 
         public void run() {
-            while (true) {
+            while (ws.sendingThreadRunning && !Thread.currentThread().isInterrupted()) {
                 try {
                     if (ws.queue.size() > 0) {
                         String message = ws.queue.get(0);
