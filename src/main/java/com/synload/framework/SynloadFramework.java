@@ -296,8 +296,8 @@ public class SynloadFramework extends ModuleClass {
         return htmlFiles;
     }
 
-    public static int getTimestamp() {
-        return (int) (System.currentTimeMillis() / 1000L);
+    public static long getTimestamp() {
+        return System.currentTimeMillis() / 1000L;
     }
 
     public static void setHtmlFiles(
