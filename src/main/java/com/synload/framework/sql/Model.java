@@ -501,7 +501,7 @@ public class Model {
                     refIdLocal = this._getKeyFromAnnotation(this.getClass(),
                             this, hsm.key());
                     s._removeFromList(obj, remoteField, refIdLocal);
-                } else if (HasOne.class.isInstance(local[1])) {
+                } else if (HasOne.class.isInstance(remote[1])) {
                     remoteField.set(obj, "");
                 }
                 s._save(remoteField.getName(), remoteField.get(obj));
@@ -549,8 +549,8 @@ public class Model {
                     refIdLocal = this._getKeyFromAnnotation(this.getClass(),
                             this, hsm.key());
                     s._addToList(obj, remoteField, refIdLocal);
-                } else if (HasOne.class.isInstance(local[1])) {
-                    HasOne hso = (HasOne) local[1];
+                } else if (HasOne.class.isInstance(remote[1])) {
+                    HasOne hso = (HasOne) remote[1];
                     refIdLocal = this._getKeyFromAnnotation(this.getClass(),
                             this, hso.key());
                     remoteField.set(obj, refIdLocal);
