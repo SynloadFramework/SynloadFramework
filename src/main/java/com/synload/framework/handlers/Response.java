@@ -12,26 +12,26 @@ import java.util.Map;
 import com.synload.framework.SynloadFramework;
 
 public class Response {
-    public String template = "";
-    public String parent = "";
-    public String pri = "";
-    public String action = "";
-    public String parentTemplate = "";
-    public String callEvent = "";
-    public String pageId = "";
-    public String pageTitle = "";
-    public String templateId = "";
-    public String reference = "";
-    public String transitionOut = "drop";
-    public String transitionIn = "slide";
-    public boolean forceParent = true;
-    public Request request = null;
-    public List<String> javascript = new ArrayList<String>();
-    public Map<String, String> redirect = new HashMap<String, String>();
-    public Map<String, String> data = new HashMap<String, String>();
-    public List<DelayedRequest> delayedRequests = new ArrayList<DelayedRequest>();
-    public Map<String, List<String>> objects = new HashMap<String, List<String>>();
-    public int sleep = 0;
+    private String template = "";
+    private String parent = "";
+    private String pri = "";
+    private String action = "";
+    private String parentTemplate = "";
+    private String callEvent = "";
+    private String pageId = "";
+    private String pageTitle = "";
+    private String templateId = "";
+    private String reference = "";
+    private String transitionOut = "drop";
+    private String transitionIn = "slide";
+    private boolean forceParent = true;
+    private Request request = null;
+    private List<String> javascript = new ArrayList<String>();
+    private Map<String, String> redirect = new HashMap<String, String>();
+    private Map<String, String> data = new HashMap<String, String>();
+    private List<DelayedRequest> delayedRequests = new ArrayList<DelayedRequest>();
+    private Map<String, List<String>> objects = new HashMap<String, List<String>>();
+    private int sleep = 0;
 
     public Map<String, List<String>> getObjects() {
         return objects;
