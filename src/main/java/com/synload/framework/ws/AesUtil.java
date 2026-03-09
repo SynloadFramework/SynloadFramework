@@ -26,16 +26,25 @@ import org.apache.commons.codec.binary.Hex;
 public class AesUtil {
     private final int keySize;
     private final int iterationCount;
-    private Cipher cipher=null;
+    private final String cipherTransformation = "AES/CBC/PKCS5Padding";
 
     public AesUtil(int keySize, int iterationCount) {
         this.keySize = keySize;
         this.iterationCount = iterationCount;
+        // Verify the cipher transformation is available at construction time
         try {
-			cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-		} catch (NoSuchAlgorithmException e) {
-		} catch (NoSuchPaddingException e) {
-		}
+            Cipher.getInstance(cipherTransformation);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("Failed to instantiate cipher: " + cipherTransformation, e);
+        }
+    }
+
+    private Cipher createCipher() {
+        try {
+            return Cipher.getInstance(cipherTransformation);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("Failed to instantiate cipher: " + cipherTransformation, e);
+        }
     }
 
     public String encrypt(String salt, String iv, String passphrase,
@@ -46,8 +55,8 @@ public class AesUtil {
                     plaintext.getBytes("UTF-8"));
             return base64(encrypted);
         } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 encoding not supported", e);
         }
-		return null;
     }
     public String encrypt(String salt, String iv, String passphrase,
             byte[] plaintext) {
@@ -65,8 +74,8 @@ public class AesUtil {
                     base64(ciphertext));
             return new String(decrypted, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 encoding not supported", e);
         }
-		return null;
     }
     public byte[] decryptByte(String salt, String iv, String passphrase,
             String ciphertext) {
@@ -78,38 +87,29 @@ public class AesUtil {
 
     private byte[] doFinal(int encryptMode, SecretKey key, String iv,
             byte[] bytes) {
-            
-            try {
-            	cipher.init(encryptMode, key, new IvParameterSpec(hex(iv)));
-				return cipher.doFinal(bytes);
-			} catch (IllegalBlockSizeException e) {
-			} catch (BadPaddingException e) {
-			} catch (InvalidKeyException e) {
-			} catch (InvalidAlgorithmParameterException e) {
-			}
-			return null;
-            
+        try {
+            Cipher cipher = createCipher();
+            cipher.init(encryptMode, key, new IvParameterSpec(hex(iv)));
+            return cipher.doFinal(bytes);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            throw new RuntimeException("Cipher operation failed", e);
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+            throw new RuntimeException("Invalid cipher parameters", e);
+        }
     }
 
     private SecretKey generateKey(String salt, String passphrase) {
-
-            SecretKeyFactory factory;
-			try {
-				factory = SecretKeyFactory
-				        .getInstance("PBKDF2WithHmacSHA1");
-				KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt),
-	                    iterationCount, keySize);
-	            SecretKey key = new SecretKeySpec(factory.generateSecret(spec)
-	                    .getEncoded(), "AES");
-	            return key;
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			} catch (InvalidKeySpecException e) {
-				e.printStackTrace();
-			}
-			return null;
-            
-            
+        try {
+            SecretKeyFactory factory = SecretKeyFactory
+                    .getInstance("PBKDF2WithHmacSHA1");
+            KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt),
+                    iterationCount, keySize);
+            SecretKey key = new SecretKeySpec(factory.generateSecret(spec)
+                    .getEncoded(), "AES");
+            return key;
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException("Failed to generate secret key", e);
+        }
     }
 
     public static String random(int length) {
