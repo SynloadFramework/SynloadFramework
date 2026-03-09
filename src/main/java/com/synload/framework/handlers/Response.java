@@ -209,14 +209,24 @@ public class Response {
 
     public String getTemplate(String tmpl) {
     	String[] p = tmpl.split("(?s)\\.");
-    	if(p[p.length-1].equalsIgnoreCase("htm") 
-		 || p[p.length-1].equalsIgnoreCase("js") 
-		 || p[p.length-1].equalsIgnoreCase("css") 
+    	if(p[p.length-1].equalsIgnoreCase("htm")
+		 || p[p.length-1].equalsIgnoreCase("js")
+		 || p[p.length-1].equalsIgnoreCase("css")
 		 || p[p.length-1].equalsIgnoreCase("ico")
 		 || p[p.length-1].equalsIgnoreCase("svg")
 		 || p[p.length-1].equalsIgnoreCase("jpg")
 		 || p[p.length-1].equalsIgnoreCase("png")){
-    		if((new File(tmpl)).exists()){
+    		File templateFile = new File(tmpl);
+    		if(templateFile.exists()){
+    			try {
+    				String canonicalPath = templateFile.getCanonicalPath();
+    				String baseDir = new File(".").getCanonicalPath();
+    				if (!canonicalPath.startsWith(baseDir + File.separator)) {
+    					return tmpl;
+    				}
+    			} catch (IOException e) {
+    				return tmpl;
+    			}
     			return this.getFileData(tmpl);
     		}else{
     			return tmpl;
