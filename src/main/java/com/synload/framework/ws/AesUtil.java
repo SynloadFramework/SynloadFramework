@@ -14,7 +14,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Hex;
 
 // TODO: Implement 256-bit version like: http://securejava.wordpress.com/2012/10/25/aes-256/
 public class AesUtil {
+    private static final int GCM_TAG_LENGTH = 128;
     private final int keySize;
     private final int iterationCount;
     private Cipher cipher=null;
@@ -32,7 +33,7 @@ public class AesUtil {
         this.keySize = keySize;
         this.iterationCount = iterationCount;
         try {
-			cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			cipher = Cipher.getInstance("AES/GCM/NoPadding");
 		} catch (NoSuchAlgorithmException e) {
 		} catch (NoSuchPaddingException e) {
 		}
@@ -80,7 +81,7 @@ public class AesUtil {
             byte[] bytes) {
             
             try {
-            	cipher.init(encryptMode, key, new IvParameterSpec(hex(iv)));
+            	cipher.init(encryptMode, key, new GCMParameterSpec(GCM_TAG_LENGTH, hex(iv)));
 				return cipher.doFinal(bytes);
 			} catch (IllegalBlockSizeException e) {
 			} catch (BadPaddingException e) {
@@ -96,7 +97,7 @@ public class AesUtil {
             SecretKeyFactory factory;
 			try {
 				factory = SecretKeyFactory
-				        .getInstance("PBKDF2WithHmacSHA1");
+				        .getInstance("PBKDF2WithHmacSHA256");
 				KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt),
 	                    iterationCount, keySize);
 	            SecretKey key = new SecretKeySpec(factory.generateSecret(spec)
