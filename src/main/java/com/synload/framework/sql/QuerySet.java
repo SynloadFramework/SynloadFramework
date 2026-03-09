@@ -9,13 +9,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.synload.framework.Log;
 import org.apache.commons.lang3.StringUtils;
 import com.synload.framework.SynloadFramework;
 
 public class QuerySet {
-    public String limit = null;
+    private static final Pattern VALID_ORDER_PART = Pattern.compile("^`?[a-zA-Z_][a-zA-Z0-9_.]*`?(?:\\s+(?:ASC|DESC))?$", Pattern.CASE_INSENSITIVE);
+
+    public int limit = -1;
     public String[] order = {};
     public String[] columns = null;
     public String where;
@@ -30,12 +33,20 @@ public class QuerySet {
         this.name = name;
     }
 
-    public QuerySet limit(String lm) {
+    public QuerySet limit(int lm) {
+        if (lm < 0) {
+            throw new IllegalArgumentException("Limit must be non-negative");
+        }
         this.limit = lm;
         return this;
     }
 
     public QuerySet orderBy(String... ob) {
+        for (String part : ob) {
+            if (part == null || !VALID_ORDER_PART.matcher(part.trim()).matches()) {
+                throw new IllegalArgumentException("Invalid ORDER BY value: " + part);
+            }
+        }
         this.order = ob;
         return this;
     }
@@ -74,7 +85,7 @@ public class QuerySet {
         if (order.length > 0) {
             sql += " ORDER BY " + StringUtils.join(order, ", ");
         }
-        if (limit != null) {
+        if (limit >= 0) {
             sql += " LIMIT " + limit;
         }
         PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
@@ -126,7 +137,7 @@ public class QuerySet {
         if (where != "") {
             sql += " WHERE " + where;
         }
-        if (limit != null) {
+        if (limit >= 0) {
             sql += " LIMIT " + limit;
         }
         PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
