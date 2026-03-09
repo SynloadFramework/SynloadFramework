@@ -38,6 +38,9 @@ public class CheckNewJar implements Runnable{
 			File folder = new File(path);
 			boolean anythingNew=false;
 			File[] listOfFiles = folder.listFiles();
+			if (listOfFiles == null) {
+				continue;
+			}
 			for (int i = 0; i < listOfFiles.length; i++) {
 	            if (listOfFiles[i].isFile()) {
 	            	String fileName = listOfFiles[i].getName();
@@ -46,6 +49,9 @@ public class CheckNewJar implements Runnable{
 	            			// LOAD NEW MODULE
 	            			Log.info("Found new module, loading "+fileName, CheckNewJar.class);
 	            			ModuleData md = ModuleLoader.loadModuleFiles(path, fileName, true, true);
+	            			if (md == null) {
+	            				continue;
+	            			}
 	            			InputStream hashIS = null;
 		                    try {
 		                    	hashIS = new FileInputStream(new File(path+fileName));
@@ -75,7 +81,9 @@ public class CheckNewJar implements Runnable{
 		                    		Log.info("Found change to "+fileName, CheckNewJar.class);
 		                    		// RELOAD MODULE
 		                    		ModuleData md = ModuleLoader.loadModuleFiles(path, fileName, true, true);
-		                    		toLoadList.add(md);
+		                    		if (md != null) {
+		                    			toLoadList.add(md);
+		                    		}
 		                    	}
 		        			} catch (NoSuchAlgorithmException e) {
 		        				e.printStackTrace();
@@ -110,7 +118,10 @@ public class CheckNewJar implements Runnable{
 				            if (obsql != null) {
 				                sql.add(obsql);
 				            }
-				            events.addAll((List<Object[]>) ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module, modData)[0]);
+				            Object[] eventResult = ModuleLoader.register(loadedClass, Handler.EVENT, TYPE.METHOD, module, modData);
+			            if (eventResult != null) {
+			                events.addAll((List<Object[]>) eventResult[0]);
+			            }
 						} catch (InstantiationException e) {
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
