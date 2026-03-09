@@ -1,6 +1,9 @@
 package com.synload.framework.security;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -12,19 +15,19 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 
 import com.synload.eventsystem.events.annotations.Event;
-import org.apache.commons.net.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,10 +43,6 @@ import com.synload.framework.handlers.Response;
 import com.synload.framework.ws.WSHandler;
 import com.synload.framework.ws.annotations.WSEvent;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
-import sun.misc.IOUtils;
-
 public class PKI {
     private PrivateKey serverPrivateKey = null;
     private PublicKey serverPublicKey = null;
@@ -52,36 +51,45 @@ public class PKI {
     public PKI(){
     	generateKeys();
     }
-    public void sendKeysToPubKeyServers(String publicKey) throws NoSuchAlgorithmException, IOException{
+    public void sendKeysToPubKeyServers(String publicKey) throws NoSuchAlgorithmException{
     	MessageDigest md = MessageDigest.getInstance("SHA-512");
-    	String sha512 = new String(md.digest(publicKey.getBytes()));
-    	try (CloseableHttpClient httpClient = HttpClients.custom().build()) {
-	    	for( HashMap<String, String> server : SynloadFramework.pubkeyServers ){
-		    	RequestBuilder reqBuilder = RequestBuilder.post().setUri("https://"+server.get("address")+"/auth.php");
-				reqBuilder.addParameter("key", sha512);
-				reqBuilder.addParameter("username",server.get("username"));
-				reqBuilder.addParameter("password",server.get("password"));
-				HttpUriRequest post = reqBuilder.build();
-				try {
-					CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(post);
-					HttpEntity entity = response.getEntity();
-					long contentLength = entity.getContentLength();
-					if (contentLength > Integer.MAX_VALUE) {
-						throw new IOException("Content length exceeds maximum supported size");
-					}
-					String content = new String(IOUtils.readFully(entity.getContent(), (int)contentLength, false));
-					if(content.equals("OK")){
-						Log.info("Sent "+server.get("address")+" the key hash", PKI.class);
-					}else{
-						Log.error("Not Working", PKI.class);
-					}
-					response.close();
-				} catch (ClientProtocolException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
+    	byte[] digestBytes = md.digest(publicKey.getBytes(StandardCharsets.UTF_8));
+    	StringBuilder hexString = new StringBuilder();
+    	for (byte b : digestBytes) {
+    	    hexString.append(String.format("%02x", b));
+    	}
+    	String sha512 = hexString.toString();
+    	HttpClient httpClient = HttpClients.custom().build();
+    	for( HashMap<String, String> server : SynloadFramework.pubkeyServers ){
+	    	RequestBuilder reqBuilder = RequestBuilder.post().setUri("http://"+server.get("address")+"/auth.php");
+			reqBuilder.addParameter("key", sha512);
+			reqBuilder.addParameter("username",server.get("username"));
+			reqBuilder.addParameter("password",server.get("password"));
+			HttpUriRequest post = reqBuilder.build();
+			try {
+				CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(post);
+				HttpEntity entity = response.getEntity();
+				String content;
+				try (InputStream is = entity.getContent()) {
+				    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				    byte[] buffer = new byte[4096];
+				    int bytesRead;
+				    while ((bytesRead = is.read(buffer)) != -1) {
+				        baos.write(buffer, 0, bytesRead);
+				    }
+				    content = baos.toString(StandardCharsets.UTF_8.name());
 				}
-	    	}
+				if(content.equals("OK")){
+					Log.info("Sent "+server.get("address")+" the key hash", PKI.class);
+				}else{
+					Log.error("Not Working", PKI.class);
+				}
+				response.close();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
     	}
     }
     public void generateKeys(){
@@ -92,8 +100,7 @@ public class PKI {
 			KeyPair kp = kpg.genKeyPair();
 			this.setServerPublicKey(kp.getPublic());
 			this.setServerPrivateKey(kp.getPrivate());
-			BASE64Encoder encoder = new BASE64Encoder();
-			//Log.info(encoder.encode(this.getServerPublicKey().getEncoded()), PKI.class);
+			//Log.info(Base64.getEncoder().encodeToString(this.getServerPublicKey().getEncoded()), PKI.class);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
@@ -105,10 +112,9 @@ public class PKI {
     		Security.addProvider(new BouncyCastleProvider());
     		try {
     			String cpk = event.getRequest().getData().get("cpk");
-    			BASE64Decoder decoder = new BASE64Decoder();
-    			byte[] pubKey = decoder.decodeBuffer(
+    			byte[] pubKey = Base64.getDecoder().decode(
     				decrypt(
-						cpk, 
+						cpk,
 						event.getSession().getPki().getServerPrivateKey()
 					)
 				);
@@ -123,6 +129,7 @@ public class PKI {
     			//System.out.println(Base64.encodeBase64String(event.getSession().getPki().getClientPublicKey().getEncoded()));
     			
 				event.getSession().encrypt=true;
+				this.generateKeys();
 				event.getSession().send(new EncryptFinal(event.getSession()));
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
@@ -152,20 +159,20 @@ public class PKI {
     	String rdata = "";
         byte[] cipherText = null;
         //System.out.println(Base64.encodeBase64String(key.getEncoded()));
-    	BASE64Encoder encoder = new BASE64Encoder();
+    	Base64.Encoder encoder = Base64.getEncoder();
     	try {
-    		Pattern regex = Pattern.compile("((.|[\r\n]){1,190})");
+    		Pattern regex = Pattern.compile("((.|[\r\n]){1,50})");
     		Matcher regexMatcher = regex.matcher(data);
     		while (regexMatcher.find()) {
     			String toEn = regexMatcher.group(1);
     			//System.out.println(toEn);
-        		final Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        		final Cipher cipher = Cipher.getInstance("RSA");
 				cipher.init(Cipher.ENCRYPT_MODE, key);
-			    cipherText = cipher.doFinal(encoder.encode(toEn.getBytes("UTF-8")).getBytes());
+			    cipherText = cipher.doFinal(encoder.encodeToString(toEn.getBytes(StandardCharsets.UTF_8)).getBytes());
 				if(rdata.equals("")){
-					rdata=encoder.encode(cipherText);
+					rdata=encoder.encodeToString(cipherText);
 				}else{
-					rdata=rdata+"&"+encoder.encode(cipherText);
+					rdata=rdata+"&"+encoder.encodeToString(cipherText);
 				}
     		} 
     	} catch (Exception ex) {
@@ -178,14 +185,14 @@ public class PKI {
     	String decryptedText = "";
     	//System.out.println(Base64.encodeBase64String(key.getEncoded()));
         try {
+        	Base64.Decoder decoder = Base64.getDecoder();
         	for(String toEn: data.split("&")){
-        		final Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        		final Cipher cipher = Cipher.getInstance("RSA");
         		cipher.init(Cipher.DECRYPT_MODE, key);
-        		BASE64Decoder decoder = new BASE64Decoder();
         		if(decryptedText.equals("")){
-        			decryptedText = new String(cipher.doFinal(decoder.decodeBuffer(toEn)));
+        			decryptedText = new String(cipher.doFinal(decoder.decode(toEn)));
         		}else{
-        			decryptedText = decryptedText + new String(cipher.doFinal(decoder.decodeBuffer(toEn)));
+        			decryptedText = decryptedText + new String(cipher.doFinal(decoder.decode(toEn)));
         		}
         	}
         } catch (Exception ex) {
