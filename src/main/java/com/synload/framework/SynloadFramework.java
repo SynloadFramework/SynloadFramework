@@ -141,6 +141,7 @@ public class SynloadFramework extends ModuleClass {
                 graphDBPath = defaultPath+prop.getProperty("graphDBPath");
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
+                Log.setLevel(loglevel);
                 debug = Boolean.valueOf(prop.getProperty("debug"));
                 dbEnabled = Boolean.valueOf(prop.getProperty("dbenabled"));
                 uploadPath = defaultPath+prop.getProperty("uploadPath");
