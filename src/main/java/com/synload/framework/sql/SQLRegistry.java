@@ -179,7 +179,7 @@ public class SQLRegistry {
                         if (tis.size() == 0 || foundTables.size() == 0) {
                             System.out.println("[SQL][ERROR]\t\t [" + sqltable.name()
                                     + "] table info not found");
-                            return;
+                            continue;
                         }
                         for (Field f : fs) {
                             if (Model._annotationPresent(f) && !f.isAnnotationPresent(NonSQL.class)) {
@@ -198,7 +198,7 @@ public class SQLRegistry {
                                             } catch (SQLException e) {
                                                 e.printStackTrace();
                                             }
-                                        } else if (cd.getCollation().equalsIgnoreCase(
+                                        } else if (!cd.getCollation().equalsIgnoreCase(
                                                 ti.getCollation())) {
                                             obj[3] = obj[3] + ", \"" + ti.getField()
                                                     + "\" collation changed";
