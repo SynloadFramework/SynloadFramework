@@ -11,9 +11,9 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.util.ArrayList;
-import java.util.List;
-import java.security.SecureRandom;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Random;
 import java.util.UUID;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -35,7 +35,7 @@ public class Client implements Runnable {
     private boolean reconnect = false;
     private EventShare es = null;
     private boolean keepRunning=true;
-    public List<Object> queue = new ArrayList<Object>();
+    public BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
     private boolean closeAfterSend = false;
     private boolean connected = true;
     /**
@@ -102,23 +102,16 @@ public class Client implements Runnable {
     }
     public void reconnect(String address, int port, boolean closeAfterSend, String key, boolean reconnect){
         if(reconnect){
-            int maxRetries = 10;
-            long backoffMs = 2000;
-            for (int attempt = 1; attempt <= maxRetries; attempt++) {
-                Log.info("Reconnect attempt " + attempt + "/" + maxRetries + " (backoff " + backoffMs + "ms)", Client.class);
-                try {
-                    Thread.sleep(backoffMs);
-                    Socket clientSocket = new Socket(address, port);
-                    this.setSocket(clientSocket);
-                    (new Thread(this)).start();
-                    Log.info("Reconnected successfully on attempt " + attempt, Client.class);
-                    return;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    backoffMs *= 2;
-                }
+            Log.info("Reconnecting", Client.class);
+            try {
+                Thread.sleep(5000); // wait 2 seconds
+                Socket clientSocket = new Socket(address, port);
+                this.setSocket(clientSocket);
+                (new Thread(this)).start();
+            }catch(Exception e){
+                e.printStackTrace();
+                reconnect(address, port, closeAfterSend, key, reconnect);
             }
-            Log.info("Failed to reconnect after " + maxRetries + " attempts, giving up", Client.class);
         }
     }
 
@@ -234,11 +227,11 @@ public class Client implements Runnable {
         this.es = es;
     }
 
-    public List<Object> getQueue() {
+    public BlockingQueue<Object> getQueue() {
         return queue;
     }
 
-    public void setQueue(List<Object> queue) {
+    public void setQueue(BlockingQueue<Object> queue) {
         this.queue = queue;
     }
 
@@ -298,7 +291,7 @@ public class Client implements Runnable {
      * random-hex-string-of-length-50-in-java-me-j2me
      */
     public static String getRandomHexString(int numchars) {
-        SecureRandom r = new SecureRandom();
+        Random r = new Random();
         StringBuffer sb = new StringBuffer();
         while (sb.length() < numchars) {
             sb.append(Integer.toHexString(r.nextInt()));
