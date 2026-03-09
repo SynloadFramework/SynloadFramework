@@ -229,14 +229,14 @@ public class Response {
         if (!isCached) {
             try {
                 File htmlFile = (new File(tmpl));
-                InputStream is = new FileInputStream(htmlFile);
-                HashMap<String, Object> tmpf = new HashMap<String, Object>();
-                tmpf.put("modified", (new File(tmpl)).lastModified());
-                dataOut = new String(Files.readAllBytes(htmlFile.toPath()),
-                        "UTF-8");
-                tmpf.put("data", dataOut);
-                SynloadFramework.htmlFiles.put(tmpl, tmpf);
-                is.close();
+                try (InputStream is = new FileInputStream(htmlFile)) {
+                    HashMap<String, Object> tmpf = new HashMap<String, Object>();
+                    tmpf.put("modified", (new File(tmpl)).lastModified());
+                    dataOut = new String(Files.readAllBytes(htmlFile.toPath()),
+                            "UTF-8");
+                    tmpf.put("data", dataOut);
+                    SynloadFramework.htmlFiles.put(tmpl, tmpf);
+                }
             } catch (IOException e) {
                 if (SynloadFramework.debug) {
                     e.printStackTrace();

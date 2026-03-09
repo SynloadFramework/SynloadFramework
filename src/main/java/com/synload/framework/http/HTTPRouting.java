@@ -88,52 +88,51 @@ public class HTTPRouting {
                 response.setContentLengthLong((new File(filename)).length());
                 if (!isCached) {
                     File htmlFile = (new File(filename));
-                    InputStream is = new FileInputStream(htmlFile);
-                    long bytesRead = 0;
-                    boolean cache = false;
-                    if ((new File(filename)).length() < 200000) {
-                        cache = true;
-                    }
-                    byte[] buffer = new byte[8 * 1024];
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    int byteArrayPos = 0;
-                    int bytesCount;
-                    while ((bytesCount = is.read(buffer)) != -1) {
+                    try (InputStream is = new FileInputStream(htmlFile)) {
+                        long bytesRead = 0;
+                        boolean cache = false;
+                        if ((new File(filename)).length() < 200000) {
+                            cache = true;
+                        }
+                        byte[] buffer = new byte[8 * 1024];
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        int byteArrayPos = 0;
+                        while (is.read(buffer) != -1) {
+                            if (cache) {
+                                outputStream.write(buffer);
+                                outputStream.flush();
+                            }
+                            try {
+                                if (ext.equalsIgnoreCase("html")
+                                        || ext.equalsIgnoreCase("css")
+                                        || ext.equalsIgnoreCase("js")) {
+                                    response.getWriter().print(
+                                            new String(buffer));
+                                    response.getWriter().flush();
+                                } else if (ext.equalsIgnoreCase("mp4")
+                                        || ext.equalsIgnoreCase("avi")
+                                        || ext.equalsIgnoreCase("webm")
+                                        || ext.equalsIgnoreCase("jpg")
+                                        || ext.equalsIgnoreCase("png")
+                                        || ext.equalsIgnoreCase("ico")
+                                        || ext.equalsIgnoreCase("gif")) {
+                                    response.getOutputStream().write(buffer);
+                                    response.getOutputStream().flush();
+                                }
+                            } catch (IOException ex) {
+                                if (SynloadFramework.debug) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        }
                         if (cache) {
-                            outputStream.write(buffer, 0, bytesCount);
-                            outputStream.flush();
-                        }
-                        try {
-                            if (ext.equalsIgnoreCase("html")
-                                    || ext.equalsIgnoreCase("css")
-                                    || ext.equalsIgnoreCase("js")) {
-                                response.getWriter().print(
-                                        new String(buffer, 0, bytesCount));
-                                response.getWriter().flush();
-                            } else if (ext.equalsIgnoreCase("mp4")
-                                    || ext.equalsIgnoreCase("avi")
-                                    || ext.equalsIgnoreCase("webm")
-                                    || ext.equalsIgnoreCase("jpg")
-                                    || ext.equalsIgnoreCase("png")
-                                    || ext.equalsIgnoreCase("ico")
-                                    || ext.equalsIgnoreCase("gif")) {
-                                response.getOutputStream().write(buffer, 0, bytesCount);
-                                response.getOutputStream().flush();
-                            }
-                        } catch (IOException ex) {
-                            if (SynloadFramework.debug) {
-                                ex.printStackTrace();
-                            }
+                            HashMap<String, Object> tmpf = new HashMap<String, Object>();
+                            tmpf.put("modified",
+                                    (new File(filename)).lastModified());
+                            tmpf.put("data", outputStream.toByteArray());
+                            SynloadFramework.htmlFiles.put(filename, tmpf);
                         }
                     }
-                    if (cache) {
-                        HashMap<String, Object> tmpf = new HashMap<String, Object>();
-                        tmpf.put("modified",
-                                (new File(filename)).lastModified());
-                        tmpf.put("data", outputStream.toByteArray());
-                        SynloadFramework.htmlFiles.put(filename, tmpf);
-                    }
-                    is.close();
                     return true;
                 } else {
                     response.getOutputStream().write(
@@ -256,7 +255,7 @@ public class HTTPRouting {
                             stream.write(buffer[i]);
                         }
                     } else if (bytesRead < maximum) {
-                        stream.write(buffer, 0, cc);
+                        stream.write(buffer);
                     }
                 }
                 stream.flush();
@@ -366,42 +365,24 @@ public class HTTPRouting {
             }
         }
         
+        boolean file = false;
         if (URI.length == 3) {
-            String relativePath = URI[1] + "/" + URI[2];
-
-            // Reject any path containing ".." segments before resolution
-            for (String segment : relativePath.split("/")) {
-                if (segment.equals("..")) {
-                    System.out.println("[WB][W] Path traversal attempt blocked: " + relativePath);
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    baseRequest.setHandled(true);
-                    return true;
-                }
-            }
-
             try {
-                File documentRoot = new File(".").getCanonicalFile();
-                File requestedFile = new File(relativePath).getCanonicalFile();
-
-                // Validate the canonical path stays within the document root
-                if (!requestedFile.getPath().startsWith(documentRoot.getPath() + File.separator)
-                        && !requestedFile.getPath().equals(documentRoot.getPath())) {
-                    System.out.println("[WB][W] Path traversal attempt blocked: " + relativePath);
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    baseRequest.setHandled(true);
-                    return true;
-                }
-
-                if (requestedFile.exists()) {
-                    System.out.println("[WB][I] Sending file data <" + URI[1]
-                            + "><" + URI[2] + ">!");
-                    openFile(requestedFile.getPath(), response, baseRequest);
-                    return true;
-                }
-            } catch (IOException e) {
-                if (SynloadFramework.debug) {
-                    e.printStackTrace();
-                }
+                Pattern regex = Pattern.compile("\\.\\.",
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+                                | Pattern.MULTILINE);
+                Matcher regexMatcher = regex.matcher(URI[1] + "/" + URI[2]);
+                file = regexMatcher.find();
+            } catch (PatternSyntaxException ex) {
+                // Syntax error in the regular expression
+            }
+        }
+        if (URI.length == 3) {
+            // System.out.println("[WB][I] Checking if route is a file <"+URI[1]+"><"+URI[2]+">!");
+            if ((new File(URI[1] + "/" + URI[2])).exists() && !file) {
+                System.out.println("[WB][I] Sending file data <" + URI[1]
+                        + "><" + URI[2] + ">!");
+                openFile(URI[1] + "/" + URI[2], response, baseRequest);
                 return true;
             }
         }

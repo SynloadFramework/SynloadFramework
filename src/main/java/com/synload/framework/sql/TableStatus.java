@@ -68,19 +68,14 @@ public class TableStatus extends Model {
 
     @SuppressWarnings("rawtypes")
     public static TableStatus get(Class c) {
-        try {
-            PreparedStatement ps = SynloadFramework.getConnection()
-                    .prepareStatement("SHOW TABLE STATUS LIKE ?");
+        try (PreparedStatement ps = SynloadFramework.sql
+                    .prepareStatement("SHOW TABLE STATUS LIKE ?")) {
             ps.setString(1, Model._tableName(c.getSimpleName()));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                TableStatus out = new TableStatus(rs);
-                rs.close();
-                ps.close();
-                return out;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new TableStatus(rs);
+                }
             }
-            rs.close();
-            ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -9,16 +9,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import com.synload.framework.Log;
 import org.apache.commons.lang3.StringUtils;
 import com.synload.framework.SynloadFramework;
 
 public class QuerySet {
-    private static final Pattern VALID_ORDER_PART = Pattern.compile("^`?[a-zA-Z_][a-zA-Z0-9_.]*`?(?:\\s+(?:ASC|DESC))?$", Pattern.CASE_INSENSITIVE);
-
-    public int limit = -1;
+    public String limit = null;
     public String[] order = {};
     public String[] columns = null;
     public String where;
@@ -33,20 +30,12 @@ public class QuerySet {
         this.name = name;
     }
 
-    public QuerySet limit(int lm) {
-        if (lm < 0) {
-            throw new IllegalArgumentException("Limit must be non-negative");
-        }
+    public QuerySet limit(String lm) {
         this.limit = lm;
         return this;
     }
 
     public QuerySet orderBy(String... ob) {
-        for (String part : ob) {
-            if (part == null || !VALID_ORDER_PART.matcher(part.trim()).matches()) {
-                throw new IllegalArgumentException("Invalid ORDER BY value: " + part);
-            }
-        }
         this.order = ob;
         return this;
     }
@@ -79,53 +68,50 @@ public class QuerySet {
             sql += this.columnToString(this.ret);
         }
         sql += " FROM `" + name + "`";
-        if (!where.isEmpty()) {
+        if (where != "") {
             sql += " WHERE " + where;
         }
         if (order.length > 0) {
             sql += " ORDER BY " + StringUtils.join(order, ", ");
         }
-        if (limit >= 0) {
+        if (limit != null) {
             sql += " LIMIT " + limit;
         }
-        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql);
-        for (int x = 0; x < data.length; x++) {
-            ps.setObject(x + 1, data[x]);
-        }
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Field index = Model._getKey(c);
-            boolean found = false;
-            if(index!=null) {
-                if (Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
-                    try {
-                        if (Model.cache.get(Model._tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
-                            //Log.info("HIT CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
-                            Model model = Model.cache.get(Model._tableName(c.getSimpleName())).get(rs.getString(index.getName()));
-                            model._updateVars(c, rs);
-                            ms.add((T) model);
-                            found = true;
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            for (int x = 0; x < data.length; x++) {
+                ps.setObject(x + 1, data[x]);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Field index = Model._getKey(c);
+                    boolean found = false;
+                    if(index!=null) {
+                        if (Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
+                            try {
+                                if (Model.cache.get(Model._tableName(c.getSimpleName())).containsKey(rs.getString(index.getName()))) {
+                                    //Log.info("HIT CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                                    Model model = Model.cache.get(Model._tableName(c.getSimpleName())).get(rs.getString(index.getName()));
+                                    model._updateVars(c, rs);
+                                    ms.add((T) model);
+                                    found = true;
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                } else {
-                    Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
-                }
-            }
-            if(!found){
-                Model model = (Model) con.newInstance(rs);
-                if(index!=null) {
-                    if (!Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
-                        Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    if(!found){
+                        //Log.info("CACHE MISS IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                        Model model = (Model) con.newInstance(rs);
+                        Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
+                        //Log.info("STORING CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                        ms.add((T) model);
                     }
-                    Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
                 }
-                ms.add((T) model);
             }
         }
-        rs.close();
-        ps.close();
         return ms;
     }
 
@@ -137,21 +123,21 @@ public class QuerySet {
         String sql = "SELECT ";
         sql += "COUNT(*) as c";
         sql += " FROM `" + name + "`";
-        if (!where.isEmpty()) {
+        if (where != "") {
             sql += " WHERE " + where;
         }
-        if (limit >= 0) {
+        if (limit != null) {
             sql += " LIMIT " + limit;
         }
-        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql);
-        for (int x = 0; x < data.length; x++) {
-            ps.setObject(x + 1, data[x]);
+        try (PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql)) {
+            for (int x = 0; x < data.length; x++) {
+                ps.setObject(x + 1, data[x]);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                c = rs.getInt("c");
+            }
         }
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        c = rs.getInt("c");
-        rs.close();
-        ps.close();
         return c;
     }
 
@@ -159,9 +145,9 @@ public class QuerySet {
         String out = "";
         for (String item : items) {
             if (item.contains("`")) {
-                out += ((!out.isEmpty()) ? ", " : "") + item;
+                out += ((out != "") ? ", " : "") + item;
             } else {
-                out += ((!out.isEmpty()) ? ", " : "") + "`" + item + "`";
+                out += ((out != "") ? ", " : "") + "`" + item + "`";
             }
         }
         return out;
