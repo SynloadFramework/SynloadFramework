@@ -118,7 +118,6 @@ public class PKI {
     			//System.out.println(Base64.encodeBase64String(event.getSession().getPki().getClientPublicKey().getEncoded()));
     			
 				event.getSession().encrypt=true;
-				this.generateKeys();
 				event.getSession().send(new EncryptFinal(event.getSession()));
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
