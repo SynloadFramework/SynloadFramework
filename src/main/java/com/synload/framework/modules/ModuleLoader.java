@@ -185,7 +185,7 @@ public class ModuleLoader extends ClassLoader {
     	byte[] mdbytes = MessageDigest.getInstance("SHA-256").digest(convertme);
     	StringBuffer hexString = new StringBuffer();
     	for (int i=0;i<mdbytes.length;i++) {
-    	  hexString.append(Integer.toHexString(0xFF & mdbytes[i]));
+    	  hexString.append(String.format("%02x", mdbytes[i]));
     	}
         return hexString.toString();
     }
