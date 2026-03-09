@@ -5,7 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.SocketException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.List;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.io.IOUtils;
 import com.synload.framework.Log;
 
@@ -62,8 +69,8 @@ class ExecuteWrite implements Runnable{
                         IOUtils.closeQuietly(out);
                         IOUtils.closeQuietly(arrayOut);
                         byte[] bytes = arrayOut.toByteArray();
-                        /*try {
-                            bytes = Client.encrypt(client.key, bytes).getBytes();
+                        try {
+                            bytes = Client.encrypt(client.getKey(), bytes).getBytes();
                         } catch (InvalidKeyException | NoSuchAlgorithmException
                                 | InvalidKeySpecException
                                 | InvalidParameterSpecException
@@ -71,7 +78,7 @@ class ExecuteWrite implements Runnable{
                                 | BadPaddingException
                                 | NoSuchPaddingException e) {
                             e.printStackTrace();
-                        }*/
+                        }
                         dOut.writeInt(bytes.length);
                         //Log.debug("wrote "+bytes.length+" bytes", this.getClass());
                         dOut.write(bytes);
