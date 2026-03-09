@@ -97,9 +97,10 @@ public class HTTPRouting {
                     byte[] buffer = new byte[8 * 1024];
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     int byteArrayPos = 0;
-                    while (is.read(buffer) != -1) {
+                    int bytesCount;
+                    while ((bytesCount = is.read(buffer)) != -1) {
                         if (cache) {
-                            outputStream.write(buffer);
+                            outputStream.write(buffer, 0, bytesCount);
                             outputStream.flush();
                         }
                         try {
@@ -107,7 +108,7 @@ public class HTTPRouting {
                                     || ext.equalsIgnoreCase("css")
                                     || ext.equalsIgnoreCase("js")) {
                                 response.getWriter().print(
-                                        new String(buffer));
+                                        new String(buffer, 0, bytesCount));
                                 response.getWriter().flush();
                             } else if (ext.equalsIgnoreCase("mp4")
                                     || ext.equalsIgnoreCase("avi")
@@ -116,7 +117,7 @@ public class HTTPRouting {
                                     || ext.equalsIgnoreCase("png")
                                     || ext.equalsIgnoreCase("ico")
                                     || ext.equalsIgnoreCase("gif")) {
-                                response.getOutputStream().write(buffer);
+                                response.getOutputStream().write(buffer, 0, bytesCount);
                                 response.getOutputStream().flush();
                             }
                         } catch (IOException ex) {
@@ -255,7 +256,7 @@ public class HTTPRouting {
                             stream.write(buffer[i]);
                         }
                     } else if (bytesRead < maximum) {
-                        stream.write(buffer);
+                        stream.write(buffer, 0, cc);
                     }
                 }
                 stream.flush();
