@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -56,12 +58,12 @@ public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
     public static String version="1.4.8.1";
-    public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
-    public static List<Session> users = new ArrayList<Session>();
+    public static ConcurrentHashMap<String, HashMap<String, Object>> htmlFiles = new ConcurrentHashMap<String, HashMap<String, Object>>();
+    public static List<Session> users = new CopyOnWriteArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
     // HashMap<String,DashboardGroup>();
-    public static List<ModuleClass> plugins = new ArrayList<ModuleClass>();
-    public static List<String> bannedIPs = new ArrayList<String>();
+    public static List<ModuleClass> plugins = new CopyOnWriteArrayList<ModuleClass>();
+    public static List<String> bannedIPs = new CopyOnWriteArrayList<String>();
     public static Connection sql = null;
     public static int totalFailures = 10;
     public static String serverTalkKey;
@@ -80,10 +82,10 @@ public class SynloadFramework extends ModuleClass {
     public static boolean encryptEnabled;
     public static int encryptLevel;
     public static Properties prop = new Properties();
-    public static List<WSHandler> clients = new ArrayList<WSHandler>();
-    public static Map<String, List<Long>> failedAttempts = new HashMap<String, List<Long>>();
-    public static List<HashMap<String, String>> pubkeyServers = new ArrayList<HashMap<String, String>>();
-    public static List<Javascript> javascripts = new ArrayList<Javascript>();
+    public static List<WSHandler> clients = new CopyOnWriteArrayList<WSHandler>();
+    public static Map<String, List<Long>> failedAttempts = new ConcurrentHashMap<String, List<Long>>();
+    public static List<HashMap<String, String>> pubkeyServers = new CopyOnWriteArrayList<HashMap<String, String>>();
+    public static List<Javascript> javascripts = new CopyOnWriteArrayList<Javascript>();
     public static ObjectWriter ow = new ObjectMapper().writer();
     public static int port = 80;
     public static boolean serverTalkEnable = false;
@@ -293,7 +295,7 @@ public class SynloadFramework extends ModuleClass {
         SynloadFramework.javascripts.add(js);
     }
 
-    public static HashMap<String, HashMap<String, Object>> getHtmlFiles() {
+    public static ConcurrentHashMap<String, HashMap<String, Object>> getHtmlFiles() {
         return htmlFiles;
     }
 
@@ -302,7 +304,7 @@ public class SynloadFramework extends ModuleClass {
     }
 
     public static void setHtmlFiles(
-            HashMap<String, HashMap<String, Object>> htmlFiles) {
+            ConcurrentHashMap<String, HashMap<String, Object>> htmlFiles) {
         SynloadFramework.htmlFiles = htmlFiles;
     }
 

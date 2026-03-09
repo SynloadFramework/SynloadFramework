@@ -15,6 +15,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
@@ -39,7 +40,7 @@ public class ModuleLoader extends ClassLoader {
 	public static Thread checkNewJar=null;
     public static HashMap<String, Properties> moduleProperties = new HashMap<String, Properties>();
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
-    public static HashMap<String, String> loadedModules = new HashMap<String, String>();
+    public static ConcurrentHashMap<String, String> loadedModules = new ConcurrentHashMap<String, String>();
     
     public static HashMap<String, ModuleData> jarList = new HashMap<String, ModuleData>();
     
