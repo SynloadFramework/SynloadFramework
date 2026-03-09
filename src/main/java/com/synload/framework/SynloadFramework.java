@@ -273,7 +273,15 @@ public class SynloadFramework extends ModuleClass {
 
     public static String randomString(int length) {
         SecureRandom random = new SecureRandom();
-        return new BigInteger(130, random).toString(length);
+        String value = new BigInteger(130, random).toString(36);
+        if (value.length() >= length) {
+            return value.substring(0, length);
+        }
+        StringBuilder sb = new StringBuilder(value);
+        while (sb.length() < length) {
+            sb.append(new BigInteger(130, random).toString(36));
+        }
+        return sb.substring(0, length);
     }
 
     public static void broadcast(String data) {
