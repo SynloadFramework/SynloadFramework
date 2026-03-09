@@ -1,6 +1,7 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.*;
 
 import com.synload.framework.TransmissionStats;
@@ -219,7 +220,7 @@ public class WSHandler extends Responder {
      * random-hex-string-of-length-50-in-java-me-j2me
      */
     public static String getRandomHexString(int numchars) {
-        Random r = new Random();
+        SecureRandom r = new SecureRandom();
         StringBuffer sb = new StringBuffer();
         while (sb.length() < numchars) {
             sb.append(Integer.toHexString(r.nextInt()));
