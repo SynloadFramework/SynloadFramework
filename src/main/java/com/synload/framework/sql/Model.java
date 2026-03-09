@@ -232,10 +232,13 @@ public class Model {
                 }
             }
             if(!found){
-                //Log.info("CACHE MISS IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
-                cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                //Log.info("STORING CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                if(index!=null) {
+                    if (!cache.containsKey(_tableName(c.getSimpleName()))) {
+                        cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    }
+                    cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
+                }
                 ms.add((T) model);
             }
         }
@@ -369,6 +372,10 @@ public class Model {
 		            break;
 		        }
 		    }
+		}
+		if (autoincrement == null) {
+			Log.error("No auto-increment field found for delete on " + this.getClass().getSimpleName(), this.getClass());
+			return;
 		}
 		PreparedStatement ps = SynloadFramework.sql.prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
 		ps.setObject(1, autoincrement.get(this));
