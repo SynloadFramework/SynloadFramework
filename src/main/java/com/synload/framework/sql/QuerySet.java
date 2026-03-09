@@ -68,7 +68,7 @@ public class QuerySet {
             sql += this.columnToString(this.ret);
         }
         sql += " FROM `" + name + "`";
-        if (where != "") {
+        if (!where.isEmpty()) {
             sql += " WHERE " + where;
         }
         if (order.length > 0) {
@@ -123,7 +123,7 @@ public class QuerySet {
         String sql = "SELECT ";
         sql += "COUNT(*) as c";
         sql += " FROM `" + name + "`";
-        if (where != "") {
+        if (!where.isEmpty()) {
             sql += " WHERE " + where;
         }
         if (limit != null) {
@@ -145,9 +145,9 @@ public class QuerySet {
         String out = "";
         for (String item : items) {
             if (item.contains("`")) {
-                out += ((out != "") ? ", " : "") + item;
+                out += ((!out.isEmpty()) ? ", " : "") + item;
             } else {
-                out += ((out != "") ? ", " : "") + "`" + item + "`";
+                out += ((!out.isEmpty()) ? ", " : "") + "`" + item + "`";
             }
         }
         return out;

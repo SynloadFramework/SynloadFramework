@@ -573,8 +573,9 @@ public class Model {
                         ColumnData cd = new ColumnData(f);
                         if (!cd.isAutoIncrement()) {
                             try {
-                                if (f.get(this) != _convert(f.getType(),
-                                        item.getValue())) {
+                                Object currentVal = f.get(this);
+                                Object newVal = _convert(f.getType(), item.getValue());
+                                if (currentVal == null ? newVal != null : !currentVal.equals(newVal)) {
                                     f.set(this,
                                             _convert(f.getType(), item.getValue()));
                                     this._save(f.getName(),
