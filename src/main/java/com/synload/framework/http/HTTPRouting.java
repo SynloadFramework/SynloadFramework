@@ -365,24 +365,42 @@ public class HTTPRouting {
             }
         }
         
-        boolean file = false;
         if (URI.length == 3) {
-            try {
-                Pattern regex = Pattern.compile("\\.\\.",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-                                | Pattern.MULTILINE);
-                Matcher regexMatcher = regex.matcher(URI[1] + "/" + URI[2]);
-                file = regexMatcher.find();
-            } catch (PatternSyntaxException ex) {
-                // Syntax error in the regular expression
+            String relativePath = URI[1] + "/" + URI[2];
+
+            // Reject any path containing ".." segments before resolution
+            for (String segment : relativePath.split("/")) {
+                if (segment.equals("..")) {
+                    System.out.println("[WB][W] Path traversal attempt blocked: " + relativePath);
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    baseRequest.setHandled(true);
+                    return true;
+                }
             }
-        }
-        if (URI.length == 3) {
-            // System.out.println("[WB][I] Checking if route is a file <"+URI[1]+"><"+URI[2]+">!");
-            if ((new File(URI[1] + "/" + URI[2])).exists() && !file) {
-                System.out.println("[WB][I] Sending file data <" + URI[1]
-                        + "><" + URI[2] + ">!");
-                openFile(URI[1] + "/" + URI[2], response, baseRequest);
+
+            try {
+                File documentRoot = new File(".").getCanonicalFile();
+                File requestedFile = new File(relativePath).getCanonicalFile();
+
+                // Validate the canonical path stays within the document root
+                if (!requestedFile.getPath().startsWith(documentRoot.getPath() + File.separator)
+                        && !requestedFile.getPath().equals(documentRoot.getPath())) {
+                    System.out.println("[WB][W] Path traversal attempt blocked: " + relativePath);
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    baseRequest.setHandled(true);
+                    return true;
+                }
+
+                if (requestedFile.exists()) {
+                    System.out.println("[WB][I] Sending file data <" + URI[1]
+                            + "><" + URI[2] + ">!");
+                    openFile(requestedFile.getPath(), response, baseRequest);
+                    return true;
+                }
+            } catch (IOException e) {
+                if (SynloadFramework.debug) {
+                    e.printStackTrace();
+                }
                 return true;
             }
         }
