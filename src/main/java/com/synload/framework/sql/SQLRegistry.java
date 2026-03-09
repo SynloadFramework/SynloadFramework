@@ -39,7 +39,7 @@ public class SQLRegistry {
                 sql += " NOT NULL";
             }
             if (!cd.getDefaultV().equalsIgnoreCase("")) {
-                sql += "DEFAULT '" + cd.getDefaultV() + "'";
+                sql += " DEFAULT '" + cd.getDefaultV() + "'";
             }
             if (cd.isAutoIncrement()) {
                 sql += " AUTO_INCREMENT";
@@ -135,7 +135,7 @@ public class SQLRegistry {
                 sql += " NOT NULL";
             }
             if (!cd.getDefaultV().equalsIgnoreCase("")) {
-                sql += "DEFAULT '" + cd.getDefaultV() + "'";
+                sql += " DEFAULT '" + cd.getDefaultV() + "'";
             }
             if (cd.isAutoIncrement()) {
                 sql += " AUTO_INCREMENT";
