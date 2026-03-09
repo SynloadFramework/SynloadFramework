@@ -21,10 +21,10 @@ import com.synload.eventsystem.events.annotations.Event;
 import org.apache.commons.net.util.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -52,31 +52,36 @@ public class PKI {
     public PKI(){
     	generateKeys();
     }
-    public void sendKeysToPubKeyServers(String publicKey) throws NoSuchAlgorithmException{
+    public void sendKeysToPubKeyServers(String publicKey) throws NoSuchAlgorithmException, IOException{
     	MessageDigest md = MessageDigest.getInstance("SHA-512");
     	String sha512 = new String(md.digest(publicKey.getBytes()));
-    	HttpClient httpClient = HttpClients.custom().build();
-    	for( HashMap<String, String> server : SynloadFramework.pubkeyServers ){
-	    	RequestBuilder reqBuilder = RequestBuilder.post().setUri("http://"+server.get("address")+"/auth.php");
-			reqBuilder.addParameter("key", sha512);
-			reqBuilder.addParameter("username",server.get("username"));
-			reqBuilder.addParameter("password",server.get("password"));
-			HttpUriRequest post = reqBuilder.build();
-			try {
-				CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(post);
-				HttpEntity entity = response.getEntity();
-				String content = new String(IOUtils.readFully(entity.getContent(), (int)entity.getContentLength(), false));
-				if(content.equals("OK")){
-					Log.info("Sent "+server.get("address")+" the key hash", PKI.class);
-				}else{
-					Log.error("Not Working", PKI.class);
+    	try (CloseableHttpClient httpClient = HttpClients.custom().build()) {
+	    	for( HashMap<String, String> server : SynloadFramework.pubkeyServers ){
+		    	RequestBuilder reqBuilder = RequestBuilder.post().setUri("https://"+server.get("address")+"/auth.php");
+				reqBuilder.addParameter("key", sha512);
+				reqBuilder.addParameter("username",server.get("username"));
+				reqBuilder.addParameter("password",server.get("password"));
+				HttpUriRequest post = reqBuilder.build();
+				try {
+					CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(post);
+					HttpEntity entity = response.getEntity();
+					long contentLength = entity.getContentLength();
+					if (contentLength > Integer.MAX_VALUE) {
+						throw new IOException("Content length exceeds maximum supported size");
+					}
+					String content = new String(IOUtils.readFully(entity.getContent(), (int)contentLength, false));
+					if(content.equals("OK")){
+						Log.info("Sent "+server.get("address")+" the key hash", PKI.class);
+					}else{
+						Log.error("Not Working", PKI.class);
+					}
+					response.close();
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				response.close();
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+	    	}
     	}
     }
     public void generateKeys(){
