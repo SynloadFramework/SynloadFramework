@@ -40,7 +40,7 @@ public class EventShare {
             eventBusServer.setEs(this);
             onConnect();
         }catch (Exception e){
-            e.printStackTrace();
+            Log.error("Failed to connect to event share server: " + ip + ":" + port, EventShare.class, e);
             Client.reconnect(this, ip, port, false, key, true);
         }
     }
@@ -52,7 +52,7 @@ public class EventShare {
                 transmitEvents();
             }
         }catch (Exception e){
-            e.printStackTrace();
+            Log.error("Error during onConnect event share setup", EventShare.class, e);
         }
     }
     public EventShare(Client eventBusServer){
@@ -74,7 +74,7 @@ public class EventShare {
                                 try {
                                     es.getEventBusServer().write(esre);
                                 }catch (Exception e){
-                                    e.printStackTrace();
+                                    Log.error("Failed to write remove event to event share server", EventShare.class, e);
                                 }
                             }
                         }
@@ -101,14 +101,14 @@ public class EventShare {
                             try {
                                 eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                Log.error("Failed to transmit shared event", EventShare.class, e);
                             }
                         }
                     }else {
                         try {
                             eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.error("Failed to transmit shared event", EventShare.class, e);
                         }
                     }
                 }
@@ -125,7 +125,7 @@ public class EventShare {
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
-            error.printStackTrace();
+            Log.error("Failed to transmit event to event bus (WSHandler)", EventShare.class, error);
         }
     }
     public void transmit(EventClass e, HttpRequest client){
@@ -134,7 +134,7 @@ public class EventShare {
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
-            error.printStackTrace();
+            Log.error("Failed to transmit event to event bus (HttpRequest)", EventShare.class, error);
         }
     }
     public void transmit(EventClass e, EventShare client){
@@ -146,7 +146,7 @@ public class EventShare {
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
-            error.printStackTrace();
+            Log.error("Failed to transmit event to event bus (EventShare)", EventShare.class, error);
         }
     }
     public void respond(ESData esd){
@@ -164,14 +164,14 @@ public class EventShare {
                 try {
                     hr.getResponse().getOutputStream().write(esd.getData().getBytes());
                 }catch (Exception e){
-                    e.printStackTrace();
+                    Log.error("Failed to write response data to HTTP output stream", EventShare.class, e);
                 }
             }else if(EventShare.class.isInstance(client)){
                 try {
                     Log.info("Sending to another server...!", EventShare.class);
                     ((EventShare) client).getEventBusServer().write(esd);
                 }catch(Exception e){
-                    e.printStackTrace();
+                    Log.error("Failed to forward response to another event share server", EventShare.class, e);
                 }
             }
         }else{

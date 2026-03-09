@@ -122,7 +122,7 @@ public class SynloadFramework extends ModuleClass {
             String[] addressElements = connectElements[0].split(":");
             try {
                 masterControl = Client.createConnection(addressElements[0], Integer.valueOf(addressElements[1]), false, connectElements[1]);
-            }catch(Exception e){ e.printStackTrace(); }
+            }catch(Exception e){ Log.error("Failed to create master control connection", SynloadFramework.class, e); }
         }
         if(parser.getCmd().hasOption("scb") && parser.getCmd().hasOption("cb")){
             new Thread(new Statistics()).start();
@@ -245,7 +245,7 @@ public class SynloadFramework extends ModuleClass {
                         try {
                             EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.valueOf(connectElements[2]), Boolean.valueOf(connectElements[3]));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.error("Failed to create EventShare connection: " + eventShareConnection, SynloadFramework.class, e);
                         }
                     }
                 }
@@ -260,9 +260,7 @@ public class SynloadFramework extends ModuleClass {
             server.join();
 
         } catch (Exception e) {
-            if (SynloadFramework.debug) {
-                e.printStackTrace();
-            }
+            Log.error("Fatal error during framework startup", SynloadFramework.class, e);
         }
     }
     public static void createFolder(String folderPath){

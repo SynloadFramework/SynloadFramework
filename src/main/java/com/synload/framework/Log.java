@@ -21,4 +21,10 @@ public class Log {
         logger.setLevel(SynloadFramework.loglevel);
         logger.error(data);
     }
+
+    public static <T> void error(String data, Class<T> c, Throwable t) {
+        Logger logger = Logger.getLogger(c.getName());
+        logger.setLevel(SynloadFramework.loglevel);
+        logger.error(data, t);
+    }
 }

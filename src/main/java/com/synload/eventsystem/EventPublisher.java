@@ -85,7 +85,7 @@ public class EventPublisher {
                                 }
                                 eventCalled = true;
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                Log.error("Error raising request event", EventPublisher.class, e);
                             }
                         } else {
 
@@ -98,7 +98,7 @@ public class EventPublisher {
                             trigger.getMethod().invoke(handler, event); // No EventShare yet
                             eventCalled = true;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.error("Error raising custom event", EventPublisher.class, e);
                         }
                     }
                 }

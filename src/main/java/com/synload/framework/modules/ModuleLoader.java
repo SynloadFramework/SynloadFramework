@@ -15,7 +15,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
@@ -28,8 +27,6 @@ import com.synload.eventsystem.events.annotations.Event;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.http.HTTPRegistry;
-import com.synload.framework.http.HTTPRouting;
-import com.synload.framework.http.modules.HTTPResponse;
 import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.sql.annotations.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
@@ -42,7 +39,7 @@ public class ModuleLoader extends ClassLoader {
 	public static Thread checkNewJar=null;
     public static HashMap<String, Properties> moduleProperties = new HashMap<String, Properties>();
     public static Hashtable<String, Class<?>> cache = new Hashtable<String, Class<?>>();
-    public static ConcurrentHashMap<String, String> loadedModules = new ConcurrentHashMap<String, String>();
+    public static HashMap<String, String> loadedModules = new HashMap<String, String>();
     
     public static HashMap<String, ModuleData> jarList = new HashMap<String, ModuleData>();
     
@@ -58,7 +55,7 @@ public class ModuleLoader extends ClassLoader {
             try {
                 c = Class.forName(clazzName);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.error("Failed to load class: " + clazzName, ModuleLoader.class, e);
             }
         }
         return c;
@@ -102,34 +99,34 @@ public class ModuleLoader extends ClassLoader {
             String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
             try {
                 loadModuleFiles((new File(".")).getCanonicalPath() + "/lib/", SynJar[SynJar.length - 1], true, false);
-            }catch (Exception e){}
+            }catch (Exception e){
+                Log.error("Failed to load SynloadFramework module files", ModuleLoader.class, e);
+            }
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Log.error("Invalid URI for SynloadFramework code source", ModuleLoader.class, e);
         }
-        if (listOfFiles != null) {
-            for (int i = 0; i < listOfFiles.length; i++) {
-                if (listOfFiles[i].isFile()) {
-                    fileName = listOfFiles[i].getName();
-                    if (fileName.endsWith(".jar")) {
-                    	InputStream hashIS = null;
-                        try {
-                        	hashIS = new FileInputStream(new File(path+fileName));
-            				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
-            			} catch (NoSuchAlgorithmException e) {
-            				e.printStackTrace();
-            			} catch (IOException e) {
-    						e.printStackTrace();
-    					}finally{
-    						if(hashIS!=null){
-    							try {
-    								hashIS.close();
-    							} catch (IOException e) {
-    								e.printStackTrace();
-    							}
-    						}
-    					}
-                    	loadModuleFiles( path, fileName, true, true);
-                    }
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                fileName = listOfFiles[i].getName();
+                if (fileName.endsWith(".jar")) {
+                	InputStream hashIS = null;
+                    try {
+                    	hashIS = new FileInputStream(new File(path+fileName));
+        				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
+        			} catch (NoSuchAlgorithmException e) {
+        				Log.error("SHA-256 algorithm not available for module: " + fileName, ModuleLoader.class, e);
+        			} catch (IOException e) {
+						Log.error("IO error reading module file: " + fileName, ModuleLoader.class, e);
+					}finally{
+						if(hashIS!=null){
+							try {
+								hashIS.close();
+							} catch (IOException e) {
+								Log.error("Failed to close hash input stream", ModuleLoader.class, e);
+							}
+						}
+					}
+                	loadModuleFiles( path, fileName, true, true);
                 }
             }
         }
@@ -147,14 +144,11 @@ public class ModuleLoader extends ClassLoader {
 		            if (obsql != null) {
 		                sql.add(obsql);
 		            }
-		            Object[] eventResult = register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue());
-		            if (eventResult != null) {
-		                events.addAll((List<Object[]>) eventResult[0]);
-		            }
+		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue())[0]);
 				} catch (InstantiationException e) {
-					e.printStackTrace();
+					Log.error("Failed to instantiate class: " + clazzPath, ModuleLoader.class, e);
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					Log.error("Illegal access loading class: " + clazzPath, ModuleLoader.class, e);
 				}
         	}
         }
@@ -190,68 +184,25 @@ public class ModuleLoader extends ClassLoader {
     	byte[] mdbytes = MessageDigest.getInstance("SHA-256").digest(convertme);
     	StringBuffer hexString = new StringBuffer();
     	for (int i=0;i<mdbytes.length;i++) {
-    	  hexString.append(String.format("%02x", mdbytes[i]));
+    	  hexString.append(Integer.toHexString(0xFF & mdbytes[i]));
     	}
         return hexString.toString();
     }
     
-    @SuppressWarnings("rawtypes")
     public static void unload(ModuleData module){
-    	Log.info("Unloading module: " + module.getName(), ModuleLoader.class);
-
-    	// Remove event handlers from HandlerRegistry whose hostClass belongs to this module
-    	for (Entry<Class, List<EventTrigger>> entry : HandlerRegistry.getHandlers().entrySet()) {
-    		List<EventTrigger> triggers = entry.getValue();
-    		List<EventTrigger> toRemove = new ArrayList<EventTrigger>();
-    		for (EventTrigger trigger : triggers) {
-    			if (trigger.getHostClass() != null && module.getClasses().contains(trigger.getHostClass().getName())) {
-    				toRemove.add(trigger);
-    			}
-    		}
-    		triggers.removeAll(toRemove);
+    	
+    	/*ModuleData jarM = jar.get(fileName);
+		ModuleRegistry.getLoadedModules().remove(jarM.getName());
+		SynloadFramework.plugins.remove(jmod[1]);
+    	List<Object[]> jarE = jarEvents.get(fileName);
+    	for(Object[] jE : jarE){
+    		HandlerRegistry.unregister((Class<?>)jE[0], (EventTrigger)jE[1]);
     	}
-
-    	// Remove HTTP routes registered by this module's classes
-    	List<String> routesToRemove = new ArrayList<String>();
-    	for (Entry<String, HTTPResponse> route : HTTPRouting.getRoutes().entrySet()) {
-    		if (route.getValue().listener != null && module.getClasses().contains(route.getValue().listener.getName())) {
-    			routesToRemove.add(route.getKey());
-    		}
-    	}
-    	for (String routeKey : routesToRemove) {
-    		HTTPRouting.getRoutes().remove(routeKey);
-    	}
-
-    	// Remove SQL table registrations for classes belonging to this module
-    	List<Class> sqlToRemove = new ArrayList<Class>();
-    	for (Class sqlClass : SQLRegistry.sqltables) {
-    		if (module.getClasses().contains(sqlClass.getName())) {
-    			sqlToRemove.add(sqlClass);
-    		}
-    	}
-    	SQLRegistry.sqltables.removeAll(sqlToRemove);
-
-    	// Remove module plugin from SynloadFramework.plugins and ModuleRegistry
-    	ModuleClass registeredModule = ModuleRegistry.getLoadedModules().remove(module.getName());
-    	if (registeredModule != null) {
-    		SynloadFramework.plugins.remove(registeredModule);
-    	}
-
-    	// Remove cached classes belonging to this module
-    	for (String className : module.getClasses()) {
-    		cache.remove(className);
-    	}
-
-    	// Remove module resources
-    	ModuleResource.getResources().remove(module.getName());
-
-    	// Remove module properties
-    	moduleProperties.remove(module.getName());
-
-    	// Remove from jarList
-    	jarList.remove(module.getFile());
-
-    	Log.info("Unloaded module: " + module.getName(), ModuleLoader.class);
+    	List<String> jarC = jar.get(fileName).getResources();
+    	for(String jC : jarC){
+    		cache.remove(jC);
+    	}*/
+    	
     }
     
     /*
@@ -266,7 +217,7 @@ public class ModuleLoader extends ClassLoader {
             ModuleLoader.jarList.put(path + fileName, moduleData);
             return moduleData;
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.error("IO error loading module file: " + path + fileName, ModuleLoader.class, e);
         }
     	return null;
     }
@@ -355,7 +306,7 @@ public class ModuleLoader extends ClassLoader {
                         try {
                             obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{eventAnnotation.method(), eventAnnotation.action()});
                         } catch (JsonProcessingException e1) {
-                            e1.printStackTrace();
+                            Log.error("Failed to serialize event trigger", ModuleLoader.class, e1);
                         }
                         obj.add(obj_tmp);
                         HandlerRegistry.register(WSEvent.class, et);
@@ -376,12 +327,12 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
                         obj_tmp[3] = Event.class.getSimpleName();
-                        obj_tmp[4] = m.getParameterTypes().length > 0 ? m.getParameterTypes()[0].getSimpleName() : "N/A";
+                        obj_tmp[4] = m.getParameterTypes()[0].getSimpleName();
                         obj_tmp[5] = eventAnnotation.description();
                         try {
                             obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{});
                         } catch (JsonProcessingException e1) {
-                            e1.printStackTrace();
+                            Log.error("Failed to serialize event trigger", ModuleLoader.class, e1);
                         }
                         obj.add(obj_tmp);
                         HandlerRegistry.register(Event.class, et);
@@ -412,14 +363,8 @@ public class ModuleLoader extends ClassLoader {
         Properties moduleSettings = new Properties();
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
         	if(entry.getName().contains("module.ini")){
-        		byte[] buffer;
-        		long entrySize = entry.getSize();
-        		if (entrySize >= 0) {
-        		    buffer = new byte[(int)entrySize];
-        		    IOUtils.readFully(zip, buffer);
-        		} else {
-        		    buffer = IOUtils.toByteArray(zip);
-        		}
+        		byte[] buffer = new byte[(int)entry.getSize()];
+            	IOUtils.readFully(zip, buffer);
             	InputStream is = IOUtils.toInputStream(new String(buffer));
             	moduleSettings.load(is);
             	is.close();
@@ -441,14 +386,8 @@ public class ModuleLoader extends ClassLoader {
 		try {
 	        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
 	            if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
-	            	byte[] buffer;
-	            	long entrySize = entry.getSize();
-	            	if (entrySize >= 0) {
-	            	    buffer = new byte[(int)entrySize];
-	            	    IOUtils.readFully(zip, buffer);
-	            	} else {
-	            	    buffer = IOUtils.toByteArray(zip);
-	            	}
+	            	byte[] buffer = new byte[(int)entry.getSize()];
+	            	IOUtils.readFully(zip, buffer);
 	            	StringBuilder className = new StringBuilder();
 	                for (String part : entry.getName().split("/")) {
 	                    if (className.length() != 0){
@@ -462,25 +401,19 @@ public class ModuleLoader extends ClassLoader {
 	            	addClassByteArray(file, entry.getName(), moduleName, className.toString(), buffer);
 	            	mData.getClasses().add(className.toString());
 	            }else if(entry.getName().contains("www/") && !entry.isDirectory()){
-	            	byte[] buffer;
-	            	long entrySize = entry.getSize();
-	            	if (entrySize >= 0) {
-	            	    buffer = new byte[(int)entrySize];
-	            	    IOUtils.readFully(zip, buffer);
-	            	} else {
-	            	    buffer = IOUtils.toByteArray(zip);
-	            	}
+	            	byte[] buffer = new byte[(int)entry.getSize()];
+	            	IOUtils.readFully(zip, buffer);
 	            	addResourceByteArray(file, entry.getName(), moduleName, buffer);
 	            	mData.getResources().add(entry.getName());
 	            }
 	        }
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Log.error("Jar file not found: " + file, ModuleLoader.class, e);
 		}finally{
 			try{
                 zip.close();
             }catch(Exception e){
-
+                Log.error("Failed to close zip stream for: " + file, ModuleLoader.class, e);
             }
 		}
         return mData;
