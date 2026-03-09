@@ -14,14 +14,23 @@ import com.synload.framework.SynloadFramework;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Response {
-    public String template, parent, pri, action, parentTemplate, callEvent,
-            pageId, pageTitle, templateId,reference = "";
+    public String template = "";
+    public String parent = "";
+    public String pri = "";
+    public String action = "";
+    public String parentTemplate = "";
+    public String callEvent = "";
+    public String pageId = "";
+    public String pageTitle = "";
+    public String templateId = "";
+    public String reference = "";
     public String transitionOut = "drop";
     public String transitionIn = "slide";
     public boolean forceParent = true;
     public Request request = null;
     public List<String> javascript = new ArrayList<String>();
-    public Map<String, String> redirect, data = new HashMap<String, String>();
+    public Map<String, String> redirect = new HashMap<String, String>();
+    public Map<String, String> data = new HashMap<String, String>();
     public List<DelayedRequest> delayedRequests = new ArrayList<DelayedRequest>();
     public Map<String, List<String>> objects = new HashMap<String, List<String>>();
     public int sleep = 0;
