@@ -102,16 +102,23 @@ public class Client implements Runnable {
     }
     public void reconnect(String address, int port, boolean closeAfterSend, String key, boolean reconnect){
         if(reconnect){
-            Log.info("Reconnecting", Client.class);
-            try {
-                Thread.sleep(5000); // wait 2 seconds
-                Socket clientSocket = new Socket(address, port);
-                this.setSocket(clientSocket);
-                (new Thread(this)).start();
-            }catch(Exception e){
-                e.printStackTrace();
-                reconnect(address, port, closeAfterSend, key, reconnect);
+            int maxRetries = 10;
+            long backoffMs = 2000;
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                Log.info("Reconnect attempt " + attempt + "/" + maxRetries + " (backoff " + backoffMs + "ms)", Client.class);
+                try {
+                    Thread.sleep(backoffMs);
+                    Socket clientSocket = new Socket(address, port);
+                    this.setSocket(clientSocket);
+                    (new Thread(this)).start();
+                    Log.info("Reconnected successfully on attempt " + attempt, Client.class);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    backoffMs *= 2;
+                }
             }
+            Log.info("Failed to reconnect after " + maxRetries + " attempts, giving up", Client.class);
         }
     }
 
