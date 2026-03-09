@@ -139,7 +139,7 @@ public class PKI {
     	}
     }
     
-    @WSEvent(name = "ReceiveClientPublicKey", description = "Receive Client Public Key", action = "ack", enabled = true, method = "synfam")
+    @WSEvent(name = "ReceiveClientAcknowledge", description = "Receive Client Acknowledge", action = "ack", enabled = true, method = "synfam")
     public void receiveClientAcknowledge(RequestEvent event) throws JsonProcessingException, IOException {
     	if(event.getRequest().getData().containsKey("message")){
 			String message = event.getRequest().getData().get("message");
