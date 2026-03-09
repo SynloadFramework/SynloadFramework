@@ -6,7 +6,25 @@ import com.synload.framework.Log;
 import com.synload.framework.ws.WSHandler;
 import com.synload.talksystem.eventShare.ESHandler;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class EventPublisher {
+    private static final ConcurrentHashMap<Class<?>, Object> handlerInstances = new ConcurrentHashMap<>();
+
+    @SuppressWarnings("rawtypes")
+    private static Object getHandlerInstance(Class hostClass)
+            throws NoSuchMethodException, InstantiationException,
+                   IllegalAccessException, InvocationTargetException {
+        return handlerInstances.computeIfAbsent(hostClass, clazz -> {
+            try {
+                return ((Class<?>) clazz).getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to instantiate handler: " + clazz.getName(), e);
+            }
+        });
+    }
+
     public static void raiseEvent(final EventClass event, boolean threaded,
             final String target) {
         if (threaded) {
@@ -47,17 +65,27 @@ public class EventPublisher {
                             try {
                                 if(trigger.getServer()==null && trigger.getHostClass()!=null) {
                                     //Log.info("Event processed ", EventPublisher.class);
-                                    trigger.getMethod().invoke(trigger.getHostClass().newInstance(), requestEvent);
+                                    Object handler = getHandlerInstance(trigger.getHostClass());
+                                    trigger.getMethod().invoke(handler, requestEvent);
                                 }else if(event.getIdentifier()!=null && trigger.getServer()!=null){
                                     Log.info("Event transmitted [ESHANDLER]", EventPublisher.class);
-                                    trigger.getServer().transmit(event, ((ESHandler)event.getResponse()).getEs());
+                                    Object response = event.getResponse();
+                                    if (response instanceof ESHandler) {
+                                        trigger.getServer().transmit(event, ((ESHandler) response).getEs());
+                                    } else {
+                                        Log.error("Expected ESHandler but got " + response.getClass().getName(), EventPublisher.class);
+                                    }
                                 }else if(trigger.getServer()!=null){
                                     Log.info("Event transmitted [WSHandler]", EventPublisher.class);
-                                    trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
+                                    if (event instanceof RequestEvent) {
+                                        trigger.getServer().transmit(event, ((RequestEvent) event).getSession());
+                                    } else {
+                                        Log.error("Expected RequestEvent but got " + event.getClass().getName(), EventPublisher.class);
+                                    }
                                 }
                                 eventCalled = true;
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                Log.error("Error raising request event", EventPublisher.class, e);
                             }
                         } else {
 
@@ -66,10 +94,11 @@ public class EventPublisher {
                 } else { // No more WebEvent, handled in HttpRouting, Custom Events Only
                     if (trigger.getMethod().getParameterTypes().length > 0 && trigger.getMethod().getParameterTypes()[0].isInstance(event)) {
                         try {
-                            trigger.getMethod().invoke(trigger.getHostClass().newInstance(), event); // No EventShare yet
+                            Object handler = getHandlerInstance(trigger.getHostClass());
+                            trigger.getMethod().invoke(handler, event); // No EventShare yet
                             eventCalled = true;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.error("Error raising custom event", EventPublisher.class, e);
                         }
                     }
                 }

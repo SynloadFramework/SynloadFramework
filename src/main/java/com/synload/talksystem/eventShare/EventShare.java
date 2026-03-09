@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,7 +30,7 @@ public class EventShare {
     public boolean localShare = false;
     public boolean remoteShare = false;
     public Map<String, Object> requestMap = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
-    public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
+    public static List<EventShare> eventShareServers = new CopyOnWriteArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         eventShareServers.add(this);
         try {
@@ -39,7 +40,7 @@ public class EventShare {
             eventBusServer.setEs(this);
             onConnect();
         }catch (Exception e){
-            e.printStackTrace();
+            Log.error("Failed to connect to event share server: " + ip + ":" + port, EventShare.class, e);
             Client.reconnect(this, ip, port, false, key, true);
         }
     }
@@ -51,7 +52,7 @@ public class EventShare {
                 transmitEvents();
             }
         }catch (Exception e){
-            e.printStackTrace();
+            Log.error("Error during onConnect event share setup", EventShare.class, e);
         }
     }
     public EventShare(Client eventBusServer){
@@ -59,8 +60,9 @@ public class EventShare {
         eventShareServers.add(this);
     }
     public void removeEvents(){
-        // Currently transmit all events
-        for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
+        // Create defensive copy to avoid ConcurrentModificationException
+        Map<Class, List<EventTrigger>> handlersCopy = new HashMap<Class, List<EventTrigger>>(HandlerRegistry.getHandlers());
+        for(Entry<Class, List<EventTrigger>> eventGroup: handlersCopy.entrySet()){
             String annotation = eventGroup.getKey().getName();
             List<EventTrigger> eventTriggers = new ArrayList<EventTrigger>(eventGroup.getValue());
             for(EventTrigger trigger : eventTriggers){
@@ -72,13 +74,12 @@ public class EventShare {
                                 try {
                                     es.getEventBusServer().write(esre);
                                 }catch (Exception e){
-                                    e.printStackTrace();
+                                    Log.error("Failed to write remove event to event share server", EventShare.class, e);
                                 }
                             }
                         }
                     }
-                    HandlerRegistry.getHandlers().get(eventGroup.getKey()).remove(trigger);
-                    System.out.println(HandlerRegistry.getHandlers());
+                    HandlerRegistry.unregister(eventGroup.getKey(), trigger);
                 }
             }
         }
@@ -89,23 +90,25 @@ public class EventShare {
     public void transmitEvents(){
         // Currently transmit all events
         Log.info("Transmitting Events", EventShare.class);
-        for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
+        // Create defensive copy to avoid ConcurrentModificationException
+        Map<Class, List<EventTrigger>> handlersCopy = new HashMap<Class, List<EventTrigger>>(HandlerRegistry.getHandlers());
+        for(Entry<Class, List<EventTrigger>> eventGroup: handlersCopy.entrySet()){
             String annotation = eventGroup.getKey().getName();
-            for(EventTrigger trigger : eventGroup.getValue()){
+            for(EventTrigger trigger : new ArrayList<EventTrigger>(eventGroup.getValue())){
                 if(trigger.getServer()!=this) { // do not send own events...
                     if(trigger.getMethod()!=null){ // its a local event
                         if(trigger.getMethod().isAnnotationPresent(ES.class)){
                             try {
                                 eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                Log.error("Failed to transmit shared event", EventShare.class, e);
                             }
                         }
                     }else {
                         try {
                             eventBusServer.write(new ESSharedEvent(annotation, trigger.getTrigger()));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.error("Failed to transmit shared event", EventShare.class, e);
                         }
                     }
                 }
@@ -122,7 +125,7 @@ public class EventShare {
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
-            error.printStackTrace();
+            Log.error("Failed to transmit event to event bus (WSHandler)", EventShare.class, error);
         }
     }
     public void transmit(EventClass e, HttpRequest client){
@@ -131,7 +134,7 @@ public class EventShare {
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
-            error.printStackTrace();
+            Log.error("Failed to transmit event to event bus (HttpRequest)", EventShare.class, error);
         }
     }
     public void transmit(EventClass e, EventShare client){
@@ -143,7 +146,7 @@ public class EventShare {
         try {
             eventBusServer.write(new ESPush(e));
         }catch(Exception error){
-            error.printStackTrace();
+            Log.error("Failed to transmit event to event bus (EventShare)", EventShare.class, error);
         }
     }
     public void respond(ESData esd){
@@ -161,14 +164,14 @@ public class EventShare {
                 try {
                     hr.getResponse().getOutputStream().write(esd.getData().getBytes());
                 }catch (Exception e){
-                    e.printStackTrace();
+                    Log.error("Failed to write response data to HTTP output stream", EventShare.class, e);
                 }
             }else if(EventShare.class.isInstance(client)){
                 try {
                     Log.info("Sending to another server...!", EventShare.class);
                     ((EventShare) client).getEventBusServer().write(esd);
                 }catch(Exception e){
-                    e.printStackTrace();
+                    Log.error("Failed to forward response to another event share server", EventShare.class, e);
                 }
             }
         }else{

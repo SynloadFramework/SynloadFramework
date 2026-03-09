@@ -10,8 +10,8 @@ public class WebsocketHandler extends WebSocketHandler {
     @Override
     public void configure(WebSocketServletFactory factory) {
         factory.getPolicy().setIdleTimeout(300000);
-        factory.getPolicy().setMaxBinaryMessageSize(104857600);
-        factory.getPolicy().setMaxTextMessageSize(104857600);
+        factory.getPolicy().setMaxBinaryMessageSize(1048576);
+        factory.getPolicy().setMaxTextMessageSize(1048576);
         factory.setCreator(new WSCreator());
         factory.getExtensionFactory().unregister("permessage-deflate");
     }

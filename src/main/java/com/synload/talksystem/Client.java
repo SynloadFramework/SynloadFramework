@@ -11,8 +11,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Random;
 import java.util.UUID;
 import javax.crypto.BadPaddingException;
@@ -35,7 +35,7 @@ public class Client implements Runnable {
     private boolean reconnect = false;
     private EventShare es = null;
     private boolean keepRunning=true;
-    public List<Object> queue = new ArrayList<Object>();
+    public BlockingQueue<Object> queue = new LinkedBlockingQueue<Object>();
     private boolean closeAfterSend = false;
     private boolean connected = true;
     /**
@@ -227,11 +227,11 @@ public class Client implements Runnable {
         this.es = es;
     }
 
-    public List<Object> getQueue() {
+    public BlockingQueue<Object> getQueue() {
         return queue;
     }
 
-    public void setQueue(List<Object> queue) {
+    public void setQueue(BlockingQueue<Object> queue) {
         this.queue = queue;
     }
 

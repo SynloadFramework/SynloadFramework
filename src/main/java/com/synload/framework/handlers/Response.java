@@ -9,22 +9,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.synload.framework.SynloadFramework;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Response {
-    public String template, parent, pri, action, parentTemplate, callEvent,
-            pageId, pageTitle, templateId,reference = "";
-    public String transitionOut = "drop";
-    public String transitionIn = "slide";
-    public boolean forceParent = true;
-    public Request request = null;
-    public List<String> javascript = new ArrayList<String>();
-    public Map<String, String> redirect, data = new HashMap<String, String>();
-    public List<DelayedRequest> delayedRequests = new ArrayList<DelayedRequest>();
-    public Map<String, List<String>> objects = new HashMap<String, List<String>>();
-    public int sleep = 0;
+    private String template = "";
+    private String parent = "";
+    private String pri = "";
+    private String action = "";
+    private String parentTemplate = "";
+    private String callEvent = "";
+    private String pageId = "";
+    private String pageTitle = "";
+    private String templateId = "";
+    private String reference = "";
+    private String transitionOut = "drop";
+    private String transitionIn = "slide";
+    private boolean forceParent = true;
+    private Request request = null;
+    private List<String> javascript = new ArrayList<String>();
+    private Map<String, String> redirect = new HashMap<String, String>();
+    private Map<String, String> data = new HashMap<String, String>();
+    private List<DelayedRequest> delayedRequests = new ArrayList<DelayedRequest>();
+    private Map<String, List<String>> objects = new HashMap<String, List<String>>();
+    private int sleep = 0;
 
     public Map<String, List<String>> getObjects() {
         return objects;
@@ -202,14 +209,24 @@ public class Response {
 
     public String getTemplate(String tmpl) {
     	String[] p = tmpl.split("(?s)\\.");
-    	if(p[p.length-1].equalsIgnoreCase("htm") 
-		 || p[p.length-1].equalsIgnoreCase("js") 
-		 || p[p.length-1].equalsIgnoreCase("css") 
+    	if(p[p.length-1].equalsIgnoreCase("htm")
+		 || p[p.length-1].equalsIgnoreCase("js")
+		 || p[p.length-1].equalsIgnoreCase("css")
 		 || p[p.length-1].equalsIgnoreCase("ico")
 		 || p[p.length-1].equalsIgnoreCase("svg")
 		 || p[p.length-1].equalsIgnoreCase("jpg")
 		 || p[p.length-1].equalsIgnoreCase("png")){
-    		if((new File(tmpl)).exists()){
+    		File templateFile = new File(tmpl);
+    		if(templateFile.exists()){
+    			try {
+    				String canonicalPath = templateFile.getCanonicalPath();
+    				String baseDir = new File(".").getCanonicalPath();
+    				if (!canonicalPath.startsWith(baseDir + File.separator)) {
+    					return tmpl;
+    				}
+    			} catch (IOException e) {
+    				return tmpl;
+    			}
     			return this.getFileData(tmpl);
     		}else{
     			return tmpl;
@@ -231,14 +248,14 @@ public class Response {
         if (!isCached) {
             try {
                 File htmlFile = (new File(tmpl));
-                InputStream is = new FileInputStream(htmlFile);
-                HashMap<String, Object> tmpf = new HashMap<String, Object>();
-                tmpf.put("modified", (new File(tmpl)).lastModified());
-                dataOut = new String(Files.readAllBytes(htmlFile.toPath()),
-                        "UTF-8");
-                tmpf.put("data", dataOut);
-                SynloadFramework.htmlFiles.put(tmpl, tmpf);
-                is.close();
+                try (InputStream is = new FileInputStream(htmlFile)) {
+                    HashMap<String, Object> tmpf = new HashMap<String, Object>();
+                    tmpf.put("modified", (new File(tmpl)).lastModified());
+                    dataOut = new String(Files.readAllBytes(htmlFile.toPath()),
+                            "UTF-8");
+                    tmpf.put("data", dataOut);
+                    SynloadFramework.htmlFiles.put(tmpl, tmpf);
+                }
             } catch (IOException e) {
                 if (SynloadFramework.debug) {
                     e.printStackTrace();

@@ -1,10 +1,10 @@
 package com.synload.framework.modules;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ModuleRegistry {
-    private static Map<String, ModuleClass> loadedModules = new HashMap<String, ModuleClass>();
+    private static Map<String, ModuleClass> loadedModules = new ConcurrentHashMap<String, ModuleClass>();
 
     public static Map<String, ModuleClass> getLoadedModules() {
         return loadedModules;

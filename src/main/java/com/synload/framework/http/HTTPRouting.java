@@ -88,51 +88,51 @@ public class HTTPRouting {
                 response.setContentLengthLong((new File(filename)).length());
                 if (!isCached) {
                     File htmlFile = (new File(filename));
-                    InputStream is = new FileInputStream(htmlFile);
-                    long bytesRead = 0;
-                    boolean cache = false;
-                    if ((new File(filename)).length() < 200000) {
-                        cache = true;
-                    }
-                    byte[] buffer = new byte[8 * 1024];
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    int byteArrayPos = 0;
-                    while (is.read(buffer) != -1) {
+                    try (InputStream is = new FileInputStream(htmlFile)) {
+                        long bytesRead = 0;
+                        boolean cache = false;
+                        if ((new File(filename)).length() < 200000) {
+                            cache = true;
+                        }
+                        byte[] buffer = new byte[8 * 1024];
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        int byteArrayPos = 0;
+                        while (is.read(buffer) != -1) {
+                            if (cache) {
+                                outputStream.write(buffer);
+                                outputStream.flush();
+                            }
+                            try {
+                                if (ext.equalsIgnoreCase("html")
+                                        || ext.equalsIgnoreCase("css")
+                                        || ext.equalsIgnoreCase("js")) {
+                                    response.getWriter().print(
+                                            new String(buffer));
+                                    response.getWriter().flush();
+                                } else if (ext.equalsIgnoreCase("mp4")
+                                        || ext.equalsIgnoreCase("avi")
+                                        || ext.equalsIgnoreCase("webm")
+                                        || ext.equalsIgnoreCase("jpg")
+                                        || ext.equalsIgnoreCase("png")
+                                        || ext.equalsIgnoreCase("ico")
+                                        || ext.equalsIgnoreCase("gif")) {
+                                    response.getOutputStream().write(buffer);
+                                    response.getOutputStream().flush();
+                                }
+                            } catch (IOException ex) {
+                                if (SynloadFramework.debug) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        }
                         if (cache) {
-                            outputStream.write(buffer);
-                            outputStream.flush();
-                        }
-                        try {
-                            if (ext.equalsIgnoreCase("html")
-                                    || ext.equalsIgnoreCase("css")
-                                    || ext.equalsIgnoreCase("js")) {
-                                response.getWriter().print(
-                                        new String(buffer));
-                                response.getWriter().flush();
-                            } else if (ext.equalsIgnoreCase("mp4")
-                                    || ext.equalsIgnoreCase("avi")
-                                    || ext.equalsIgnoreCase("webm")
-                                    || ext.equalsIgnoreCase("jpg")
-                                    || ext.equalsIgnoreCase("png")
-                                    || ext.equalsIgnoreCase("ico")
-                                    || ext.equalsIgnoreCase("gif")) {
-                                response.getOutputStream().write(buffer);
-                                response.getOutputStream().flush();
-                            }
-                        } catch (IOException ex) {
-                            if (SynloadFramework.debug) {
-                                ex.printStackTrace();
-                            }
+                            HashMap<String, Object> tmpf = new HashMap<String, Object>();
+                            tmpf.put("modified",
+                                    (new File(filename)).lastModified());
+                            tmpf.put("data", outputStream.toByteArray());
+                            SynloadFramework.htmlFiles.put(filename, tmpf);
                         }
                     }
-                    if (cache) {
-                        HashMap<String, Object> tmpf = new HashMap<String, Object>();
-                        tmpf.put("modified",
-                                (new File(filename)).lastModified());
-                        tmpf.put("data", outputStream.toByteArray());
-                        SynloadFramework.htmlFiles.put(filename, tmpf);
-                    }
-                    is.close();
                     return true;
                 } else {
                     response.getOutputStream().write(
@@ -335,7 +335,7 @@ public class HTTPRouting {
         	String path = httpResponse.getKey();
         	//Log.info("Request checked: "+httpResponses.getValue().getHttpMethod(), HTTPRouting.class);
         	//Log.info(target+":"+baseRequest.getMethod()+"="+path+":"+httpResponse.getValue().getHttpMethod().toLowerCase(), HTTPRouting.class);
-            if (target.matches(path) && baseRequest.getMethod().toLowerCase().equals(httpResponse.getValue().getHttpMethod().toLowerCase())) {
+            if (target.equals(path) && baseRequest.getMethod().toLowerCase().equals(httpResponse.getValue().getHttpMethod().toLowerCase())) {
                 try {
                     HTTPResponse p = httpResponse.getValue();
                     if(p.getMimetype()!=null){

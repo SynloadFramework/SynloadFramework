@@ -177,13 +177,13 @@ public class WSHandler extends Responder {
                                         SynloadFramework.ow.writeValueAsString(message),
                                         ws.getPki().getClientPublicKey()
                                 );
-                                TransmissionStats.ws_sent+=cipher.length();
+                                TransmissionStats.ws_sent.addAndGet(cipher.length());
                                 ws.session.getRemote().sendString(
                                         cipher,
                                         new verifySend(ws)
                                 );
                             } else {
-                                TransmissionStats.ws_sent+=message.length();
+                                TransmissionStats.ws_sent.addAndGet(message.length());
                                 ws.session.getRemote().sendString(
                                         message,
                                         new verifySend(ws)
@@ -252,7 +252,7 @@ public class WSHandler extends Responder {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
-            TransmissionStats.ws_receive+=message.length();
+            TransmissionStats.ws_receive.addAndGet(message.length());
             if (encrypt) {
 				request = mapper.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
             } else {

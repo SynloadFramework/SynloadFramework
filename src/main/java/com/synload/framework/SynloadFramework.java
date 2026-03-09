@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -61,7 +63,7 @@ public class SynloadFramework extends ModuleClass {
     // public static Map<String,DashboardGroup> dashboardGroups = new
     // HashMap<String,DashboardGroup>();
     public static List<ModuleClass> plugins = new ArrayList<ModuleClass>();
-    public static List<String> bannedIPs = new ArrayList<String>();
+    public static List<String> bannedIPs = new CopyOnWriteArrayList<String>();
     public static Connection sql = null;
     public static int totalFailures = 10;
     public static String serverTalkKey;
@@ -81,7 +83,7 @@ public class SynloadFramework extends ModuleClass {
     public static int encryptLevel;
     public static Properties prop = new Properties();
     public static List<WSHandler> clients = new ArrayList<WSHandler>();
-    public static Map<String, List<Long>> failedAttempts = new HashMap<String, List<Long>>();
+    public static Map<String, List<Long>> failedAttempts = new ConcurrentHashMap<String, List<Long>>();
     public static List<HashMap<String, String>> pubkeyServers = new ArrayList<HashMap<String, String>>();
     public static List<Javascript> javascripts = new ArrayList<Javascript>();
     public static ObjectWriter ow = new ObjectMapper().writer();
@@ -120,7 +122,7 @@ public class SynloadFramework extends ModuleClass {
             String[] addressElements = connectElements[0].split(":");
             try {
                 masterControl = Client.createConnection(addressElements[0], Integer.valueOf(addressElements[1]), false, connectElements[1]);
-            }catch(Exception e){ e.printStackTrace(); }
+            }catch(Exception e){ Log.error("Failed to create master control connection", SynloadFramework.class, e); }
         }
         if(parser.getCmd().hasOption("scb") && parser.getCmd().hasOption("cb")){
             new Thread(new Statistics()).start();
@@ -128,7 +130,9 @@ public class SynloadFramework extends ModuleClass {
         Log.info( "Starting Synload Development Framework Server", SynloadFramework.class );
         try {
             if ((new File(configFile)).exists()) {
-                prop.load(new FileInputStream(configFile));
+                try (FileInputStream configFis = new FileInputStream(configFile)) {
+                    prop.load(configFis);
+                }
                 port = Integer.valueOf(prop.getProperty("port"));
                 handleUpload = Boolean.valueOf(prop.getProperty("enableUploads"));
                 siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
@@ -141,6 +145,7 @@ public class SynloadFramework extends ModuleClass {
                 graphDBPath = defaultPath+prop.getProperty("graphDBPath");
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
+                Log.setLevel(loglevel);
                 debug = Boolean.valueOf(prop.getProperty("debug"));
                 dbEnabled = Boolean.valueOf(prop.getProperty("dbenabled"));
                 uploadPath = defaultPath+prop.getProperty("uploadPath");
@@ -152,11 +157,10 @@ public class SynloadFramework extends ModuleClass {
                 eventShareServers = prop.getProperty("eventShareServers","");
                 pubkeyServers = parsePubKeyServers(prop.getProperty("pubkeyservers"));
             } else {
-                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("config.ini");
-                FileOutputStream os = new FileOutputStream(new File(configFile));
-                IOUtils.copy(is, os);
-                os.close();
-                is.close();
+                try (InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("config.ini");
+                     FileOutputStream os = new FileOutputStream(new File(configFile))) {
+                    IOUtils.copy(is, os);
+                }
                 System.exit(0);
             }
             if(parser.getCmd().hasOption("port")){
@@ -164,18 +168,16 @@ public class SynloadFramework extends ModuleClass {
 
             }
             if(!new File(defaultPath+"log4j.properties").exists()){
-                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("log4j.properties");
-                FileOutputStream os = new FileOutputStream(new File(defaultPath+"log4j.properties"));
-                IOUtils.copy(is, os);
-                os.close();
-                is.close();
+                try (InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("log4j.properties");
+                     FileOutputStream os = new FileOutputStream(new File(defaultPath+"log4j.properties"))) {
+                    IOUtils.copy(is, os);
+                }
             }
             if(!new File(defaultPath+"bbcodes.xml").exists()){
-                InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("bbcodes.xml");
-                FileOutputStream os = new FileOutputStream(new File(defaultPath+"bbcodes.xml"));
-                IOUtils.copy(is, os);
-                os.close();
-                is.close();
+                try (InputStream is = SynloadFramework.class.getClassLoader().getResourceAsStream("bbcodes.xml");
+                     FileOutputStream os = new FileOutputStream(new File(defaultPath+"bbcodes.xml"))) {
+                    IOUtils.copy(is, os);
+                }
             }
             Log.info("CONF", SynloadFramework.class);
             if(!dbEnabled){
@@ -244,7 +246,7 @@ public class SynloadFramework extends ModuleClass {
                         try {
                             EventShare eventShare = new EventShare(addressElements[0], Integer.valueOf(addressElements[1]), connectElements[1], Boolean.valueOf(connectElements[2]), Boolean.valueOf(connectElements[3]));
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.error("Failed to create EventShare connection: " + eventShareConnection, SynloadFramework.class, e);
                         }
                     }
                 }
@@ -259,9 +261,7 @@ public class SynloadFramework extends ModuleClass {
             server.join();
 
         } catch (Exception e) {
-            if (SynloadFramework.debug) {
-                e.printStackTrace();
-            }
+            Log.error("Fatal error during framework startup", SynloadFramework.class, e);
         }
     }
     public static void createFolder(String folderPath){
@@ -297,8 +297,8 @@ public class SynloadFramework extends ModuleClass {
         return htmlFiles;
     }
 
-    public static int getTimestamp() {
-        return (int) (System.currentTimeMillis() / 1000L);
+    public static long getTimestamp() {
+        return System.currentTimeMillis() / 1000L;
     }
 
     public static void setHtmlFiles(
