@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,7 +30,7 @@ public class EventShare {
     public boolean localShare = false;
     public boolean remoteShare = false;
     public Map<String, Object> requestMap = ExpiringMap.builder().expiration(5, TimeUnit.SECONDS).build();
-    public static List<EventShare> eventShareServers = new ArrayList<EventShare>();
+    public static List<EventShare> eventShareServers = new CopyOnWriteArrayList<EventShare>();
     public EventShare(String ip, int port, String key, boolean localShare, boolean remoteShare){
         eventShareServers.add(this);
         try {

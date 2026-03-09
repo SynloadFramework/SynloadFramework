@@ -1,13 +1,13 @@
 package com.synload.eventsystem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class HandlerRegistry {
     @SuppressWarnings("rawtypes")
-    private static Map<Class, List<EventTrigger>> triggers = new HashMap<Class, List<EventTrigger>>();
+    private static Map<Class, List<EventTrigger>> triggers = new ConcurrentHashMap<Class, List<EventTrigger>>();
 
     @SuppressWarnings("rawtypes")
     public static void register(Class handler, EventTrigger trigger) {
@@ -19,7 +19,7 @@ public class HandlerRegistry {
                 System.out.println("Trigger already registered!");
             }
         } else {
-            List<EventTrigger> eventTrigger = new ArrayList<EventTrigger>();
+            List<EventTrigger> eventTrigger = new CopyOnWriteArrayList<EventTrigger>();
             eventTrigger.add(trigger);
             triggers.put(handler, eventTrigger);
         }

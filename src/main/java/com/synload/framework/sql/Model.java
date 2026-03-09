@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,7 +29,7 @@ import com.synload.framework.sql.annotations.StringColumn;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Model {
-    public static Map<String, Map<String, Model>> cache = new HashMap<String, Map<String, Model>>();
+    public static Map<String, Map<String, Model>> cache = new ConcurrentHashMap<String, Map<String, Model>>();
     public Model(ResultSet rs) {
         for (Field f : Model._getFields(this.getClass())) {
             try {
@@ -228,7 +229,7 @@ public class Model {
                         e.printStackTrace();
                     }
                 } else {
-                    cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    cache.put(_tableName(c.getSimpleName()), new ConcurrentHashMap<String, Model>());
                 }
             }
             if(!found){
@@ -356,7 +357,7 @@ public class Model {
                     e.printStackTrace();
                 }
             } else {
-                cache.put(_tableName(this.getClass().getSimpleName()), new HashMap<String, Model>());
+                cache.put(_tableName(this.getClass().getSimpleName()), new ConcurrentHashMap<String, Model>());
                 if (!cache.get(_tableName(this.getClass().getSimpleName())).containsKey(String.valueOf(index.get(this)))) {
                     //Log.info("STORING CACHE IN INSERT - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+String.valueOf(index.get(this)), Model.class);
                     cache.get(_tableName(this.getClass().getSimpleName())).put(String.valueOf(index.get(this)), this);
