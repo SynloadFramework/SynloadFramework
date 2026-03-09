@@ -129,7 +129,7 @@ public class SynloadFramework extends ModuleClass {
         try {
             if ((new File(configFile)).exists()) {
                 prop.load(new FileInputStream(configFile));
-                port = Integer.valueOf(prop.getProperty("port"));
+                port = parseIntProperty(prop.getProperty("port"), port);
                 handleUpload = Boolean.valueOf(prop.getProperty("enableUploads"));
                 siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
                 modulePath = defaultPath+prop.getProperty("modulePath", modulePath);
@@ -137,17 +137,17 @@ public class SynloadFramework extends ModuleClass {
                 configPath = defaultPath+prop.getProperty("configPath", configPath);
                 sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
-                encryptLevel = Integer.valueOf(prop.getProperty("encryptLevel"));
+                encryptLevel = parseIntProperty(prop.getProperty("encryptLevel"), encryptLevel);
                 graphDBPath = defaultPath+prop.getProperty("graphDBPath");
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
                 debug = Boolean.valueOf(prop.getProperty("debug"));
                 dbEnabled = Boolean.valueOf(prop.getProperty("dbenabled"));
                 uploadPath = defaultPath+prop.getProperty("uploadPath");
-                maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
+                maxUploadSize = parseLongProperty(prop.getProperty("maxUploadSize"), maxUploadSize);
                 serverTalkEnable = Boolean.valueOf(prop.getProperty("serverTalkEnable"));
                 serverTalkKey = prop.getProperty("serverTalkKey");
-                serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
+                serverTalkPort = parseIntProperty(prop.getProperty("serverTalkPort"), serverTalkPort);
                 graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
                 eventShareServers = prop.getProperty("eventShareServers","");
                 pubkeyServers = parsePubKeyServers(prop.getProperty("pubkeyservers"));
@@ -235,7 +235,7 @@ public class SynloadFramework extends ModuleClass {
             server.setHandler(handlerCollection);
 
             Log.info("Loaded all aspects running on port " + port, SynloadFramework.class);
-            if(!eventShareServers.equals("")){
+            if(eventShareServers != null && !eventShareServers.isEmpty()){
                 String[] eventShareConnections = eventShareServers.split(",");
                 for(String eventShareConnection: eventShareConnections) {
                     String[] connectElements = eventShareConnection.split("&");
@@ -430,19 +430,51 @@ public class SynloadFramework extends ModuleClass {
 		SynloadFramework.encryptLevel = encryptLevel;
 	}
 
+	private static int parseIntProperty(String value, int defaultValue) {
+		if (value == null || value.trim().isEmpty()) {
+			return defaultValue;
+		}
+		try {
+			return Integer.valueOf(value.trim());
+		} catch (NumberFormatException e) {
+			Log.error("Invalid integer config value: " + value + ", using default: " + defaultValue, SynloadFramework.class);
+			return defaultValue;
+		}
+	}
+
+	private static long parseLongProperty(String value, long defaultValue) {
+		if (value == null || value.trim().isEmpty()) {
+			return defaultValue;
+		}
+		try {
+			return Long.valueOf(value.trim());
+		} catch (NumberFormatException e) {
+			Log.error("Invalid long config value: " + value + ", using default: " + defaultValue, SynloadFramework.class);
+			return defaultValue;
+		}
+	}
+
 	private static List<HashMap<String, String>> parsePubKeyServers(String pubKeyServerList){
 		List<HashMap<String, String>> servers = new ArrayList<HashMap<String, String>>();
+		if (pubKeyServerList == null || pubKeyServerList.trim().isEmpty()) {
+			return servers;
+		}
 		String[] pubKeyServers = pubKeyServerList.split("&");
 		for(String pubKeyServer: pubKeyServers){
+			if (pubKeyServer == null || pubKeyServer.trim().isEmpty()) {
+				continue;
+			}
+			String[] serverData = pubKeyServer.split(",");
+			if (serverData.length < 3) {
+				Log.error("Invalid pubkey server entry (expected 3 comma-separated values): " + pubKeyServer, SynloadFramework.class);
+				continue;
+			}
 			HashMap<String, String> server = new HashMap<String, String>();
-			String[] serverData =  pubKeyServer.split(",");
 			server.put("address", serverData[0]);
 			server.put("username", serverData[1]);
 			server.put("password", serverData[2]);
 			servers.add(server);
 		}
 		return servers;
-		
-		
 	}
 }
