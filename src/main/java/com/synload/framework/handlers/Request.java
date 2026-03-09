@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 public class Request implements Serializable {
-    public String method, action, reference = "";
+    public String method = "";
+    public String action = "";
+    public String reference = "";
     public List<String> templateCache = new ArrayList<String>();
     public Map<String, String> data = new HashMap<String, String>();
 
