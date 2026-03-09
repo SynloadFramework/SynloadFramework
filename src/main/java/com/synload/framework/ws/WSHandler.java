@@ -1,10 +1,8 @@
 package com.synload.framework.ws;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.synload.framework.TransmissionStats;
 import com.synload.framework.modules.Responder;
@@ -36,21 +34,16 @@ import com.synload.framework.security.PKI;
 @WebSocket
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class WSHandler extends Responder {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final ExecutorService MESSAGE_POOL = Executors.newCachedThreadPool();
-
     @JsonIgnore
     public Session session = null;
     @JsonIgnore
-    public Vector<String> queue = new Vector<String>();
+    public LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
     public Map<String, Object> sessionData = new HashMap<String, Object>();
     private PKI pki;
     public boolean encrypt = false;
     public List<String> flags = new ArrayList<String>();
     @JsonIgnore
     public boolean isSending = false;
-    @JsonIgnore
-    private volatile boolean sendingThreadRunning = false;
     @JsonIgnore
     private Thread sendingThreadVar = null;
 
@@ -61,16 +54,15 @@ public class WSHandler extends Responder {
      * }
      */
 
+    @SuppressWarnings("deprecation")
     @OnWebSocketClose
     public void onWebSocketClose(int statusCode, String reason) {
         EventPublisher.raiseEvent(new CloseEvent(this), null);
         OOnPage.removeClient(this);
         SynloadFramework.users.remove(session);
         SynloadFramework.clients.remove(this);
-        sendingThreadRunning = false;
-        if (sendingThreadVar != null) {
-            sendingThreadVar.interrupt();
-        }
+        sendingThreadVar.stop();
+        sendingThreadVar.interrupt();
         Log.debug("Close: statusCode=" + statusCode + ", reason=" + reason,
                 this.getClass());
     }
@@ -96,7 +88,6 @@ public class WSHandler extends Responder {
 
         this.session = session;
         SynloadFramework.users.add(session);
-        sendingThreadRunning = true;
         sendingThreadVar = (new Thread(new sendingThread(this)));
         sendingThreadVar.start();
         SynloadFramework.clients.add(this);
@@ -176,34 +167,32 @@ public class WSHandler extends Responder {
         }
 
         public void run() {
-            while (ws.sendingThreadRunning && !Thread.currentThread().isInterrupted()) {
+            while (true) {
                 try {
-                    if (ws.queue.size() > 0) {
-                        String message = ws.queue.get(0);
-                        if (SpamDetection.respondAllowed(ws.session.getRemoteAddress().getAddress().getHostAddress())) {
-                            ws.isSending = true;
-                            if (ws.encrypt) {
-                                String cipher = pki.encrypt(
-                                        SynloadFramework.ow.writeValueAsString(message),
-                                        ws.getPki().getClientPublicKey()
-                                );
-                                TransmissionStats.ws_sent+=cipher.length();
-                                ws.session.getRemote().sendString(
-                                        cipher,
-                                        new verifySend(ws)
-                                );
-                            } else {
-                                TransmissionStats.ws_sent+=message.length();
-                                ws.session.getRemote().sendString(
-                                        message,
-                                        new verifySend(ws)
-                                );
-                            }
-                            ws.queue.remove(0);
-                            ws.queue.trimToSize();
+                    String message = ws.queue.take();
+                    if (SpamDetection.respondAllowed(ws.session.getRemoteAddress().getAddress().getHostAddress())) {
+                        ws.isSending = true;
+                        if (ws.encrypt) {
+                            String cipher = pki.encrypt(
+                                    SynloadFramework.ow.writeValueAsString(message),
+                                    ws.getPki().getClientPublicKey()
+                            );
+                            TransmissionStats.ws_sent+=cipher.length();
+                            ws.session.getRemote().sendString(
+                                    cipher,
+                                    new verifySend(ws)
+                            );
+                        } else {
+                            TransmissionStats.ws_sent+=message.length();
+                            ws.session.getRemote().sendString(
+                                    message,
+                                    new verifySend(ws)
+                            );
                         }
                     }
-                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return; // thread interrupted, shut down cleanly.
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
@@ -229,7 +218,7 @@ public class WSHandler extends Responder {
      * random-hex-string-of-length-50-in-java-me-j2me
      */
     public static String getRandomHexString(int numchars) {
-        SecureRandom r = new SecureRandom();
+        Random r = new Random();
         StringBuffer sb = new StringBuffer();
         while (sb.length() < numchars) {
             sb.append(Integer.toHexString(r.nextInt()));
@@ -259,16 +248,17 @@ public class WSHandler extends Responder {
     @OnWebSocketMessage
     public void onWebSocketText(String message) {
         //System.out.println(message.substring(0,30));
+        ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
             TransmissionStats.ws_receive+=message.length();
             if (encrypt) {
-				request = MAPPER.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
+				request = mapper.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
             } else {
-                request = MAPPER.readValue(message, Request.class);
+                request = mapper.readValue(message, Request.class);
             }
 
-            MESSAGE_POOL.execute(new HandleRequest(this, request));
+            (new Thread(new HandleRequest(this, request))).start();
         } catch (IOException e) {
             if (SynloadFramework.debug) {
                 e.printStackTrace();
