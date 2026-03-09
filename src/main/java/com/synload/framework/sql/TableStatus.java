@@ -69,7 +69,7 @@ public class TableStatus extends Model {
     @SuppressWarnings("rawtypes")
     public static TableStatus get(Class c) {
         try {
-            PreparedStatement ps = SynloadFramework.sql
+            PreparedStatement ps = SynloadFramework.getConnection()
                     .prepareStatement("SHOW TABLE STATUS LIKE ?");
             ps.setString(1, Model._tableName(c.getSimpleName()));
             ResultSet rs = ps.executeQuery();

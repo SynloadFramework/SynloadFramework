@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +65,33 @@ public class SynloadFramework extends ModuleClass {
     // HashMap<String,DashboardGroup>();
     public static List<ModuleClass> plugins = new CopyOnWriteArrayList<ModuleClass>();
     public static List<String> bannedIPs = new CopyOnWriteArrayList<String>();
-    public static Connection sql = null;
+    private static final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
+
+    /**
+     * Returns a JDBC connection for the current thread. Each thread gets its
+     * own connection, avoiding the thread-safety issues of a single shared
+     * connection. The connection is created lazily on first access and cached
+     * in a {@link ThreadLocal} for subsequent calls on the same thread.
+     *
+     * @return a thread-local {@link Connection}, or {@code null} when the
+     *         database is disabled.
+     * @throws SQLException if a new connection cannot be established.
+     */
+    public static Connection getConnection() throws SQLException {
+        if (!dbEnabled) {
+            return null;
+        }
+        Connection conn = threadLocalConnection.get();
+        if (conn == null || conn.isClosed()) {
+            conn = DriverManager.getConnection(
+                prop.getProperty("jdbc"),
+                prop.getProperty("dbuser"),
+                prop.getProperty("dbpass")
+            );
+            threadLocalConnection.set(conn);
+        }
+        return conn;
+    }
     public static int totalFailures = 10;
     public static String serverTalkKey;
     public static boolean debug = false;
@@ -180,11 +207,10 @@ public class SynloadFramework extends ModuleClass {
                 is.close();
             }
             Log.info("CONF", SynloadFramework.class);
-            if(!dbEnabled){
-                sql=null;
-            }else{
-                sql = DriverManager.getConnection(prop.getProperty("jdbc"), prop.getProperty("dbuser"), prop.getProperty("dbpass"));
-                if(sql.isClosed()){
+            if(dbEnabled){
+                // Verify database connectivity at startup
+                Connection startupConn = getConnection();
+                if(startupConn == null || startupConn.isClosed()){
                     Log.error("MySQL failed to connect!",SynloadFramework.class);
                     //return;
                 }
