@@ -60,8 +60,9 @@ public class EventShare {
         eventShareServers.add(this);
     }
     public void removeEvents(){
-        // Currently transmit all events
-        for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
+        // Create defensive copy to avoid ConcurrentModificationException
+        Map<Class, List<EventTrigger>> handlersCopy = new HashMap<Class, List<EventTrigger>>(HandlerRegistry.getHandlers());
+        for(Entry<Class, List<EventTrigger>> eventGroup: handlersCopy.entrySet()){
             String annotation = eventGroup.getKey().getName();
             List<EventTrigger> eventTriggers = new ArrayList<EventTrigger>(eventGroup.getValue());
             for(EventTrigger trigger : eventTriggers){
@@ -78,8 +79,7 @@ public class EventShare {
                             }
                         }
                     }
-                    HandlerRegistry.getHandlers().get(eventGroup.getKey()).remove(trigger);
-                    System.out.println(HandlerRegistry.getHandlers());
+                    HandlerRegistry.unregister(eventGroup.getKey(), trigger);
                 }
             }
         }
@@ -90,9 +90,11 @@ public class EventShare {
     public void transmitEvents(){
         // Currently transmit all events
         Log.info("Transmitting Events", EventShare.class);
-        for(Entry<Class, List<EventTrigger>> eventGroup: HandlerRegistry.getHandlers().entrySet()){
+        // Create defensive copy to avoid ConcurrentModificationException
+        Map<Class, List<EventTrigger>> handlersCopy = new HashMap<Class, List<EventTrigger>>(HandlerRegistry.getHandlers());
+        for(Entry<Class, List<EventTrigger>> eventGroup: handlersCopy.entrySet()){
             String annotation = eventGroup.getKey().getName();
-            for(EventTrigger trigger : eventGroup.getValue()){
+            for(EventTrigger trigger : new ArrayList<EventTrigger>(eventGroup.getValue())){
                 if(trigger.getServer()!=this) { // do not send own events...
                     if(trigger.getMethod()!=null){ // its a local event
                         if(trigger.getMethod().isAnnotationPresent(ES.class)){

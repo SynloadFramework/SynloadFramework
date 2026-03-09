@@ -12,24 +12,25 @@ public class HandlerRegistry {
     @SuppressWarnings("rawtypes")
     public static void register(Class handler, EventTrigger trigger) {
         //System.out.println(handler.getName() + " trigger "+trigger.getTrigger() );
-        if (triggers.containsKey(handler)) {
-            if (!triggers.get(handler).contains(trigger)) {
-                triggers.get(handler).add(trigger);
+        triggers.compute(handler, (key, existing) -> {
+            if (existing == null) {
+                List<EventTrigger> eventTrigger = new CopyOnWriteArrayList<EventTrigger>();
+                eventTrigger.add(trigger);
+                return eventTrigger;
             } else {
-                System.out.println("Trigger already registered!");
+                if (!existing.contains(trigger)) {
+                    existing.add(trigger);
+                } else {
+                    System.out.println("Trigger already registered!");
+                }
+                return existing;
             }
-        } else {
-            List<EventTrigger> eventTrigger = new CopyOnWriteArrayList<EventTrigger>();
-            eventTrigger.add(trigger);
-            triggers.put(handler, eventTrigger);
-        }
+        });
     }
-    
+
     public static void unregister(Class handler, EventTrigger trigger) {
         if (triggers.containsKey(handler)) {
-            if (triggers.get(handler).contains(trigger)) {
-                triggers.get(handler).remove(trigger);
-            }
+            triggers.get(handler).remove(trigger);
         }
     }
 
