@@ -22,6 +22,12 @@ import com.synload.talksystem.systemMessages.UnrecognizedMessage;
 
 public class ExecuteRead implements Runnable{
 
+    // TODO: When migrating to Java 9+, add an ObjectInputFilter to ConnectDocumentLoader
+    // to enforce class whitelisting at the deserialization level (see JEP 290).
+
+    private static final int MAX_MESSAGE_LENGTH = 10 * 1024 * 1024; // 10 MB
+    private static final String ALLOWED_CLASS_PREFIX = "com.synload.";
+
     public DataInputStream dIn;
     private Client client;
     private boolean keepRunning=true;
@@ -82,6 +88,11 @@ public class ExecuteRead implements Runnable{
             while(this.isKeepRunning() && !this.getClient().getSocket().isInputShutdown()){
                 if(dIn.available()>0){
                     int length = dIn.readInt();
+                    if(length > MAX_MESSAGE_LENGTH){
+                        Log.error("Rejected message: length " + length + " exceeds maximum " + MAX_MESSAGE_LENGTH, ExecuteRead.class);
+                        this.setKeepRunning(false);
+                        break;
+                    }
                     if(length>0){
                         Object data = read(length);
                         if(data!=null){
@@ -129,6 +140,10 @@ public class ExecuteRead implements Runnable{
                             }else if(ESSharedEvent.class.isInstance(data)){
                                 ESSharedEvent esse = (ESSharedEvent)data;
                                 try {
+                                    if(!esse.getAnnotation().startsWith(ALLOWED_CLASS_PREFIX)){
+                                        Log.error("Rejected class load: " + esse.getAnnotation() + " is not in allowed package", ExecuteRead.class);
+                                        continue;
+                                    }
                                     Class c = Class.forName(esse.getAnnotation());
                                     if(!HandlerRegistry.getHandlers().containsKey(c)){
                                         HandlerRegistry.getHandlers().put(c, new ArrayList<EventTrigger>() );
@@ -152,6 +167,10 @@ public class ExecuteRead implements Runnable{
                             }else if(ESRemoveEvent.class.isInstance(data)){
                                 ESRemoveEvent esre = (ESRemoveEvent)data;
                                 try {
+                                    if(!esre.getAnnotation().startsWith(ALLOWED_CLASS_PREFIX)){
+                                        Log.error("Rejected class load: " + esre.getAnnotation() + " is not in allowed package", ExecuteRead.class);
+                                        continue;
+                                    }
                                     Class c = Class.forName(esre.getAnnotation());
                                     if(HandlerRegistry.getHandlers().containsKey(c)){
                                         List<EventTrigger> list = new ArrayList<EventTrigger>(HandlerRegistry.getHandlers().get(c));
