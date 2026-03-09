@@ -48,7 +48,7 @@ public class CLIParser {
 		}
 	}
 	public void addOption(String tag, boolean hasArg, String description){
-		options.addOption("t", hasArg, description);
+		options.addOption(tag, hasArg, description);
 	}
 	public CommandLineParser getParser() {
 		return parser;
