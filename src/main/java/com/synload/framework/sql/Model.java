@@ -262,9 +262,15 @@ public class Model {
                 if (hsm.of() == c) {
                     try {
                         if (!((String) f.get(this)).equalsIgnoreCase("")) {
+                            String[] parts = ((String) f.get(this)).split(",");
+                            String placeholders = String.join(", ", java.util.Collections.nCopies(parts.length, "?"));
+                            Object[] params = new Object[parts.length];
+                            for (int i = 0; i < parts.length; i++) {
+                                params[i] = parts[i].trim();
+                            }
                             return new QuerySet("`" + hsm.key() + "` IN ("
-                                + ((String) f.get(this)) + ")",
-                                new Object[] {}, _getColumns(c),
+                                + placeholders + ")",
+                                params, _getColumns(c),
                                 _tableName(c.getSimpleName())
                             );
                         } else {
