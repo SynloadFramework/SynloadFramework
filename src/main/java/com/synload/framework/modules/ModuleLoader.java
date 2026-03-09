@@ -27,6 +27,8 @@ import com.synload.eventsystem.events.annotations.Event;
 import com.synload.framework.Log;
 import com.synload.framework.SynloadFramework;
 import com.synload.framework.http.HTTPRegistry;
+import com.synload.framework.http.HTTPRouting;
+import com.synload.framework.http.modules.HTTPResponse;
 import com.synload.framework.modules.annotations.Module;
 import com.synload.framework.sql.annotations.SQLTable;
 import com.synload.framework.sql.SQLRegistry;
@@ -187,20 +189,63 @@ public class ModuleLoader extends ClassLoader {
         return hexString.toString();
     }
     
+    @SuppressWarnings("rawtypes")
     public static void unload(ModuleData module){
-    	
-    	/*ModuleData jarM = jar.get(fileName);
-		ModuleRegistry.getLoadedModules().remove(jarM.getName());
-		SynloadFramework.plugins.remove(jmod[1]);
-    	List<Object[]> jarE = jarEvents.get(fileName);
-    	for(Object[] jE : jarE){
-    		HandlerRegistry.unregister((Class<?>)jE[0], (EventTrigger)jE[1]);
+    	Log.info("Unloading module: " + module.getName(), ModuleLoader.class);
+
+    	// Remove event handlers from HandlerRegistry whose hostClass belongs to this module
+    	for (Entry<Class, List<EventTrigger>> entry : HandlerRegistry.getHandlers().entrySet()) {
+    		List<EventTrigger> triggers = entry.getValue();
+    		List<EventTrigger> toRemove = new ArrayList<EventTrigger>();
+    		for (EventTrigger trigger : triggers) {
+    			if (trigger.getHostClass() != null && module.getClasses().contains(trigger.getHostClass().getName())) {
+    				toRemove.add(trigger);
+    			}
+    		}
+    		triggers.removeAll(toRemove);
     	}
-    	List<String> jarC = jar.get(fileName).getResources();
-    	for(String jC : jarC){
-    		cache.remove(jC);
-    	}*/
-    	
+
+    	// Remove HTTP routes registered by this module's classes
+    	List<String> routesToRemove = new ArrayList<String>();
+    	for (Entry<String, HTTPResponse> route : HTTPRouting.getRoutes().entrySet()) {
+    		if (route.getValue().listener != null && module.getClasses().contains(route.getValue().listener.getName())) {
+    			routesToRemove.add(route.getKey());
+    		}
+    	}
+    	for (String routeKey : routesToRemove) {
+    		HTTPRouting.getRoutes().remove(routeKey);
+    	}
+
+    	// Remove SQL table registrations for classes belonging to this module
+    	List<Class> sqlToRemove = new ArrayList<Class>();
+    	for (Class sqlClass : SQLRegistry.sqltables) {
+    		if (module.getClasses().contains(sqlClass.getName())) {
+    			sqlToRemove.add(sqlClass);
+    		}
+    	}
+    	SQLRegistry.sqltables.removeAll(sqlToRemove);
+
+    	// Remove module plugin from SynloadFramework.plugins and ModuleRegistry
+    	ModuleClass registeredModule = ModuleRegistry.getLoadedModules().remove(module.getName());
+    	if (registeredModule != null) {
+    		SynloadFramework.plugins.remove(registeredModule);
+    	}
+
+    	// Remove cached classes belonging to this module
+    	for (String className : module.getClasses()) {
+    		cache.remove(className);
+    	}
+
+    	// Remove module resources
+    	ModuleResource.getResources().remove(module.getName());
+
+    	// Remove module properties
+    	moduleProperties.remove(module.getName());
+
+    	// Remove from jarList
+    	jarList.remove(module.getFile());
+
+    	Log.info("Unloaded module: " + module.getName(), ModuleLoader.class);
     }
     
     /*
