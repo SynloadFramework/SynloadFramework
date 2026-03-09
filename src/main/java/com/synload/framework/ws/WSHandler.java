@@ -2,7 +2,6 @@ package com.synload.framework.ws;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import com.synload.framework.TransmissionStats;
 import com.synload.framework.modules.Responder;
@@ -37,7 +36,7 @@ public class WSHandler extends Responder {
     @JsonIgnore
     public Session session = null;
     @JsonIgnore
-    public LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+    public Vector<String> queue = new Vector<String>();
     public Map<String, Object> sessionData = new HashMap<String, Object>();
     private PKI pki;
     public boolean encrypt = false;
@@ -169,30 +168,32 @@ public class WSHandler extends Responder {
         public void run() {
             while (true) {
                 try {
-                    String message = ws.queue.take();
-                    if (SpamDetection.respondAllowed(ws.session.getRemoteAddress().getAddress().getHostAddress())) {
-                        ws.isSending = true;
-                        if (ws.encrypt) {
-                            String cipher = pki.encrypt(
-                                    SynloadFramework.ow.writeValueAsString(message),
-                                    ws.getPki().getClientPublicKey()
-                            );
-                            TransmissionStats.ws_sent+=cipher.length();
-                            ws.session.getRemote().sendString(
-                                    cipher,
-                                    new verifySend(ws)
-                            );
-                        } else {
-                            TransmissionStats.ws_sent+=message.length();
-                            ws.session.getRemote().sendString(
-                                    message,
-                                    new verifySend(ws)
-                            );
+                    if (ws.queue.size() > 0) {
+                        String message = ws.queue.get(0);
+                        if (SpamDetection.respondAllowed(ws.session.getRemoteAddress().getAddress().getHostAddress())) {
+                            ws.isSending = true;
+                            if (ws.encrypt) {
+                                String cipher = pki.encrypt(
+                                        SynloadFramework.ow.writeValueAsString(message),
+                                        ws.getPki().getClientPublicKey()
+                                );
+                                TransmissionStats.ws_sent.addAndGet(cipher.length());
+                                ws.session.getRemote().sendString(
+                                        cipher,
+                                        new verifySend(ws)
+                                );
+                            } else {
+                                TransmissionStats.ws_sent.addAndGet(message.length());
+                                ws.session.getRemote().sendString(
+                                        message,
+                                        new verifySend(ws)
+                                );
+                            }
+                            ws.queue.remove(0);
+                            ws.queue.trimToSize();
                         }
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return; // thread interrupted, shut down cleanly.
+                    Thread.sleep(1);
                 } catch (Exception e) {
                     if (SynloadFramework.debug) {
                         e.printStackTrace();
@@ -251,7 +252,7 @@ public class WSHandler extends Responder {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Request request = null;
-            TransmissionStats.ws_receive+=message.length();
+            TransmissionStats.ws_receive.addAndGet(message.length());
             if (encrypt) {
 				request = mapper.readValue(pki.decrypt(message, pki.getServerPrivateKey()), Request.class);
             } else {

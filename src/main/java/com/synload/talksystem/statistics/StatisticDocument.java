@@ -30,10 +30,10 @@ public class StatisticDocument extends ConnectionDocument {
     public Properties instanceProperties;
     public StatisticDocument(UUID chain) {
         super(null, chain);
-        ws_sent = TransmissionStats.ws_sent;
-        ws_receive = TransmissionStats.ws_receive;
-        http_receive = TransmissionStats.http_receive;
-        http_sent = TransmissionStats.http_sent;
+        ws_sent = TransmissionStats.ws_sent.get();
+        ws_receive = TransmissionStats.ws_receive.get();
+        http_receive = TransmissionStats.http_receive.get();
+        http_sent = TransmissionStats.http_sent.get();
         free = Runtime.getRuntime().freeMemory();
         total = Runtime.getRuntime().totalMemory();
         max = Runtime.getRuntime().maxMemory();
