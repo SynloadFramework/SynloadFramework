@@ -77,7 +77,7 @@ public class QuerySet {
         if (limit != null) {
             sql += " LIMIT " + limit;
         }
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
+        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql);
         for (int x = 0; x < data.length; x++) {
             ps.setObject(x + 1, data[x]);
         }
@@ -129,7 +129,7 @@ public class QuerySet {
         if (limit != null) {
             sql += " LIMIT " + limit;
         }
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
+        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql);
         for (int x = 0; x < data.length; x++) {
             ps.setObject(x + 1, data[x]);
         }

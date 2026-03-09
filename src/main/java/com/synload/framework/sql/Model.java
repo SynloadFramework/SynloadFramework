@@ -123,7 +123,7 @@ public class Model {
                         + _tableName(this.getClass().getSimpleName())
                         + "` SET `" + colName + "`=? WHERE `" + f.getName()
                         + "`=? LIMIT 1;";
-                PreparedStatement ps = SynloadFramework.sql
+                PreparedStatement ps = SynloadFramework.getConnection()
                         .prepareStatement(sql);
                 ps.setObject(1, data);
                 ps.setObject(2, f.get(this));
@@ -206,7 +206,7 @@ public class Model {
             return null;
         }
         List<T> ms = new ArrayList<T>();
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
+        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql);
         for (int x = 0; x < data.length; x++) {
             ps.setObject(x + 1, data[x]);
         }
@@ -324,7 +324,7 @@ public class Model {
         Object[] valuesA = values.toArray();
         sql = "INSERT INTO `" + _tableName(this.getClass().getSimpleName())
                 + "` ( " + sql + " ) VALUES ( " + sqlQs + ");";
-        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,
+        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql,
                 java.sql.Statement.RETURN_GENERATED_KEYS);
         for (int i = 0; i < valuesA.length; i++) {
             ps.setObject(i + 1, valuesA[i]);
@@ -370,7 +370,7 @@ public class Model {
 		        }
 		    }
 		}
-		PreparedStatement ps = SynloadFramework.sql.prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
+		PreparedStatement ps = SynloadFramework.getConnection().prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
 		ps.setObject(1, autoincrement.get(this));
 		ps.execute();
 		ps.close();
