@@ -103,28 +103,30 @@ public class ModuleLoader extends ClassLoader {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                fileName = listOfFiles[i].getName();
-                if (fileName.endsWith(".jar")) {
-                	InputStream hashIS = null;
-                    try {
-                    	hashIS = new FileInputStream(new File(path+fileName));
-        				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
-        			} catch (NoSuchAlgorithmException e) {
-        				e.printStackTrace();
-        			} catch (IOException e) {
-						e.printStackTrace();
-					}finally{
-						if(hashIS!=null){
-							try {
-								hashIS.close();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-					}
-                	loadModuleFiles( path, fileName, true, true);
+        if (listOfFiles != null) {
+            for (int i = 0; i < listOfFiles.length; i++) {
+                if (listOfFiles[i].isFile()) {
+                    fileName = listOfFiles[i].getName();
+                    if (fileName.endsWith(".jar")) {
+                    	InputStream hashIS = null;
+                        try {
+                        	hashIS = new FileInputStream(new File(path+fileName));
+            				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
+            			} catch (NoSuchAlgorithmException e) {
+            				e.printStackTrace();
+            			} catch (IOException e) {
+    						e.printStackTrace();
+    					}finally{
+    						if(hashIS!=null){
+    							try {
+    								hashIS.close();
+    							} catch (IOException e) {
+    								e.printStackTrace();
+    							}
+    						}
+    					}
+                    	loadModuleFiles( path, fileName, true, true);
+                    }
                 }
             }
         }
@@ -142,7 +144,10 @@ public class ModuleLoader extends ClassLoader {
 		            if (obsql != null) {
 		                sql.add(obsql);
 		            }
-		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue())[0]);
+		            Object[] eventResult = register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue());
+		            if (eventResult != null) {
+		                events.addAll((List<Object[]>) eventResult[0]);
+		            }
 				} catch (InstantiationException e) {
 					e.printStackTrace();
 				} catch (IllegalAccessException e) {
@@ -325,7 +330,7 @@ public class ModuleLoader extends ClassLoader {
                         obj_tmp[1] = moduleData.getName();
                         obj_tmp[2] = m.getName();
                         obj_tmp[3] = Event.class.getSimpleName();
-                        obj_tmp[4] = m.getParameterTypes()[0].getSimpleName();
+                        obj_tmp[4] = m.getParameterTypes().length > 0 ? m.getParameterTypes()[0].getSimpleName() : "N/A";
                         obj_tmp[5] = eventAnnotation.description();
                         try {
                             obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{});
@@ -361,8 +366,14 @@ public class ModuleLoader extends ClassLoader {
         Properties moduleSettings = new Properties();
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
         	if(entry.getName().contains("module.ini")){
-        		byte[] buffer = new byte[(int)entry.getSize()];
-            	IOUtils.readFully(zip, buffer);
+        		byte[] buffer;
+        		long entrySize = entry.getSize();
+        		if (entrySize >= 0) {
+        		    buffer = new byte[(int)entrySize];
+        		    IOUtils.readFully(zip, buffer);
+        		} else {
+        		    buffer = IOUtils.toByteArray(zip);
+        		}
             	InputStream is = IOUtils.toInputStream(new String(buffer));
             	moduleSettings.load(is);
             	is.close();
@@ -384,8 +395,14 @@ public class ModuleLoader extends ClassLoader {
 		try {
 	        for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()){
 	            if (entry.getName().endsWith(".class") && !entry.isDirectory()) {
-	            	byte[] buffer = new byte[(int)entry.getSize()];
-	            	IOUtils.readFully(zip, buffer);
+	            	byte[] buffer;
+	            	long entrySize = entry.getSize();
+	            	if (entrySize >= 0) {
+	            	    buffer = new byte[(int)entrySize];
+	            	    IOUtils.readFully(zip, buffer);
+	            	} else {
+	            	    buffer = IOUtils.toByteArray(zip);
+	            	}
 	            	StringBuilder className = new StringBuilder();
 	                for (String part : entry.getName().split("/")) {
 	                    if (className.length() != 0){
@@ -399,8 +416,14 @@ public class ModuleLoader extends ClassLoader {
 	            	addClassByteArray(file, entry.getName(), moduleName, className.toString(), buffer);
 	            	mData.getClasses().add(className.toString());
 	            }else if(entry.getName().contains("www/") && !entry.isDirectory()){
-	            	byte[] buffer = new byte[(int)entry.getSize()];
-	            	IOUtils.readFully(zip, buffer);
+	            	byte[] buffer;
+	            	long entrySize = entry.getSize();
+	            	if (entrySize >= 0) {
+	            	    buffer = new byte[(int)entrySize];
+	            	    IOUtils.readFully(zip, buffer);
+	            	} else {
+	            	    buffer = IOUtils.toByteArray(zip);
+	            	}
 	            	addResourceByteArray(file, entry.getName(), moduleName, buffer);
 	            	mData.getResources().add(entry.getName());
 	            }
