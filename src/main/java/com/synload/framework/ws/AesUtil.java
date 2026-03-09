@@ -14,7 +14,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -24,27 +24,19 @@ import org.apache.commons.codec.binary.Hex;
 
 // TODO: Implement 256-bit version like: http://securejava.wordpress.com/2012/10/25/aes-256/
 public class AesUtil {
+    private static final int GCM_TAG_LENGTH = 128;
     private final int keySize;
     private final int iterationCount;
-    private final String cipherTransformation = "AES/CBC/PKCS5Padding";
+    private Cipher cipher=null;
 
     public AesUtil(int keySize, int iterationCount) {
         this.keySize = keySize;
         this.iterationCount = iterationCount;
-        // Verify the cipher transformation is available at construction time
         try {
-            Cipher.getInstance(cipherTransformation);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new RuntimeException("Failed to instantiate cipher: " + cipherTransformation, e);
-        }
-    }
-
-    private Cipher createCipher() {
-        try {
-            return Cipher.getInstance(cipherTransformation);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new RuntimeException("Failed to instantiate cipher: " + cipherTransformation, e);
-        }
+			cipher = Cipher.getInstance("AES/GCM/NoPadding");
+		} catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchPaddingException e) {
+		}
     }
 
     public String encrypt(String salt, String iv, String passphrase,
@@ -55,8 +47,8 @@ public class AesUtil {
                     plaintext.getBytes("UTF-8"));
             return base64(encrypted);
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("UTF-8 encoding not supported", e);
         }
+		return null;
     }
     public String encrypt(String salt, String iv, String passphrase,
             byte[] plaintext) {
@@ -74,8 +66,8 @@ public class AesUtil {
                     base64(ciphertext));
             return new String(decrypted, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("UTF-8 encoding not supported", e);
         }
+		return null;
     }
     public byte[] decryptByte(String salt, String iv, String passphrase,
             String ciphertext) {
@@ -87,29 +79,38 @@ public class AesUtil {
 
     private byte[] doFinal(int encryptMode, SecretKey key, String iv,
             byte[] bytes) {
-        try {
-            Cipher cipher = createCipher();
-            cipher.init(encryptMode, key, new IvParameterSpec(hex(iv)));
-            return cipher.doFinal(bytes);
-        } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException("Cipher operation failed", e);
-        } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
-            throw new RuntimeException("Invalid cipher parameters", e);
-        }
+            
+            try {
+            	cipher.init(encryptMode, key, new GCMParameterSpec(GCM_TAG_LENGTH, hex(iv)));
+				return cipher.doFinal(bytes);
+			} catch (IllegalBlockSizeException e) {
+			} catch (BadPaddingException e) {
+			} catch (InvalidKeyException e) {
+			} catch (InvalidAlgorithmParameterException e) {
+			}
+			return null;
+            
     }
 
     private SecretKey generateKey(String salt, String passphrase) {
-        try {
-            SecretKeyFactory factory = SecretKeyFactory
-                    .getInstance("PBKDF2WithHmacSHA1");
-            KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt),
-                    iterationCount, keySize);
-            SecretKey key = new SecretKeySpec(factory.generateSecret(spec)
-                    .getEncoded(), "AES");
-            return key;
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException("Failed to generate secret key", e);
-        }
+
+            SecretKeyFactory factory;
+			try {
+				factory = SecretKeyFactory
+				        .getInstance("PBKDF2WithHmacSHA256");
+				KeySpec spec = new PBEKeySpec(passphrase.toCharArray(), hex(salt),
+	                    iterationCount, keySize);
+	            SecretKey key = new SecretKeySpec(factory.generateSecret(spec)
+	                    .getEncoded(), "AES");
+	            return key;
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (InvalidKeySpecException e) {
+				e.printStackTrace();
+			}
+			return null;
+            
+            
     }
 
     public static String random(int length) {
