@@ -8,7 +8,6 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,39 +58,13 @@ public class SynloadFramework extends ModuleClass {
     public SynloadFramework() {
     }
     public static String version="1.4.8.1";
-    public static ConcurrentHashMap<String, HashMap<String, Object>> htmlFiles = new ConcurrentHashMap<String, HashMap<String, Object>>();
-    public static List<Session> users = new CopyOnWriteArrayList<Session>();
+    public static HashMap<String, HashMap<String, Object>> htmlFiles = new HashMap<String, HashMap<String, Object>>();
+    public static List<Session> users = new ArrayList<Session>();
     // public static Map<String,DashboardGroup> dashboardGroups = new
     // HashMap<String,DashboardGroup>();
-    public static List<ModuleClass> plugins = new CopyOnWriteArrayList<ModuleClass>();
+    public static List<ModuleClass> plugins = new ArrayList<ModuleClass>();
     public static List<String> bannedIPs = new CopyOnWriteArrayList<String>();
-    private static final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
-
-    /**
-     * Returns a JDBC connection for the current thread. Each thread gets its
-     * own connection, avoiding the thread-safety issues of a single shared
-     * connection. The connection is created lazily on first access and cached
-     * in a {@link ThreadLocal} for subsequent calls on the same thread.
-     *
-     * @return a thread-local {@link Connection}, or {@code null} when the
-     *         database is disabled.
-     * @throws SQLException if a new connection cannot be established.
-     */
-    public static Connection getConnection() throws SQLException {
-        if (!dbEnabled) {
-            return null;
-        }
-        Connection conn = threadLocalConnection.get();
-        if (conn == null || conn.isClosed()) {
-            conn = DriverManager.getConnection(
-                prop.getProperty("jdbc"),
-                prop.getProperty("dbuser"),
-                prop.getProperty("dbpass")
-            );
-            threadLocalConnection.set(conn);
-        }
-        return conn;
-    }
+    public static Connection sql = null;
     public static int totalFailures = 10;
     public static String serverTalkKey;
     public static boolean debug = false;
@@ -109,10 +82,10 @@ public class SynloadFramework extends ModuleClass {
     public static boolean encryptEnabled;
     public static int encryptLevel;
     public static Properties prop = new Properties();
-    public static List<WSHandler> clients = new CopyOnWriteArrayList<WSHandler>();
+    public static List<WSHandler> clients = new ArrayList<WSHandler>();
     public static Map<String, List<Long>> failedAttempts = new ConcurrentHashMap<String, List<Long>>();
-    public static List<HashMap<String, String>> pubkeyServers = new CopyOnWriteArrayList<HashMap<String, String>>();
-    public static List<Javascript> javascripts = new CopyOnWriteArrayList<Javascript>();
+    public static List<HashMap<String, String>> pubkeyServers = new ArrayList<HashMap<String, String>>();
+    public static List<Javascript> javascripts = new ArrayList<Javascript>();
     public static ObjectWriter ow = new ObjectMapper().writer();
     public static int port = 80;
     public static boolean serverTalkEnable = false;
@@ -158,7 +131,7 @@ public class SynloadFramework extends ModuleClass {
         try {
             if ((new File(configFile)).exists()) {
                 prop.load(new FileInputStream(configFile));
-                port = parseIntProperty(prop.getProperty("port"), port);
+                port = Integer.valueOf(prop.getProperty("port"));
                 handleUpload = Boolean.valueOf(prop.getProperty("enableUploads"));
                 siteDefaults = Boolean.valueOf(prop.getProperty("siteDefaults"));
                 modulePath = defaultPath+prop.getProperty("modulePath", modulePath);
@@ -166,17 +139,17 @@ public class SynloadFramework extends ModuleClass {
                 configPath = defaultPath+prop.getProperty("configPath", configPath);
                 sqlManager = Boolean.valueOf(prop.getProperty("sqlManager"));
                 encryptEnabled = Boolean.valueOf(prop.getProperty("encrypt"));
-                encryptLevel = parseIntProperty(prop.getProperty("encryptLevel"), encryptLevel);
+                encryptLevel = Integer.valueOf(prop.getProperty("encryptLevel"));
                 graphDBPath = defaultPath+prop.getProperty("graphDBPath");
                 graphDBConfig = prop.getProperty("graphDBConfig");
                 loglevel = Level.toLevel(prop.getProperty("loglevel"));
                 debug = Boolean.valueOf(prop.getProperty("debug"));
                 dbEnabled = Boolean.valueOf(prop.getProperty("dbenabled"));
                 uploadPath = defaultPath+prop.getProperty("uploadPath");
-                maxUploadSize = parseLongProperty(prop.getProperty("maxUploadSize"), maxUploadSize);
+                maxUploadSize = Long.valueOf(prop.getProperty("maxUploadSize"));
                 serverTalkEnable = Boolean.valueOf(prop.getProperty("serverTalkEnable"));
                 serverTalkKey = prop.getProperty("serverTalkKey");
-                serverTalkPort = parseIntProperty(prop.getProperty("serverTalkPort"), serverTalkPort);
+                serverTalkPort = Integer.valueOf(prop.getProperty("serverTalkPort"));
                 graphDBEnable = Boolean.valueOf(prop.getProperty("graphDBEnable"));
                 eventShareServers = prop.getProperty("eventShareServers","");
                 pubkeyServers = parsePubKeyServers(prop.getProperty("pubkeyservers"));
@@ -207,10 +180,11 @@ public class SynloadFramework extends ModuleClass {
                 is.close();
             }
             Log.info("CONF", SynloadFramework.class);
-            if(dbEnabled){
-                // Verify database connectivity at startup
-                Connection startupConn = getConnection();
-                if(startupConn == null || startupConn.isClosed()){
+            if(!dbEnabled){
+                sql=null;
+            }else{
+                sql = DriverManager.getConnection(prop.getProperty("jdbc"), prop.getProperty("dbuser"), prop.getProperty("dbpass"));
+                if(sql.isClosed()){
                     Log.error("MySQL failed to connect!",SynloadFramework.class);
                     //return;
                 }
@@ -263,7 +237,7 @@ public class SynloadFramework extends ModuleClass {
             server.setHandler(handlerCollection);
 
             Log.info("Loaded all aspects running on port " + port, SynloadFramework.class);
-            if(eventShareServers != null && !eventShareServers.isEmpty()){
+            if(!eventShareServers.equals("")){
                 String[] eventShareConnections = eventShareServers.split(",");
                 for(String eventShareConnection: eventShareConnections) {
                     String[] connectElements = eventShareConnection.split("&");
@@ -301,15 +275,7 @@ public class SynloadFramework extends ModuleClass {
 
     public static String randomString(int length) {
         SecureRandom random = new SecureRandom();
-        String value = new BigInteger(130, random).toString(36);
-        if (value.length() >= length) {
-            return value.substring(0, length);
-        }
-        StringBuilder sb = new StringBuilder(value);
-        while (sb.length() < length) {
-            sb.append(new BigInteger(130, random).toString(36));
-        }
-        return sb.substring(0, length);
+        return new BigInteger(130, random).toString(length);
     }
 
     public static void broadcast(String data) {
@@ -329,7 +295,7 @@ public class SynloadFramework extends ModuleClass {
         SynloadFramework.javascripts.add(js);
     }
 
-    public static ConcurrentHashMap<String, HashMap<String, Object>> getHtmlFiles() {
+    public static HashMap<String, HashMap<String, Object>> getHtmlFiles() {
         return htmlFiles;
     }
 
@@ -338,7 +304,7 @@ public class SynloadFramework extends ModuleClass {
     }
 
     public static void setHtmlFiles(
-            ConcurrentHashMap<String, HashMap<String, Object>> htmlFiles) {
+            HashMap<String, HashMap<String, Object>> htmlFiles) {
         SynloadFramework.htmlFiles = htmlFiles;
     }
 
@@ -466,51 +432,19 @@ public class SynloadFramework extends ModuleClass {
 		SynloadFramework.encryptLevel = encryptLevel;
 	}
 
-	private static int parseIntProperty(String value, int defaultValue) {
-		if (value == null || value.trim().isEmpty()) {
-			return defaultValue;
-		}
-		try {
-			return Integer.valueOf(value.trim());
-		} catch (NumberFormatException e) {
-			Log.error("Invalid integer config value: " + value + ", using default: " + defaultValue, SynloadFramework.class);
-			return defaultValue;
-		}
-	}
-
-	private static long parseLongProperty(String value, long defaultValue) {
-		if (value == null || value.trim().isEmpty()) {
-			return defaultValue;
-		}
-		try {
-			return Long.valueOf(value.trim());
-		} catch (NumberFormatException e) {
-			Log.error("Invalid long config value: " + value + ", using default: " + defaultValue, SynloadFramework.class);
-			return defaultValue;
-		}
-	}
-
 	private static List<HashMap<String, String>> parsePubKeyServers(String pubKeyServerList){
 		List<HashMap<String, String>> servers = new ArrayList<HashMap<String, String>>();
-		if (pubKeyServerList == null || pubKeyServerList.trim().isEmpty()) {
-			return servers;
-		}
 		String[] pubKeyServers = pubKeyServerList.split("&");
 		for(String pubKeyServer: pubKeyServers){
-			if (pubKeyServer == null || pubKeyServer.trim().isEmpty()) {
-				continue;
-			}
-			String[] serverData = pubKeyServer.split(",");
-			if (serverData.length < 3) {
-				Log.error("Invalid pubkey server entry (expected 3 comma-separated values): " + pubKeyServer, SynloadFramework.class);
-				continue;
-			}
 			HashMap<String, String> server = new HashMap<String, String>();
+			String[] serverData =  pubKeyServer.split(",");
 			server.put("address", serverData[0]);
 			server.put("username", serverData[1]);
 			server.put("password", serverData[2]);
 			servers.add(server);
 		}
 		return servers;
+		
+		
 	}
 }
