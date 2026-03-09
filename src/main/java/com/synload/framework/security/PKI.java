@@ -155,12 +155,12 @@ public class PKI {
         //System.out.println(Base64.encodeBase64String(key.getEncoded()));
     	BASE64Encoder encoder = new BASE64Encoder();
     	try {
-    		Pattern regex = Pattern.compile("((.|[\r\n]){1,50})");
+    		Pattern regex = Pattern.compile("((.|[\r\n]){1,190})");
     		Matcher regexMatcher = regex.matcher(data);
     		while (regexMatcher.find()) {
     			String toEn = regexMatcher.group(1);
     			//System.out.println(toEn);
-        		final Cipher cipher = Cipher.getInstance("RSA");
+        		final Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
 				cipher.init(Cipher.ENCRYPT_MODE, key);
 			    cipherText = cipher.doFinal(encoder.encode(toEn.getBytes("UTF-8")).getBytes());
 				if(rdata.equals("")){
@@ -180,7 +180,7 @@ public class PKI {
     	//System.out.println(Base64.encodeBase64String(key.getEncoded()));
         try {
         	for(String toEn: data.split("&")){
-        		final Cipher cipher = Cipher.getInstance("RSA");
+        		final Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
         		cipher.init(Cipher.DECRYPT_MODE, key);
         		BASE64Decoder decoder = new BASE64Decoder();
         		if(decryptedText.equals("")){
