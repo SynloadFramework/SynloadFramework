@@ -114,10 +114,13 @@ public class QuerySet {
                 }
             }
             if(!found){
-                //Log.info("CACHE MISS IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
-                Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                //Log.info("STORING CACHE IN QuerySet EXEC - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                if(index!=null) {
+                    if (!Model.cache.containsKey(Model._tableName(c.getSimpleName()))) {
+                        Model.cache.put(Model._tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    }
+                    Model.cache.get(Model._tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
+                }
                 ms.add((T) model);
             }
         }

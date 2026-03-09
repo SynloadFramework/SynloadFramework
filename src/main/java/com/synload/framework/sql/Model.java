@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,7 +28,7 @@ import com.synload.framework.sql.annotations.StringColumn;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public class Model {
-    public static Map<String, Map<String, Model>> cache = new ConcurrentHashMap<String, Map<String, Model>>();
+    public static Map<String, Map<String, Model>> cache = new HashMap<String, Map<String, Model>>();
     public Model(ResultSet rs) {
         for (Field f : Model._getFields(this.getClass())) {
             try {
@@ -124,7 +123,7 @@ public class Model {
                         + _tableName(this.getClass().getSimpleName())
                         + "` SET `" + colName + "`=? WHERE `" + f.getName()
                         + "`=? LIMIT 1;";
-                PreparedStatement ps = SynloadFramework.getConnection()
+                PreparedStatement ps = SynloadFramework.sql
                         .prepareStatement(sql);
                 ps.setObject(1, data);
                 ps.setObject(2, f.get(this));
@@ -207,7 +206,7 @@ public class Model {
             return null;
         }
         List<T> ms = new ArrayList<T>();
-        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql);
+        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql);
         for (int x = 0; x < data.length; x++) {
             ps.setObject(x + 1, data[x]);
         }
@@ -229,14 +228,17 @@ public class Model {
                         e.printStackTrace();
                     }
                 } else {
-                    cache.put(_tableName(c.getSimpleName()), new ConcurrentHashMap<String, Model>());
+                    cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
                 }
             }
             if(!found){
-                //Log.info("CACHE MISS IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
                 Model model = (Model) con.newInstance(rs);
-                cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
-                //Log.info("STORING CACHE IN SQLFETCH - "+Model._tableName(c.getSimpleName())+" KEY:"+rs.getString(index.getName()), Model.class);
+                if(index!=null) {
+                    if (!cache.containsKey(_tableName(c.getSimpleName()))) {
+                        cache.put(_tableName(c.getSimpleName()), new HashMap<String, Model>());
+                    }
+                    cache.get(_tableName(c.getSimpleName())).put(rs.getString(index.getName()), model);
+                }
                 ms.add((T) model);
             }
         }
@@ -263,15 +265,9 @@ public class Model {
                 if (hsm.of() == c) {
                     try {
                         if (!((String) f.get(this)).equalsIgnoreCase("")) {
-                            String[] parts = ((String) f.get(this)).split(",");
-                            String placeholders = String.join(", ", java.util.Collections.nCopies(parts.length, "?"));
-                            Object[] params = new Object[parts.length];
-                            for (int i = 0; i < parts.length; i++) {
-                                params[i] = parts[i].trim();
-                            }
                             return new QuerySet("`" + hsm.key() + "` IN ("
-                                + placeholders + ")",
-                                params, _getColumns(c),
+                                + ((String) f.get(this)) + ")",
+                                new Object[] {}, _getColumns(c),
                                 _tableName(c.getSimpleName())
                             );
                         } else {
@@ -331,7 +327,7 @@ public class Model {
         Object[] valuesA = values.toArray();
         sql = "INSERT INTO `" + _tableName(this.getClass().getSimpleName())
                 + "` ( " + sql + " ) VALUES ( " + sqlQs + ");";
-        PreparedStatement ps = SynloadFramework.getConnection().prepareStatement(sql,
+        PreparedStatement ps = SynloadFramework.sql.prepareStatement(sql,
                 java.sql.Statement.RETURN_GENERATED_KEYS);
         for (int i = 0; i < valuesA.length; i++) {
             ps.setObject(i + 1, valuesA[i]);
@@ -357,7 +353,7 @@ public class Model {
                     e.printStackTrace();
                 }
             } else {
-                cache.put(_tableName(this.getClass().getSimpleName()), new ConcurrentHashMap<String, Model>());
+                cache.put(_tableName(this.getClass().getSimpleName()), new HashMap<String, Model>());
                 if (!cache.get(_tableName(this.getClass().getSimpleName())).containsKey(String.valueOf(index.get(this)))) {
                     //Log.info("STORING CACHE IN INSERT - "+Model._tableName(this.getClass().getSimpleName())+" KEY:"+String.valueOf(index.get(this)), Model.class);
                     cache.get(_tableName(this.getClass().getSimpleName())).put(String.valueOf(index.get(this)), this);
@@ -377,7 +373,11 @@ public class Model {
 		        }
 		    }
 		}
-		PreparedStatement ps = SynloadFramework.getConnection().prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
+		if (autoincrement == null) {
+			Log.error("No auto-increment field found for delete on " + this.getClass().getSimpleName(), this.getClass());
+			return;
+		}
+		PreparedStatement ps = SynloadFramework.sql.prepareStatement("DELETE FROM `" + _tableName(this.getClass().getSimpleName()) + "` WHERE `"+autoincrement.getName() + "`=?");
 		ps.setObject(1, autoincrement.get(this));
 		ps.execute();
 		ps.close();
