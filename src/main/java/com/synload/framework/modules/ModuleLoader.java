@@ -55,7 +55,7 @@ public class ModuleLoader extends ClassLoader {
             try {
                 c = Class.forName(clazzName);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.error("Failed to load class: " + clazzName, ModuleLoader.class, e);
             }
         }
         return c;
@@ -99,9 +99,11 @@ public class ModuleLoader extends ClassLoader {
             String[] SynJar = SynloadFramework.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString().split("/");
             try {
                 loadModuleFiles((new File(".")).getCanonicalPath() + "/lib/", SynJar[SynJar.length - 1], true, false);
-            }catch (Exception e){}
+            }catch (Exception e){
+                Log.error("Failed to load SynloadFramework module files", ModuleLoader.class, e);
+            }
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Log.error("Invalid URI for SynloadFramework code source", ModuleLoader.class, e);
         }
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
@@ -112,15 +114,15 @@ public class ModuleLoader extends ClassLoader {
                     	hashIS = new FileInputStream(new File(path+fileName));
         				loadedModules.put(fileName, SHA256(IOUtils.toByteArray(hashIS)));
         			} catch (NoSuchAlgorithmException e) {
-        				e.printStackTrace();
+        				Log.error("SHA-256 algorithm not available for module: " + fileName, ModuleLoader.class, e);
         			} catch (IOException e) {
-						e.printStackTrace();
+						Log.error("IO error reading module file: " + fileName, ModuleLoader.class, e);
 					}finally{
 						if(hashIS!=null){
 							try {
 								hashIS.close();
 							} catch (IOException e) {
-								e.printStackTrace();
+								Log.error("Failed to close hash input stream", ModuleLoader.class, e);
 							}
 						}
 					}
@@ -144,9 +146,9 @@ public class ModuleLoader extends ClassLoader {
 		            }
 		            events.addAll((List<Object[]>) register(loadedClass, Handler.EVENT, TYPE.METHOD, module, clazz.getValue())[0]);
 				} catch (InstantiationException e) {
-					e.printStackTrace();
+					Log.error("Failed to instantiate class: " + clazzPath, ModuleLoader.class, e);
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					Log.error("Illegal access loading class: " + clazzPath, ModuleLoader.class, e);
 				}
         	}
         }
@@ -215,7 +217,7 @@ public class ModuleLoader extends ClassLoader {
             ModuleLoader.jarList.put(path + fileName, moduleData);
             return moduleData;
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.error("IO error loading module file: " + path + fileName, ModuleLoader.class, e);
         }
     	return null;
     }
@@ -304,7 +306,7 @@ public class ModuleLoader extends ClassLoader {
                         try {
                             obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{eventAnnotation.method(), eventAnnotation.action()});
                         } catch (JsonProcessingException e1) {
-                            e1.printStackTrace();
+                            Log.error("Failed to serialize event trigger", ModuleLoader.class, e1);
                         }
                         obj.add(obj_tmp);
                         HandlerRegistry.register(WSEvent.class, et);
@@ -330,7 +332,7 @@ public class ModuleLoader extends ClassLoader {
                         try {
                             obj_tmp[6] = SynloadFramework.ow.writeValueAsString(new String[]{});
                         } catch (JsonProcessingException e1) {
-                            e1.printStackTrace();
+                            Log.error("Failed to serialize event trigger", ModuleLoader.class, e1);
                         }
                         obj.add(obj_tmp);
                         HandlerRegistry.register(Event.class, et);
@@ -406,12 +408,12 @@ public class ModuleLoader extends ClassLoader {
 	            }
 	        }
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Log.error("Jar file not found: " + file, ModuleLoader.class, e);
 		}finally{
 			try{
                 zip.close();
             }catch(Exception e){
-
+                Log.error("Failed to close zip stream for: " + file, ModuleLoader.class, e);
             }
 		}
         return mData;
