@@ -10,10 +10,10 @@ import com.synload.framework.SynloadFramework;
 
 public class HTTPHandler extends ContextHandler {
     public static final MultipartConfigElement MULTI_PART_CONFIG = new MultipartConfigElement(
-            "/tmp/", 943718400, 948718400, 948718400);
+            "/tmp/", 10485760, 52428800, 10485760);
 
     public HTTPHandler() {
-        this.setMaxFormContentSize(2000000000);
+        this.setMaxFormContentSize(10485760);
     }
 
     @Override
